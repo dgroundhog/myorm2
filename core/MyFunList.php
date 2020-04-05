@@ -4,31 +4,9 @@
 /**
  * 查询列表的结构
  */
-class MyList
+class MyFunList extends MyFun
 {
-    /**
-     * MyList constructor.
-     * @param $name 唯一标识
-     * @param $title 标题
-     */
-    function __construct($name, $title)
-    {
-        $this->list_name = $name;
-        $this->list_title = $title;
-    }
 
-    /**
-     * 查询列表的名字
-     * @var string
-     */
-    public $list_name = "default";
-
-
-    /**
-     * 查询的标题
-     * @var string
-     */
-    public $list_title = "默认列表";
 
     /**
      * 查询那些字段

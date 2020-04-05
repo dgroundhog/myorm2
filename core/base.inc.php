@@ -141,7 +141,7 @@ function _model_get_ok_list($model)
             /**
              * 基本查询
              */
-            $my_list = new MyList();
+            $my_list = new MyFunList();
             $my_list->list_name = $list_key;
             $my_list->list_title = $list_conf['list_title'];
 

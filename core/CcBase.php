@@ -9,7 +9,7 @@ include_once(CC_ROOT . "/base.inc.php");
  *
  * Class CcBase
  */
-abstract class CcBase
+interface CcBase
 {
 
     /**
@@ -17,14 +17,14 @@ abstract class CcBase
      * @param MyModel $model
      * @return mixed
      */
-    abstract function cAdd($model);
+    function cAdd($model);
 
     /**
      * 修改
      * @param MyModel $model
      * @return mixed
      */
-    abstract function cUpdate($model);
+    function cUpdate($model);
 
 
     /**
@@ -32,7 +32,7 @@ abstract class CcBase
      * @param MyModel $model
      * @return mixed
      */
-    abstract function cDelete($model);
+    function cDelete($model);
 
 
     /**
@@ -40,14 +40,14 @@ abstract class CcBase
      * @param MyModel $model
      * @return mixed
      */
-    abstract function cFetch($model);
+    function cFetch($model);
 
     /**
      * 聚合查询、统计
      * @param $model
      * @return mixed
      */
-    abstract function cList($model);
+    function cList($model);
 
 
 }

@@ -4,9 +4,8 @@
  * 构建数据库的基类
  * Class DbBase
  */
-abstract class DbBase extends CcBase
+abstract class DbBase implements CcBase
 {
-
 
     /**
      * 创建初始化结构
@@ -35,8 +34,6 @@ abstract class DbBase extends CcBase
      * @param MyModel $model
      */
     abstract function ccProc($model);
-
-
 
 
 }
