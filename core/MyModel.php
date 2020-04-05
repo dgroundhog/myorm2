@@ -8,13 +8,13 @@ class MyModel
      * 模型名称
      * @var string
      */
-    public $model_name = "abc";
+    public $name = "abc";
 
     /**
      * 模型名称
      * @var string
      */
-    public $model_title = "模型ABC";
+    public $title = "模型ABC";
 
     /**
      * 表格名称，最终表为 t_$table_name
@@ -55,7 +55,7 @@ class MyModel
      * @var array
      *
      * "uk1" => array("op_id"),
-     *"uk2" => array("account")
+     * "uk2" => array("account")
      */
     public $unique_key = array();
 
@@ -64,14 +64,14 @@ class MyModel
      * @var array
      *
      * "ik1" => array("op_id"),
-     *"ik2" => array("account")
+     * "ik2" => array("account")
      */
     public $index_key = array();
 
 
     /**
      * 预定义kv字典值的定义
-     * TODO，写到myfield里去
+     * 从myfield计算
      * @var array
      */
     public $kv_list = array();
@@ -79,28 +79,22 @@ class MyModel
 
     /**
      * 用select输入的key
+     * 从myfield计算
      * @var array
      */
     public $keys_by_select = array();
 
     /**
      * 通过文件上传来的key
-     * TODO，写到myfield里去
+     * 从myfield计算
      * @var array
      */
     public $keys_by_upload = array();
 
-    /**
-     * 允许上传文件
-     * = if count（keys_by_upload）>0
-     * @var array
-     */
-    public $upload_enable = false;
-
 
     /**
      * 允许添加
-     * @var array
+     * @var bool
      */
     public $add_enable = true;
 
@@ -120,7 +114,7 @@ class MyModel
 
     /**
      * 允许查询一个
-     * @var array
+     * @var bool
      */
     public $fetch_enable = true;
 
@@ -141,7 +135,7 @@ class MyModel
      * 启用更新
      * = if count（update_confs）>0
      *
-     * @var array
+     * @var bool
      */
     public $update_enable = true;
 
@@ -154,9 +148,9 @@ class MyModel
 
     /**
      * 启用删除
-     * = if count（update_confs）>0
+     * = if count（delete_confs）>0
      *
-     * @var array
+     * @var bool
      */
     public $delete_enable = true;
 
@@ -169,7 +163,8 @@ class MyModel
     /**
      * "delete_confs" => array(
      * "default" => array(
-     * "delete_title" => "默认删除",
+     * "name" => "default",
+     * "title" => "默认删除",
      * "delete_by" => "default"
      * ),
      * "account" => array(
@@ -183,13 +178,13 @@ class MyModel
      * 启用列表查询
      * = if count（update_confs）>0
      *
-     * @var array
+     * @var bool
      */
     public $list_enable = true;
 
     /**
      * 列表查询的条件组合
-     * @var array
+     * @var array [key=> MyList]
      */
     public $list_confs = array();
 

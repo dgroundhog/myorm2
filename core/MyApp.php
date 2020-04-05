@@ -7,57 +7,97 @@
 class MyApp
 {
 
+    /**
+     * 单例模式的实例
+     * @var MyApp
+     */
+    private static $instance = null;
 
     /**
-     * 用空格替代缩进
-     * @param $size
+     * 构造器私有化:禁止从类外部实例化
+     * MyApp constructor.
      */
-    public static function _tab($size)
+    private function __construct()
     {
-        $space = "";
-        for ($ii = 0; $ii < $size; $ii++) {
-            $space .= "    ";
+    }
+
+    /**
+     * 克隆方法私有化:禁止从外部克隆对象
+     */
+    private function __clone()
+    {
+    }
+
+    /**
+     * @return MyApp
+     */
+    public static function getInstance()
+    {
+        //检测当前类属性$instance是否已经保存了当前类的实例
+        if (self::$instance == null) {
+            //如果没有,则创建当前类的实例
+            self::$instance = new self();
         }
-        return $space;
+        //如果已经有了当前类实例,就直接返回,不要重复创建类实例
+        return self::$instance;
     }
 
     /**
-     * 默认模型结构
-     * @return array
+     * 包含的字段，key => MyModel
+     * @var array
      */
-    public static function _get_default_model()
+    public $models = array();
+
+    /**
+     * 数据库配置
+     * @var MyDb
+     */
+    public $db_conf = null;
+
+
+    /**
+     * 解析模型
+     * @param array $a_app_data
+     * @return bool|void
+     */
+    public function parse($a_app_data = array())
     {
-        return array(
-            "name" => "账户",
-            "size" => "32",
-            "type" => "varchar",
-            "required" => "1",
-            "help" => "6-20长度限制",
-            "valid_rule" => "size_range",
-            "valid_min" => 6,
-            "valid_max" => 20
-        );
+        return false;
     }
 
     /**
-     * 获取list的聚合类型
-     * @return array
+     * 从json解析系统模型
+     * @param string $json_path
+     * @return bool|void
      */
-    public static function _get_list_group_type()
+    public function parseByJson($json_path)
     {
-        return array(
-            "sum" => "求和",
-            "avg" => "求平均值",
-            "max" => "最大值",
-            "min" => "最小值",
-            "count" => "统计记录数"
-        );
+        $s_json_data = file_get_contents($json_path);
+        $a_json_data = json_decode($s_json_data, true);
+
+        if (null != $a_json_data) {
+            return $this->parse($a_json_data);
+
+        }
+        return false;
     }
+
+
+    /**
+     * 导出到json
+     * @param string $json_path
+     */
+    public function saveToJson($json_path = "")
+    {
+
+
+    }
+
 
     /**
      * 获取基本过滤器
      */
-    public static function _get_default_filter()
+    public static function getDefaultFilter()
     {
         return array(
             "int",
@@ -70,34 +110,14 @@ class MyApp
 
 
     /**
-     * 默认字段结构
+     * 获取可能的查询条件配置
      * @return array
      */
-    public static function _get_default_table_field()
+    public static function getQueryCndTypes()
     {
         return array(
-            "name" => "名称",
-            "size" => "255",
-            "type" => "varchar", //有限的几种类型，int string  longblob date datetime
-            "required" => "0",
-            "default_value" => "",
-            "help" => "帮助提示",
-            "valid_rule" => "no_rule", //默认无规则
-            "valid_regexp" => "", //正则表达式
-            "valid_min" => 0,
-            "valid_max" => 0,
-            "filter" => "string"
-        );
-    }
-
-
-    /**
-     * 获取可能的配置
-     * @return array
-     */
-    public static function _php_list_get_conds()
-    {
-        return array(
+            'eq', //等于
+            'neq', //不等于
             'kw', //关键字模糊匹配
             'date', //日期范围
             'time', //时间范围
@@ -109,6 +129,22 @@ class MyApp
             'gte', //大于等于
             'lt', //少于
             'lte', //少于等于
+        );
+    }
+
+
+    /**
+     * 获取list的聚合类型
+     * @return array
+     */
+    public static function getListGroupTypes()
+    {
+        return array(
+            "sum" => "求和",
+            "avg" => "求平均值",
+            "max" => "最大值",
+            "min" => "最小值",
+            "count" => "统计记录数"
         );
     }
 

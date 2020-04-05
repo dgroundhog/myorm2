@@ -1,5 +1,64 @@
 <?php
+/**
+ * 一些基本函数
+ */
 
+
+/**
+ * 输出空格
+ * 用空格替代缩进
+ * @param int $size
+ */
+function _tab($size)
+{
+    $space = "";
+    for ($ii = 0; $ii < $size; $ii++) {
+        $space .= "    ";
+    }
+    return $space;
+}
+
+
+/**
+ * sql注释头
+ * @return void
+ */
+function _db_comment_begin()
+{
+    echo "-- ---------- begin ----------\n";
+}
+
+/**
+ * sql注释尾
+ * @return void
+ */
+function _db_comment_end()
+{
+    echo "-- ----------- end -----------\n";
+}
+
+/**
+ * sql 注释
+ * @param mixed $msg 消息体
+ * @param boolean $with_head 是否包含头尾
+ * @return void
+ */
+function _db_comment($msg, $with_head = false)
+{
+    if ($with_head) {
+        _db_comment_begin();
+    }
+    if (is_array($msg)) {
+        foreach ($msg as $s) {
+            echo "-- {$s} \n";
+        }
+    } else {
+        echo "-- {$msg}\n";
+    }
+    if ($with_head) {
+        _db_comment_end();
+    }
+}
 
 
 /**
