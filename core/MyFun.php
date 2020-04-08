@@ -39,6 +39,4 @@ abstract class MyFun implements MyBase
     {
         return $this->fun_name;
     }
-
-
 }

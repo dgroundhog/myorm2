@@ -12,7 +12,7 @@ class MyDb
     /**
      * 一组驱动常量
      */
-    const   MYSQL = "mysql";
+     const   MYSQL = "mysql";
     const   SQLITE = "sqlite";
     const   ORACLE = "oracle";
 

@@ -133,19 +133,6 @@ class MyApp
     }
 
 
-    /**
-     * 获取list的聚合类型
-     * @return array
-     */
-    public static function getListGroupTypes()
-    {
-        return array(
-            "sum" => "求和",
-            "avg" => "求平均值",
-            "max" => "最大值",
-            "min" => "最小值",
-            "count" => "统计记录数"
-        );
-    }
+
 
 }
