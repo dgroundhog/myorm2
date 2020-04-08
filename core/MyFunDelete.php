@@ -10,7 +10,7 @@ class MyFunDelete extends MyFun
 
     /**
      * 删除依据，不能为空
-     * @var array
+     * @var array  [MyWhere]
      */
     public $delete_by = array();
 
@@ -50,7 +50,12 @@ class MyFunDelete extends MyFun
             $fun_name = (!isset($a_data['name']) || $a_data['name'] == "") ? "default" : trim($a_data['name']);
             $fun_title = (!isset($a_data['title']) || $a_data['title'] == "") ? "删除" : trim($a_data['title']);
 
-            $a_delete_by = $a_data['delete_by'];
+            $a_delete_by = array();
+            foreach ($a_data['delete_by'] as $vv) {
+                $ww = MyWhere::parseToObj($vv);
+                $a_delete_by[] = $ww;
+            }
+
             $i_limit = (!isset($a_data["limit"]) || $a_data["limit"] < 0) ? 1 : $a_data["limit"];
 
             $o_obj = new MyFunDelete($fun_name, $fun_title);

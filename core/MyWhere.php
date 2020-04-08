@@ -60,24 +60,27 @@ class MyWhere implements MyBase
      * 获取查询条件
      * @return array
      */
-    static function getQueryConditions()
-    {
-        return array(
-            'eq', //等于
-            'neq', //不等于
-            'kw', //关键字模糊匹配
-            'date', //日期范围
-            'time', //时间范围
-            'in', //离散量范围内
-            'notin', //离散量范围外
-            'between', //标量范围内
-            'notbetween', //标量范围外
-            'gt', //大于
-            'gte', //大于等于
-            'lt', //少于
-            'lte', //少于等于
-        );
-    }
+    static $conditions = array(
+        'eq', //等于
+        'neq', //不等于
+        'gt', //大于
+        'gte', //大于等于
+        'lt', //少于
+        'lte', //少于等于
+        '=', //等于
+        '!=', //不等于
+        '>', //大于
+        '>=', //大于等于
+        '<', //少于
+        '<=', //少于等于
+        'kw', //关键字模糊匹配
+        'date', //日期范围
+        'time', //时间范围
+        'in', //离散量范围内
+        'notin', //离散量范围外
+        'between', //标量范围内
+        'notbetween' //标量范围外
+    );
 
 
     /**
@@ -94,24 +97,32 @@ class MyWhere implements MyBase
     }
 
 
-
     /**
      * @inheritDoc
      */
     static function parseToObj($a_data)
     {
         /**
-         * 可以更新全部，但必须要有更新的内容
+         * 解析一个条件
          */
-        if (isset($a_data['joiner']) && isset($a_data['type']) && isset($a_data['key']) ) {
+        if (isset($a_data['joiner']) && isset($a_data['type']) && isset($a_data['key'])) {
 
+            $joiner = $a_data['joiner'];
+            $type = $a_data['type'];
+            $key = $a_data['key'];
 
-            $o_obj = new MyWhere($fun_name, $fun_title);
-            $o_obj->joiner = $a_update_keys;
-            $o_obj->type = $a_update_by;
-            $o_obj->key = $i_limit;
+            if ($joiner != self::JOIN_OR) {
+                //默认与
+                $joiner = self::JOIN_AND;
+            }
 
-            return $o_obj;
+            if (!in_array($type, self::$conditions)) {
+                //默认等于
+                $type = "=";
+            }
+            //在这里不判断key
+            return new MyWhere($joiner, $type, $key);
+
         }
         return null;
     }

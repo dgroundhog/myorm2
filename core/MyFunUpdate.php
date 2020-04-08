@@ -60,7 +60,13 @@ class MyFunUpdate extends MyFun
 
             $a_update_keys = $a_data['update_keys'];
 
-            $a_update_by = (!is_array($a_data['update_by']) || count($a_data['update_keys']) == 0) ? array() : $a_data['update_keys'];
+            $a_update_by = array();
+            if (is_array($a_data['update_by']) && count($a_data['update_keys']) > 0) {
+                foreach ($a_data['update_by'] as $vv) {
+                    $ww = MyWhere::parseToObj($vv);
+                    $a_update_by[] = $ww;
+                }
+            }
 
             $i_limit = (!isset($a_data["limit"]) || $a_data["limit"] < 0) ? 1 : $a_data["limit"];
 

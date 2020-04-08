@@ -51,7 +51,13 @@ class MyFunFetch extends MyFun
             $fun_title = (!isset($a_data['title']) || $a_data['title'] == "") ? "查询" : trim($a_data['title']);
 
             $a_fetch_keys = (!is_array($a_data['fetch_keys']) || count($a_data['fetch_keys']) == 0) ? array() : $a_data['fetch_keys'];
-            $a_fetch_by = $a_data['fetch_by'];
+
+
+            $a_fetch_by = array();
+            foreach ($a_data['fetch_by'] as $vv) {
+                $ww = MyWhere::parseToObj($vv);
+                $a_fetch_by[] = $ww;
+            }
 
             $o_obj = new MyFunFetch($fun_name, $fun_title);
             $o_obj->fetch_keys = $a_fetch_keys;
