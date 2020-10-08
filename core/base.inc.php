@@ -62,6 +62,45 @@ function _db_comment($msg, $with_head = false)
 
 
 /**
+ * 获取基本过滤器
+ */
+ function _app_get_default_filter()
+{
+    return array(
+        "int",
+        "trim",
+        "string",
+        "email",
+        "alphanum",
+    );
+}
+
+
+/**
+ * 获取可能的查询条件配置
+ * @return array
+ */
+  function _app_get_query_cnd_types()
+{
+    return array(
+        'eq', //等于
+        'neq', //不等于
+        'kw', //关键字模糊匹配
+        'date', //日期范围
+        'time', //时间范围
+        'in', //离散量范围内
+        'notin', //离散量范围外
+        'between', //标量范围内
+        'notbetween', //标量范围外
+        'gt', //大于
+        'gte', //大于等于
+        'lt', //少于
+        'lte', //少于等于
+    );
+}
+
+
+/**
  * 获取,默认主键查询
  *
  * @param $model

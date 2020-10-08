@@ -71,6 +71,87 @@ class MyApp
      */
     public $mvc = "";
 
+    /**
+     * @return string
+     */
+    public function getLang()
+    {
+        return $this->lang;
+    }
+
+    /**
+     * @param string $lang
+     */
+    public function setLang($lang)
+    {
+        $this->lang = $lang;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMvc()
+    {
+        return $this->mvc;
+    }
+
+    /**
+     * @param string $mvc
+     */
+    public function setMvc($mvc)
+    {
+        $this->mvc = $mvc;
+    }
+
+    /**
+     * @return MyDb
+     */
+    public function getDbConf()
+    {
+        return $this->db_conf;
+    }
+
+    /**
+     * @param MyDb $db_conf
+     */
+    public function setDbConf($db_conf)
+    {
+        $this->db_conf = $db_conf;
+    }
+
+    /**
+     * @return array
+     */
+    public function getModelList()
+    {
+        return $this->model_list;
+    }
+
+    /**
+     * @param array $model_list
+     */
+    public function setModelList($model_list)
+    {
+        $this->model_list = $model_list;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPathOutput()
+    {
+        return $this->path_output;
+    }
+
+    /**
+     * 设置输出目录
+     * @param string $path_output
+     */
+    public function setPathOutput($path_output)
+    {
+        $this->path_output = $path_output;
+    }
+
 
     /**
      * 数据库配置
@@ -86,6 +167,19 @@ class MyApp
 
 
     /**
+     * 输出目录
+     * @var string
+     */
+    public $path_output = "";
+
+    /**
+     * app数据ok
+     * @var boolean
+     */
+    public $checked_app_data_is_good = false;
+
+
+    /**
      * 解析模型
      * @param array $a_app_data
      * @return bool|void
@@ -94,14 +188,13 @@ class MyApp
     {
 
         /**
-         *
+         * 判断语言
          */
         if (!isset($a_db_conf['lang'])) {
             echo "NO database defined!!!";
             return null;
         }
-        //TODO
-        //TODO
+
 
         //db conf ,默认就是mysql
         $a_db_conf = $a_app_data['mvc'];
@@ -181,41 +274,40 @@ class MyApp
 
 
     /**
-     * 获取基本过滤器
+     * 构建
      */
-    public static function getDefaultFilter()
+    public function buildAll()
     {
-        return array(
-            "int",
-            "trim",
-            "string",
-            "email",
-            "alphanum",
-        );
+
+
+    }
+
+    /**
+     * 构建模版
+     */
+    public function buildTmpl()
+    {
+
+
+    }
+
+    /**
+     * 构建模型
+     */
+    public function buildModel()
+    {
+
+
     }
 
 
     /**
-     * 获取可能的查询条件配置
-     * @return array
+     * 构建数据库
      */
-    public static function getQueryCndTypes()
+    public function buildDb()
     {
-        return array(
-            'eq', //等于
-            'neq', //不等于
-            'kw', //关键字模糊匹配
-            'date', //日期范围
-            'time', //时间范围
-            'in', //离散量范围内
-            'notin', //离散量范围外
-            'between', //标量范围内
-            'notbetween', //标量范围外
-            'gt', //大于
-            'gte', //大于等于
-            'lt', //少于
-            'lte', //少于等于
-        );
+
+
     }
 
 

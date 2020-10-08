@@ -6,6 +6,7 @@
  */
 class MyField
 {
+    
 
     /**
      * 字段标识
