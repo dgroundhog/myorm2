@@ -128,10 +128,10 @@ class MyFunList extends MyFun
             "name" => $this->fun_name,
             "title" => $this->fun_title,
 
-
             "is_distinct" => $this->is_distinct,
             "list_keys" => $this->list_keys,
             "list_by" => $this->list_by,
+
             "has_group" => $this->has_group,
             "group_type" => $this->group_type,
             "group_key" => $this->group_key,

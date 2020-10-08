@@ -8,11 +8,10 @@
 class MyDb
 {
 
-
     /**
      * 一组驱动常量
      */
-     const   MYSQL = "mysql";
+    const   MYSQL = "mysql";
     const   SQLITE = "sqlite";
     const   ORACLE = "oracle";
 
@@ -59,6 +58,12 @@ class MyDb
     public $database = "";//
 
     /**
+     * 数据库版本
+     * @var string
+     */
+    public $version = "";
+
+    /**
      * 编码格式
      * @var string
      */
@@ -71,12 +76,6 @@ class MyDb
      * @var string
      */
     public $source = "env";
-
-    /**
-     * 数据库版本
-     * @var string
-     */
-    public $version = "";
 
 
     /**
