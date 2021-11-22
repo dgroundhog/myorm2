@@ -214,10 +214,10 @@ class DbMysql extends DbBase
 
     /**
      * 创建初始化结构
-     * @param MyDb $db
+     * @param MyDbConf $db
      * @return mixed|void
      */
-    function ccInitDb($db)
+    function ccInitDb()
     {
 
         _db_comment_begin();

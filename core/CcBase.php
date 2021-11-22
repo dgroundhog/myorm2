@@ -2,7 +2,7 @@
 if (!defined("CC_ROOT")) {
     define('CC_ROOT', realpath(dirname(__FILE__)));
 }
-include_once(CC_ROOT . "/base.inc.php");
+include_once(CC_ROOT . "/_cc.inc.php");
 
 /**
  * CRUD 解析器的抽象类
@@ -42,6 +42,8 @@ interface CcBase
      */
     function cFetch($model);
 
+
+
     /**
      * 聚合查询、统计
      * @param $model
@@ -49,5 +51,12 @@ interface CcBase
      */
     function cList($model);
 
+
+    /**
+     * 聚合查询、统计数量
+     * @param $model
+     * @return mixed
+     */
+    function cCount($model);
 
 }

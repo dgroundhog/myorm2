@@ -1,13 +1,8 @@
 <?php
-/**
- * 一些基本函数
- */
-
 
 /**
- * 输出空格
  * 用空格替代缩进
- * @param int $size
+ * @param $size
  */
 function _tab($size)
 {
@@ -18,53 +13,43 @@ function _tab($size)
     return $space;
 }
 
-
 /**
- * sql注释头
- * @return void
+ * 默认模型结构
+ * @return array
  */
-function _db_comment_begin()
+function _get_default_model()
 {
-    echo "-- ---------- begin ----------\n";
+    return array(
+        "name" => "账户",
+        "size" => "32",
+        "type" => "varchar",
+        "required" => "1",
+        "help" => "6-20长度限制",
+        "valid_rule" => "size_range",
+        "valid_min" => 6,
+        "valid_max" => 20
+    );
 }
 
 /**
- * sql注释尾
- * @return void
+ * 获取list的聚合类型
+ * @return array
  */
-function _db_comment_end()
+function _get_list_group_type()
 {
-    echo "-- ----------- end -----------\n";
+    return array(
+        "sum" => "求和",
+        "avg" => "求平均值",
+        "max" => "最大值",
+        "min" => "最小值",
+        "count" => "统计记录数"
+    );
 }
-
-/**
- * sql 注释
- * @param mixed $msg 消息体
- * @param boolean $with_head 是否包含头尾
- * @return void
- */
-function _db_comment($msg, $with_head = false)
-{
-    if ($with_head) {
-        _db_comment_begin();
-    }
-    if (is_array($msg)) {
-        foreach ($msg as $s) {
-            echo "-- {$s} \n";
-        }
-    } else {
-        echo "-- {$msg}\n";
-    }
-    if ($with_head) {
-        _db_comment_end();
-    }
-}
-
 
 /**
  * 获取基本过滤器
  */
- function _app_get_default_filter()
+function _get_default_filter()
 {
     return array(
         "int",
@@ -77,14 +62,330 @@ function _db_comment($msg, $with_head = false)
 
 
 /**
- * 获取可能的查询条件配置
+ * 默认字段结构
  * @return array
  */
-  function _app_get_query_cnd_types()
+function _get_default_table_field()
 {
     return array(
-        'eq', //等于
-        'neq', //不等于
+        "name" => "名称",
+        "size" => "255",
+        "type" => "varchar", //有限的几种类型，int string  longblob date datetime
+        "required" => "0",
+        "default_value" => "",
+        "help" => "帮助提示",
+        "valid_rule" => "no_rule", //默认无规则
+        "valid_regexp" => "", //正则表达式
+        "valid_min" => 0,
+        "valid_max" => 0,
+        "filter" => "string"
+    );
+}
+
+/**
+ * 列表查询的结构
+ */
+class MyList
+{
+
+    /**
+     * 查询列表的名字
+     * @var string
+     */
+    public $list_name = "default";
+
+
+    /**
+     * 查询的标题
+     * @var string
+     */
+    public $list_title = "默认列表";
+
+    /**
+     * 查询那些字段
+     * @var array
+     */
+    public $is_distinct = false;
+
+    /**
+     * 查询那些字段
+     * @var array
+     */
+    public $list_keys = array();
+
+    /**
+     * 索引组合
+     * @var array
+     */
+    public $list_by = array();
+
+    /**
+     * 是否带关键字
+     * @var boolean
+     */
+    public $list_has_kw = false;
+
+    /**
+     * 关键字数组
+     * @var array
+     */
+    public $list_kw = array();
+
+    /**
+     * 启用日期过滤
+     * @var boolean
+     */
+    public $list_has_date = false;
+
+    /**
+     * 日期字段
+     * @var string
+     */
+    public $list_date_key = "";
+
+    /**
+     * 启用时间过滤
+     * @var boolean
+     */
+    public $list_has_time = false;
+
+    /**
+     * 时间字段
+     * @var string
+     */
+    public $list_time_key = "";
+
+    /**
+     * 仅查询数量
+     * @var boolean
+     */
+    public $count_only = false;
+
+    /**
+     * 用来统计的id
+     * @var string
+     */
+    public $list_count_key = "id";
+
+    /**
+     * 索引组合
+     * @var boolean
+     */
+    public $list_has_group = false;
+
+    /**
+     * 聚合类型
+     *
+     * @var string
+     */
+    public $list_group_type = "";
+
+    /**
+     * 用来统计的列名
+     * @var string
+     */
+    public $list_group_key = "";
+
+    /**
+     * 聚合依据
+     * @var array
+     */
+    public $list_group_by = array();
+
+
+    /**
+     * 是否带排序
+     * @var boolean
+     */
+    public $list_has_order = true;
+
+    /**
+     * 默认排序字段
+     * @var string|array
+     */
+    public $list_order_by = "";
+
+    /**
+     * 默认排序字段,方向  DESC|ASC|空白
+     * @var string
+     */
+    public $list_order_dir = "";
+
+    /**
+     * 是否带分页
+     * @var boolean
+     */
+    public $list_has_pager = true;
+
+    /**
+     * 分页的类型,决定limit的个数
+     * @var string normal|cursor
+     */
+    public $list_pager_type = "normal";
+
+
+    /**
+     * cursor 用来计算的偏移量
+     * @var string
+     */
+    public $cursor_offset_key = "";
+
+    /**
+     * XXX 下面非常规字段
+     */
+
+    /**
+     * 子列表，在扩展本模型
+     * @var array
+     */
+    public $sub_list = array();
+
+    /**
+     * 定点范围内
+     * @var boolean
+     */
+    public $list_has_in = false;
+
+    /**
+     * Key in
+     * @var string
+     */
+    public $list_in_key = "";
+
+    /**
+     * 定点范围外
+     * @var boolean
+     */
+    public $list_has_notin = false;
+
+    /**
+     * Key notin
+     * @var string
+     */
+    public $list_notin_key = "";
+
+    /**
+     * 数值范围内
+     * @var boolean
+     */
+    public $list_has_between = false;
+
+    /**
+     * Key between
+     * @var string
+     */
+    public $list_between_key = "";
+
+    /**
+     * 数值范围外
+     * @var boolean
+     */
+    public $list_has_notbetween = false;
+
+    /**
+     * Key notbetween
+     * @var string
+     */
+    public $list_notbetween_key = "";
+
+    /**
+     * 数值大于
+     * @var boolean
+     */
+    public $list_has_gt = false;
+
+    /**
+     * Key gt
+     * @var string
+     */
+    public $list_gt_key = "";
+
+    /**
+     * 数值大于等于
+     * @var boolean
+     */
+    public $list_has_gte = false;
+
+    /**
+     * Key gte
+     * @var string
+     */
+    public $list_gte_key = "";
+
+    /**
+     * 数值少于
+     * @var boolean
+     */
+    public $list_has_lt = false;
+
+    /**
+     * Key lt
+     * @var string
+     */
+    public $list_lt_key = "";
+
+    /**
+     * 数值少于等于
+     * @var boolean
+     */
+    public $list_has_lte = false;
+
+    /**
+     * Key lte
+     * @var string
+     */
+    public $list_lte_key = "";
+
+}
+
+/**
+ * 子列表查询的结构
+ */
+class MySubList
+{
+
+    /**
+     * 查询列表的名字
+     * @var string
+     */
+    public $list_name = "default";
+
+    /**
+     * 查询的标题
+     * @var string
+     */
+    public $list_title = "默认列表";
+
+    /**
+     * 索引组合
+     * @var array
+     */
+    public $list_by = array();
+
+    /**
+     * 是否带关键字
+     * @var boolean
+     */
+    public $list_has_kw = false;
+
+    /**
+     * 启用日期过滤
+     * @var boolean
+     */
+    public $list_has_date = false;
+
+    /**
+     * 启用时间过滤
+     * @var boolean
+     */
+    public $list_has_time = false;
+
+}
+
+
+function _php_list_get_conds()
+{
+    return array(
         'kw', //关键字模糊匹配
         'date', //日期范围
         'time', //时间范围
@@ -98,7 +399,6 @@ function _db_comment($msg, $with_head = false)
         'lte', //少于等于
     );
 }
-
 
 /**
  * 获取,默认主键查询
@@ -180,7 +480,7 @@ function _model_get_ok_list($model)
             /**
              * 基本查询
              */
-            $my_list = new MyFunList();
+            $my_list = new MyList();
             $my_list->list_name = $list_key;
             $my_list->list_title = $list_conf['list_title'];
 

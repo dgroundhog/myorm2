@@ -2,7 +2,10 @@
 if (!defined("CC_ROOT")) {
     define('CC_ROOT', realpath(dirname(__FILE__)));
 }
-include_once(CC_ROOT . "/base.inc.php");
+if (!defined("DS")) {
+    define('DS', DIRECTORY_SEPARATOR);
+}
+include_once(CC_ROOT . "/_cc.inc.php");
 
 /**
  * CRUD 解析器的抽象类
@@ -11,6 +14,7 @@ include_once(CC_ROOT . "/base.inc.php");
  */
 interface MyBase
 {
+
 
     /**
      * 输出字段结构为数组
@@ -24,7 +28,7 @@ interface MyBase
      * @param array $a_data
      * @return mixed
      */
-    static function parseToObj($a_data);
+    function parseToObj($a_data);
 
 
 }

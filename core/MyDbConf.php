@@ -2,19 +2,11 @@
 
 /**
  * 数据库配置结构
- * Class MyDb
+ * Class MyDbConf
  *
  */
-class MyDb
+class MyDbConf
 {
-
-    /**
-     * 一组驱动常量
-     */
-    const   MYSQL = "mysql";
-    const   SQLITE = "sqlite";
-    const   ORACLE = "oracle";
-
 
     /**
      * 驱动
@@ -79,7 +71,7 @@ class MyDb
 
 
     /**
-     * MyDb constructor.
+     * MyDbConf constructor.
      * @param string $driver
      * @param string $host
      * @param int $port

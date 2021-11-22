@@ -9,24 +9,14 @@ class MyWhere implements MyBase
 {
 
 
-    /**
-     * 条件链接方式
-     */
-    const   JOIN_AND = "and";
-    const   JOIN_OR = "or";
-
-    /**
-     * 条件链接方式
-     */
-    const   TYPE_AND = "and";
-    const   TYPE_OR = "or";
+  
 
 
     /**
      * 查询列表的名字
      * @var string
      */
-    public $joiner = self::JOIN_AND;
+    public $joiner =Constant::WHERE_JOIN_AND;
 
 
     /**
@@ -111,9 +101,9 @@ class MyWhere implements MyBase
             $type = $a_data['type'];
             $key = $a_data['key'];
 
-            if ($joiner != self::JOIN_OR) {
+            if ($joiner != Constant::WHERE_JOIN_OR) {
                 //默认与
-                $joiner = self::JOIN_AND;
+                $joiner = Constant::WHERE_JOIN_AND;
             }
 
             if (!in_array($type, self::$conditions)) {

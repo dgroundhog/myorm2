@@ -1,0 +1,125 @@
+<?php
+
+if (!defined("JAVA_BASE")) {
+    define('JAVA_BASE', realpath(dirname(__FILE__)));
+}
+include_once(JAVA_BASE . "/java_base.ini.php");
+
+function _java_abs_sum_param_comment($model)
+{
+    foreach ($model['list_by'] as $key) {
+        echo "* @param v_{$key} {$model['table_fields'][$key]['name']}\n";
+    }
+
+    if (isset($model["list_kw"]) && count($model["list_kw"]) > 0) {
+        echo "* @param v_kw 搜索关键字\n";
+    }
+
+    if (isset($model["list_has_date"]) && $model["list_has_date"] != false) {
+        echo "* @param v_date_from 开始日期\n";
+        echo "* @param v_date_to 结束日期\n";
+    }
+
+    echo "* @param v_group_by 分组聚合\n";
+    echo "* @param v_order_by 排序\n";
+
+
+    echo "* @return int\n";
+}
+
+function _java_abs_sum_param($model)
+{
+    $ii = 0;
+    foreach ($model['list_by'] as $key) {
+        $ii++;
+        $_prefix = _java_db_warp($ii);
+        _java_db_param($key, $model['table_fields'][$key]['type'], $_prefix);
+    }
+
+    if (isset($model["list_kw"]) && count($model["list_kw"]) > 0) {
+        $ii++;
+        $_prefix = _java_db_warp($ii);
+        echo "{$_prefix} String v_kw";
+    }
+
+    if (isset($model["list_has_date"]) && $model["list_has_date"] != false) {
+        $ii++;
+        $_prefix = _java_db_warp($ii);
+        echo "{$_prefix} String v_date_from";
+        $ii++;
+        $_prefix = _java_db_warp($ii);
+        echo "{$_prefix} String v_date_to";
+    }
+
+    $ii++;
+    $_prefix = _java_db_warp($ii);
+    echo "{$_prefix} String v_group_by";
+    $ii++;
+    $_prefix = _java_db_warp($ii);
+    echo "{$_prefix} String v_order_by";
+
+    return $ii;
+}
+
+function _java_abs_sum_param4use($model, $in_model = false)
+{
+    $ii = 0;
+
+    foreach ($model['list_by'] as $key) {
+        $ii++;
+        $_prefix = _java_param_join($ii);
+        echo _java_req2db_param($key, $model['table_fields'][$key]['type'], $_prefix, $in_model);
+    }
+
+    if (isset($model["list_kw"]) && count($model["list_kw"]) > 0) {
+
+        $ii++;
+        $_prefix = _java_param_join($ii);
+        echo "{$_prefix} v_kw";
+    }
+
+    if (isset($model["list_has_date"]) && $model["list_has_date"] != false) {
+
+
+        $ii++;
+        $_prefix = _java_param_join($ii);
+        echo "{$_prefix} v_date_from";
+
+        $ii++;
+        $_prefix = _java_param_join($ii);
+        echo "{$_prefix} v_date_to";
+
+    }
+
+    $ii++;
+    $_prefix = _java_param_join($ii);
+    echo "{$_prefix} v_group_by";
+
+    $ii++;
+    $_prefix = _java_param_join($ii);
+    echo "{$_prefix} v_order_by";
+}
+
+/**
+ * java抽象类--统计
+ *
+ * @param $model
+ */
+function java_abs_sum($model)
+{
+
+    if (!_java_db_header($model, "sum")) {
+        return;
+    }
+
+    _java_comment_header("统计");
+    _java_abs_sum_param_comment($model);
+    _java_comment_footer();
+
+    echo "public Vector<HashMap> sum(";
+    _java_abs_sum_param($model);
+    echo ") { return null; }\n";
+
+    _java_db_footer($model, "sum");
+
+}
