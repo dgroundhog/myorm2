@@ -95,6 +95,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 <!-- tmpl -->
 <?php include("./_tpl_project_menu_list.php"); ?>
+<?php include("./_tpl_conf_list.php"); ?>
 <!-- /tmpl -->
 
 <!-- REQUIRED SCRIPTS -->
@@ -139,9 +140,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         App.dt.init();
 
-        $("#btn_edit_conf").click(function () {
-            $("#modal_edit_app_conf").modal('show');
-        });
 
     });
 

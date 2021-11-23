@@ -69,6 +69,12 @@
                             <button type="button" class="btn btn-primary" id="btn_save_project">
                                 <i class="fa fa-check"></i> 保存项目
                             </button>
+
+                            <button type="button" class="btn btn-danger btn_sync_project">
+                                <i class="fa fa-save"></i> 同步到服务器
+                            </button>
+
+
                             <button type="button" class="btn btn-success float-right" id="btn_add_app">
                                 <i class="fa fa-plus"></i> 创建新版本
                             </button>

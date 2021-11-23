@@ -237,9 +237,10 @@ App.dt.project.onLoadAll = function (_server_return) {
     self.data.projects = [];
     var firstOne = true;
     var firstProject = "";
-    $.each(json_projects, function (i, item) {
 
+    for (var ii in json_projects) {
         var _project = new MyProject();
+        var item = json_projects[ii];
         _project.parse(item);
         var _name = _project.name;
         if (MyProject.isGoodName(_name)) {
@@ -249,7 +250,9 @@ App.dt.project.onLoadAll = function (_server_return) {
             }
             self.data.projects[_name] = _project;
         }
-    });
+    }
+
+
     self.menu.render();
 
     if (self.data.curr_project != "") {
@@ -277,6 +280,7 @@ App.dt.project.onLoadAll = function (_server_return) {
         self.project.loadProject(project_name, self.data.curr_project_version);
     }
 };
+
 
 /**
  * 加载1个项目
@@ -328,6 +332,9 @@ App.dt.project.loadProject = function (project_name, app_version) {
 
         //其他更新
         self.editor.updateTitle();
+
+        //加载配置
+        self.project.confLoad();
     }
 
 }
@@ -461,29 +468,93 @@ App.dt.project.onUpdate = function (_server_return) {
 
 
 /**
+ * 修改当前项目应用
+ * @param project_name
+ */
+App.dt.project.syncApp = function () {
+    var self = App.dt;
+    var _curr_project = self.project.getCurrProject();
+    if (null == _curr_project) {
+        self.fail("未选中项目")
+        return;
+    }
+
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选中应用")
+        return;
+    }
+
+
+    var dataStr = JSON.stringify(_curr_app);
+
+    var sbf = new StringBuffer();
+    sbf.append("act=save");
+    sbf.append("&project=");
+    sbf.append(encodeURIComponent(_curr_app.project_id));
+    sbf.append("&version=");
+    sbf.append(encodeURIComponent(_curr_app.uuid));
+    sbf.append("&data=");
+    sbf.append(encodeURIComponent(dataStr));
+    var _data = sbf.toString();
+    self.aPost(_data, self.project.onSyncApp);
+}
+
+/**
+ * 全更新整个项目
+ * @param _server_return
+ */
+App.dt.project.onSyncApp = function (_server_return) {
+    var self = App.dt;
+    var project_info = _server_return['project_info'];
+    if (App.su.isEmpty(project_info)) {
+        self.fail("同步失败，请稍后再试试3");
+        return;
+    }
+    var _project = new MyProject();
+    _project.parse(project_info);
+    var _name = _project.name;
+    //self.data.projects[_name] = _project;
+    self.data.projects[_name] = _project;
+    //UI 上更新2个时间
+    $(".txt_project_utime").val(_project.utime);
+    var app_version = self.data.curr_project_version;
+    var _app = _project.version_list[app_version];
+
+    $(".txt_app_utime").val(_app.utime);
+
+    self.succ("和服务器同步成功");
+}
+
+
+/**
  * 修改当前项目的标题和备注
  * @param project_name
  */
 App.dt.project.updateApp = function () {
     var self = App.dt;
-    var _curr_project = self.data.curr_project;
-    if(App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]){
-        self.fail("项目不存在2")
+    var _curr_project = self.project.getCurrProject();
+    if (null == _curr_project) {
+        self.fail("未选中项目")
         return;
     }
 
-    var sbf = new StringBuffer();
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选中应用")
+        return;
+    }
 
-    var _curr_version = self.data.curr_project_version;
     var _name = $("#txt_app_name").val();
-    var _version_list = self.data.projects[_curr_project].version_list;
+    var _version_list = _curr_project.version_list;
+    var _myuuid = _curr_app.uuid;
 
     for (var ii in _version_list) {
         //var _version = ii
         var _version = _version_list[ii];
         var __uuid = _version.uuid;
         var __name = _version.name;
-        if (_name == __name && __uuid != _curr_version) {
+        if (_name == __name && __uuid != _myuuid) {
             self.fail("存在同名的其他版本--" + __name)
             return;
         }
@@ -494,68 +565,29 @@ App.dt.project.updateApp = function () {
      */
     var _title = $("#txt_app_title").val();
     var _memo = $("#txt_app_memo").val();
-
     var _img_icon_id = $("#img_icon_id").val();
     var _img_logo_id = $("#img_logo_id").val();
 
-    var _project = self.data.projects[_curr_project];
-    _project.version_list[_curr_version].name = _name;
-    _project.version_list[_curr_version].memo = _memo;
-    _project.version_list[_curr_version].title = _title;
-    _project.version_list[_curr_version].img_icon_id = _img_icon_id;
-    _project.version_list[_curr_version].img_logo_id = _img_logo_id;
+    _curr_app.name = _name;
+    _curr_app.memo = _memo;
+    _curr_app.title = _title;
+    _curr_app.img_icon_id = _img_icon_id;
+    _curr_app.img_logo_id = _img_logo_id;
+    self.project.setCurrApp(_curr_app);
 
-    var dataStr = JSON.stringify(_project);
-
-    sbf.append("act=save");
-    sbf.append("&project=");
-    sbf.append(encodeURIComponent(_curr_project));
-    sbf.append("&version=");
-    sbf.append(encodeURIComponent(_curr_version));
-    sbf.append("&data=");
-    sbf.append(encodeURIComponent(dataStr));
-    var _data = sbf.toString();
-    self.aPost(_data, self.project.onUpdateApp);
-}
-
-/**
- * 全更新
- * @param _server_return
- */
-App.dt.project.onUpdateApp = function (_server_return) {
-    var self = App.dt;
-    var project_info = _server_return['project_info'];
-    if (App.su.isEmpty(project_info)) {
-        self.fail("保存失败，请稍后再试试3");
-        return;
-    }
-    var _project = new MyProject();
-    _project.parse(project_info);
-    var _name = _project.name;
-    //self.data.projects[_name] = _project;
-    self.data.projects[_name] = _project;
-
-    var _img_icon_id = $("#img_icon_id").val();
-    var _img_logo_id = $("#img_logo_id").val();
-
-    var project_name = self.data.curr_project;
-    var app_version = self.data.curr_project_version;
-
-    $(".img_icon_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _img_icon_id);
-    $(".img_logo_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _img_logo_id);
+    $(".img_icon_saved").attr("src", "tool.php?act=app_img&project=" + _curr_app.project_id + "&version=" + _myuuid + "&img_id=" + _img_icon_id);
+    $(".img_logo_saved").attr("src", "tool.php?act=app_img&project=" + _curr_app.project_id + "&version=" + _myuuid + "&img_id=" + _img_logo_id);
     $(".img_icon_free").attr("src", "");
     $(".img_logo_free").attr("src", "");
-
-    var _app= _project[app_version];
-
-    $(".txt_app_name").val(_app.name);
-    $(".txt_app_title").val(_app.title);
-    $(".txt_app_memo").val(_app.memo);
-    $(".txt_app_ctime").val(_app.ctime);
-    $(".txt_app_utime").val(_app.utime);
+    $(".txt_app_name").val(_curr_app.name);
+    $(".txt_app_title").val(_curr_app.title);
+    $(".txt_app_memo").val(_curr_app.memo);
+    $(".txt_app_ctime").val(_curr_app.ctime);
+    $(".txt_app_utime").val(_curr_app.utime);
 
     $("#modal_edit_app_info").modal('hide');
-    self.succ("更新成功");
+    self.succ("暂存成功");
+
 }
 
 
@@ -566,16 +598,16 @@ App.dt.project.onUpdateApp = function (_server_return) {
 App.dt.project.addApp = function (new_version) {
     var self = App.dt;
     var _curr_project = self.data.curr_project;
-    if(App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]){
+    if (App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]) {
         self.fail("项目不存在2")
         return;
     }
 
     var _project = self.data.projects[_curr_project];
-    for(var ii in _project.version_list){
+    for (var ii in _project.version_list) {
         var _app = _project.version_list[ii];
-        if(new_version == _app.name) {
-            self.fail("本项目已经存在同名的版本--"+new_version);
+        if (new_version == _app.name) {
+            self.fail("本项目已经存在同名的版本--" + new_version);
             return;
         }
     }
@@ -611,7 +643,7 @@ App.dt.project.onAddApp = function (_server_return) {
 
     self.menu.render();
 
-    self.project.loadProject(_name,_app_version);
+    self.project.loadProject(_name, _app_version);
 
     self.succ("添加成功");
 }
@@ -623,20 +655,19 @@ App.dt.project.onAddApp = function (_server_return) {
 App.dt.project.cloneApp = function (new_version) {
     var self = App.dt;
     var _curr_project = self.data.curr_project;
-    if(App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]){
+    if (App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]) {
         self.fail("项目不存在2")
         return;
     }
 
     var _project = self.data.projects[_curr_project];
-    for(var ii in _project.version_list){
+    for (var ii in _project.version_list) {
         var _app = _project.version_list[ii];
-        if(new_version == _app.name) {
-            self.fail("本项目已经存在同名的版本--"+new_version);
+        if (new_version == _app.name) {
+            self.fail("本项目已经存在同名的版本--" + new_version);
             return;
         }
     }
-
 
 
     var _curr_version = self.data.curr_project_version;
@@ -673,7 +704,7 @@ App.dt.project.onCloneApp = function (_server_return) {
 
     self.menu.render();
 
-    self.project.loadProject(_name,_app_version);
+    self.project.loadProject(_name, _app_version);
 
     self.succ("复制成功");
 }
@@ -684,13 +715,13 @@ App.dt.project.onCloneApp = function (_server_return) {
 App.dt.project.deleteApp = function () {
     var self = App.dt;
     var _curr_project = self.data.curr_project;
-    if(App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]){
+    if (App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]) {
         self.fail("项目不存在3")
         return;
     }
     var _project = self.data.projects[_curr_project];
 
-    if ( Object.keys(_project.version_list).length < 2) {
+    if (Object.keys(_project.version_list).length < 2) {
         self.fail("最后一个版本不能删除");
         return;
     }
@@ -714,7 +745,7 @@ App.dt.project.deleteApp = function () {
 }
 
 App.dt.project.onDeleteApp = function (_server_return) {
-
+    var self = App.dt;
     var project_info = _server_return['project_info'];
 
     if (App.su.isEmpty(project_info)) {
@@ -738,10 +769,211 @@ App.dt.project.onDeleteApp = function (_server_return) {
         break;
     }
     self.data.curr_project_version = firstVersion;
-    self.project.loadProject(_name,firstVersion);
+    self.project.loadProject(_name, firstVersion);
 
     self.succ("删除成功");
 }
+
+
+/**
+ * 获取当前应用
+ * null or MyApp
+ */
+App.dt.project.getCurrProject = function () {
+    var self = App.dt;
+    var _curr_project = self.data.curr_project;
+
+    if (App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]) {
+        console.log("项目不存在--" + _curr_project);
+        return null;
+    }
+    return self.data.projects[_curr_project];
+
+
+}
+
+/**
+ * 获取当前应用
+ * null or MyApp
+ */
+App.dt.project.getCurrApp = function () {
+    var self = App.dt;
+    var _curr_project = self.data.curr_project;
+
+    if (App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]) {
+        console.log("项目不存在--" + _curr_project);
+        return null;
+    }
+    var _project = self.data.projects[_curr_project];
+    var _curr_version = self.data.curr_project_version;
+    if (App.su.isEmpty(_curr_version) || undefined == _project.version_list[_curr_version]) {
+        console.log("应用不存在11--" + _curr_version);
+        return null;
+    }
+    return _project.version_list[_curr_version];
+}
+
+/**
+ * 设置当前应用
+ * true or false
+ * @param app
+ */
+App.dt.project.setCurrApp = function (app) {
+    var self = App.dt;
+    var _curr_project = self.data.curr_project;
+    if (App.su.isEmpty(_curr_project) || undefined == self.data.projects[_curr_project]) {
+        console.log("项目不存在22--" + _curr_project);
+        return false;
+    }
+    var _project = self.data.projects[_curr_project];
+    var _curr_version = self.data.curr_project_version;
+    if (App.su.isEmpty(_curr_version) || undefined == _project.version_list[_curr_version]) {
+        console.log("应用不存在22--" + _curr_version);
+        return null;
+    }
+    _project.version_list[_curr_version] = app;
+    return true;
+}
+
+/**
+ * 加载配置
+ */
+App.dt.project.confLoad = function () {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本,无法打开配置");
+        return;
+    }
+
+    var tpl = new jSmart(self.getTpl('tpl_conf_list'));
+    var res = tpl.fetch(_curr_app);
+    $("#table_conf_list").html(res);
+}
+
+
+/**
+ * 保存配置
+ */
+App.dt.project.confSave = function () {
+    var self = App.dt;
+    var _uuid = $("#txt_conf_uuid").val();
+    var _conf = new MyAppConf();
+    var now = App.su.datetime.getCurrentDateTime();
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("保存失败");
+        return;
+    }
+
+    if (App.su.isEmpty(_uuid)) {
+        var new_uuid = App.su.maths.uuid.create();
+        _conf.uuid = new_uuid;
+        _conf.name = now;
+        _conf.ctime = now;
+        _conf.utime = now;
+        _uuid = new_uuid;
+    } else {
+        _conf = _curr_app.conf_list[_uuid];
+        _conf.utime = now;
+    }
+
+    _conf.mvc = $("#sel_app_mvc").val();
+    _conf.ui = $("#sel_app_ui").val();
+
+    var _conf_has_restful = $("#txt_conf_has_restful").bootstrapSwitch('state');
+    _conf.has_restful = _conf_has_restful ? "1" : "0";
+
+    var _conf_has_doc = $("#txt_conf_has_doc").bootstrapSwitch('state');
+    _conf.has_doc = _conf_has_doc ? "1" : "0";
+
+    var _conf_has_test = $("#txt_conf_has_test").bootstrapSwitch('state');
+    _conf.has_test = _conf_has_test ? "1" : "0";
+
+
+    console.log(_conf);
+
+    _curr_app.conf_list[_uuid] = _conf;
+    if (self.project.setCurrApp(_curr_app)) {
+        self.succ("暂存成功");
+    } else {
+        self.fail("暂存失败");
+    }
+    $("#modal_edit_app_conf").modal('hide');
+    self.project.confLoad();
+}
+
+/**
+ * 编辑配置
+ */
+App.dt.project.confEdit = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(_uuid)) {
+        console.log("新的配置");
+
+
+        $("#txt_conf_has_restful").bootstrapSwitch('state', true);
+        $("#txt_conf_has_doc").bootstrapSwitch('state', true);
+        $("#txt_conf_has_test").bootstrapSwitch('state', true);
+
+        $("#txt_conf_uuid").val("");
+
+    } else {
+        console.log("编辑旧配置");
+        $("#txt_conf_uuid").val(_uuid);
+        var _conf = _curr_app.conf_list[_uuid];
+
+        App.su.select.selectByValue($("#sel_app_mvc"), _conf.mvc);
+        App.su.select.selectByValue($("#sel_app_ui"), _conf.ui);
+
+
+        $("#txt_conf_has_restful").bootstrapSwitch('state', (_conf.has_restful == "1") ? true : false);
+        $("#txt_conf_has_doc").bootstrapSwitch('state', (_conf.has_doc == "1") ? true : false);
+        $("#txt_conf_has_test").bootstrapSwitch('state', (_conf.has_test == "1") ? true : false);
+
+
+    }
+
+    $("#modal_edit_app_conf").modal('show');
+
+}
+
+/**
+ * 编辑配置
+ */
+App.dt.project.confDrop = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(_uuid)) {
+        self.fail("未选择配置");
+        return;
+    } else {
+        bootbox.confirm("确认删除这个配置",function (ret){
+            if(ret){
+                if(undefined != _curr_app.conf_list[_uuid]){
+                    delete _curr_app.conf_list[_uuid];
+                    self.succ("移除成功");
+                }
+                else{
+                    self.fail("移除失败");
+                }
+                self.project.confLoad();
+            }
+        });
+    }
+
+
+}
+
 
 /**
  * 主程序入口
@@ -767,18 +999,34 @@ App.dt.init = function () {
     });
 
     /**
-     * 1.2 保存一个项目
+     * 1.2 暂存保存一个项目
      */
     $("#btn_save_project").click(function () {
         self.project.update();
     });
 
+
+    /**
+     * 同步到服务器
+     */
+    $(".btn_sync_project").click(function () {
+        self.project.syncApp();
+    });
+
+
     /**
      * 1.3 app的icon和logo的上传
      */
     $("#btn_edit_app").click(function () {
-        $("#modal_edit_app_info").modal('show');
+        if (null != self.project.getCurrApp()) {
+            $("#modal_edit_app_info").modal('show');
+        } else {
+            self.fail("当前未打开应用")
+        }
+
     });
+
+
     $('#app_file_logo').fileinput(self.editor.getUploadParam())
         .on('fileuploaded', function (event, data, index, fileId) {
 
@@ -839,6 +1087,18 @@ App.dt.init = function () {
             }
         });
     });
+
+    /**
+     * 1.8 添加app
+     */
+    $("#btn_edit_conf").click(function () {
+        self.project.confEdit("");
+    });
+
+    $("#btn_save_conf").click(function () {
+        self.project.confSave();
+    });
+
 
     /**
      *   $(".btn-warning").on('click', function () {

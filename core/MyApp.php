@@ -5,6 +5,7 @@ if (!defined("CC_ROOT")) {
 include_once(CC_ROOT . "/_util.inc.php");
 include_once(CC_ROOT . "/_cc.inc.php");
 include_once(CC_ROOT . "/MyStruct.php");
+include_once(CC_ROOT . "/MyAppConf.php");
 
 /**
  * 主程序模型
@@ -52,6 +53,11 @@ class MyApp extends MyStruct
      * @var boolean
      */
     public $checked_app_data_is_good = false;
+    public $basic_keys = array(
+        "project_id",
+        "img_icon_id",
+        "img_logo_id"
+    );
 
     /**
      *
@@ -60,7 +66,6 @@ class MyApp extends MyStruct
     public function __construct()
     {
     }
-
 
     /**
      *
@@ -81,9 +86,9 @@ class MyApp extends MyStruct
         $this->ctime = $now_str;
         $this->utime = $now_str;
 
-        $this->model_list = [];
-        $this->db_conf = [];
-        $this->conf_list = [];
+        $this->model_list = array();
+        $this->db_conf = array();
+        $this->conf_list =array();
 
         /**
          * 创建目录
@@ -126,19 +131,15 @@ class MyApp extends MyStruct
             return null;
         }
 
-
     }
 
     function getAsArray()
     {
         $a_data = $this->getBasicAsArray();
-
-        $a_data['img_icon_id'] = $this->img_icon_id;
-        $a_data['img_logo_id'] = $this->img_logo_id;
-        $a_data['project_id'] = $this->project_id;
         $a_data['conf_list'] = array();
-
         foreach ($this->conf_list as $key => $conf) {
+
+            SeasLog::debug(count($a_data['conf_list']));
             /*@var MyAppConf $conf */
             $a_data['conf_list'][$key] = $conf->getAsArray();
         }
@@ -154,16 +155,14 @@ class MyApp extends MyStruct
     function parseToObj($a_data)
     {
         $this->parseToBasicObj($a_data);
+        $this->conf_list = array();
 
-        $this->img_icon_id = $a_data['img_icon_id'];
-        $this->img_logo_id = $a_data['img_logo_id'];
-        $this->project_id = $a_data['project_id'];
-        $this->conf_list = [];
         foreach ($a_data['conf_list'] as $key => $conf) {
-            $o_conf = new MyApp();
+            $o_conf = new MyAppConf();
             $o_conf->parseToObj($conf);
             $this->conf_list[$key] = $o_conf;
         }
+
         //TODO db
         //TODO model
         return $this;

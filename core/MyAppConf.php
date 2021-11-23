@@ -45,25 +45,30 @@ class MyAppConf extends MyStruct
      */
     public $has_doc = 0;
 
+    public $basic_keys = array(
+        "mvc",
+        "ui",
+        "has_restful",
+        "has_test",
+        "has_doc"
+    );
+
 
     function getAsArray()
     {
         $a_data = $this->getBasicAsArray();
-        $a_data["mvc"] = $this->mvc;
-        $a_data["ui"] = $this->ui;
-        $a_data["has_doc"] = $this->has_doc;
-        $a_data["has_restful"] = $this->has_restful;
-        $a_data["has_test"] = $this->has_test;
-        // TODO: Implement getAsArray() method.
+        return $a_data;
     }
 
     function parseToObj($a_data)
     {
-        // TODO: Implement parseToObj() method.
+        $this->parseToBasicObj($a_data);
+        return $this;
     }
 
     function init($v1)
     {
+        //可能外部生成
         $now = time();
         $now_str = date("Y-m-d H:i:s", $now);
         $now_str2 = date("YmdHi", $now);

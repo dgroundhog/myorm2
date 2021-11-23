@@ -249,6 +249,12 @@ function load_projects($_project)
 
 }
 
+/**
+ * 仅更新其中一个版本
+ * @param $project
+ * @param $version
+ * @param $data
+ */
 function save_project($project, $version, $data)
 {
     global $g_data_root_path;
@@ -260,12 +266,19 @@ function save_project($project, $version, $data)
     //如果项目存在就返回那个项目的信息
     $project_path = $g_data_root_path . DIRECTORY_SEPARATOR . $project . ".json";
     if (file_exists($project_path)) {
-        $a_project_info = json_decode($data, true);
+        $str_project = file_get_contents($project_path);
+        $a_project_info = json_decode($str_project, true);
+
         $o_project = new MyProject();
         $o_project->parseToObj($a_project_info);
         $utime = date("Y-m-d H:i:s", time());
         $o_project->utime = $utime;
-        $o_project->version_list[$version]->utime = $utime;
+
+        $a_app_info = json_decode($data, true);
+        $o_app = new MyApp();
+        $o_app->parseToObj($a_app_info);
+        $o_app->utime = $utime;
+        $o_project->version_list[$version] = $o_app;
 
         $a_project_info = $o_project->getAsArray();
 

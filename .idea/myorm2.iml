@@ -67,6 +67,7 @@
       <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/tempusdominus-bootstrap-4" />
       <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/toastr" />
       <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/uplot" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

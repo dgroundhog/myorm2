@@ -81,7 +81,7 @@ class MyProject extends MyStruct
     function parseToObj($a_data)
     {
         $this->parseToBasicObj($a_data);
-        $this->version_list = [];
+        $this->version_list = array();
         foreach ($a_data['version_list'] as $key => $item) {
             $o_app = new MyApp();
             $o_app->parseToObj($item);

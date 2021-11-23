@@ -16,10 +16,12 @@ abstract class MyStruct implements MyBase
     public $name;//显性唯一
     public $title;//标题别称
     public $memo;//备注
-    public $position=255;//备注
+    public $position = 255;//备注
 
     public $ctime;//创建
     public $utime;//最后更新时间
+
+    public $basic_keys = array();
 
     /**
      * 冗余的项目名字，不可以该名字
@@ -36,6 +38,7 @@ abstract class MyStruct implements MyBase
 
     }
 
+
     function getBasicAsArray()
     {
         $a_data = array();
@@ -46,21 +49,27 @@ abstract class MyStruct implements MyBase
         $a_data['utime'] = $this->utime;
         $a_data['memo'] = $this->memo;
         $a_data['position'] = $this->position;
+        foreach ($this->basic_keys as $key) {
+            $a_data[$key] = $this->$key;
+        }
         return $a_data;
-
-        // TODO: Implement getAsArray() method.
+        
     }
 
     function parseToBasicObj($a_data)
     {
 
-        $this->name = $a_data['name']  ;
-        $this->title = $a_data['title']  ;
-        $this->uuid = $a_data['uuid']  ;
-        $this->ctime = $a_data['ctime'] ;
-        $this->utime = $a_data['utime'] ;
-        $this->memo = $a_data['memo'] ;
-        $this->position = $a_data['position'] ;
+        $this->name = $a_data['name'];
+        $this->title = $a_data['title'];
+        $this->uuid = $a_data['uuid'];
+        $this->ctime = $a_data['ctime'];
+        $this->utime = $a_data['utime'];
+        $this->memo = $a_data['memo'];
+        $this->position = $a_data['position'];
+
+        foreach ($this->basic_keys as $key) {
+            $this->$key = $a_data[$key];
+        }
 
         return $this;
     }
