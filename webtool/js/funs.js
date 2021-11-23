@@ -17,19 +17,21 @@ StringBuffer.prototype.toString = function () {
 function MyFun() {
     this.uuid = "";//唯一码
     this.name = "";//名称
-    this.title = "";//名称
+    this.title = "";//标题
+    this.position = 255;//排序
     this.ctime = "";//创建时间
-    this.utime = "";//最后更新时间
+    this.utime = "";//更新时间
 }
 
 MyFun.prototype.parseBasic = function (json_one) {
     //解析一个单体
-    this.uuid = json_one.uuid;//唯一码
-    this.name = json_one.name;//名称
-    this.title = json_one.title;//名称
-    this.memo = json_one.memo;//名称
-    this.ctime = json_one.ctime;//名称
-    this.utime = json_one.utime;//名称
+    this.uuid = json_one.uuid;
+    this.name = json_one.name;
+    this.title = json_one.title;
+    this.memo = json_one.memo;
+    this.position = json_one.position;
+    this.ctime = json_one.ctime;
+    this.utime = json_one.utime;
 
 };
 
@@ -65,19 +67,8 @@ MyProject.prototype.parse = function (json_one) {
         var _uuid = _app.uuid;
         this.version_list[_uuid] = _app;
     }
-
-
-
 };
 
-/**
- *
- * @param json_all
- */
-MyProject.prototype.toJson = function () {
-    //解析一个列表
-    return "";
-};
 
 /**
  * 静态方法,是否有效的UID
@@ -105,6 +96,9 @@ function MyApp() {
     this.project_id = "";
     this.img_icon_id = "";
     this.img_logo_id = "";
+
+    this.conf_list = [];//配置列表
+
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
@@ -118,6 +112,15 @@ MyApp.prototype.parse = function (json_one) {
     this.project_id = json_one.project_id;
     this.img_icon_id = json_one.img_icon_id;
     this.img_logo_id = json_one.img_logo_id;
+
+    //配置
+    this.conf_list = new Object();
+    for(var ii in json_one.conf_list){
+        var _conf = new MyAppConf();
+        _conf.parse(json_one.conf_list[ii]);
+        var _uuid = _conf.uuid;
+        this.conf_list[_uuid] = _conf;
+    }
 
     // this.version_list = new Object();//版本号列表  k-v
     //
@@ -152,6 +155,41 @@ function MyModel() {
     this._fun_order_ = {};//模型位置  k-v
     this._funs_ = [];//函数列表
 }
+
+
+/**
+ * 主APP的结构
+ * @constructor
+ */
+function MyAppConf() {
+    MyFun.call(this);
+    this.mvc = "";
+    this.ui = "";
+    this.has_restful = "0";
+    this.has_test = "0";
+    this.has_doc = "0";
+    //版本号不排序
+}
+
+//把子类的原型指向通过Object.create创建的中间对象
+MyAppConf.prototype = Object.create(MyFun.prototype);
+MyAppConf.prototype.constructor = MyAppConf;
+
+/**
+ *
+ * @param json_one
+ */
+MyAppConf.prototype.parse = function (json_one) {
+    //解析一个单体
+    this.parseBasic(json_one);
+
+    this.mvc = json_one.mvc;
+    this.ui =json_one.ui;
+    this.has_restful = json_one.has_restful;
+    this.has_test =json_one.has_test;
+    this.has_doc = json_one.has_doc;
+
+};
 
 /**
  * 主字段

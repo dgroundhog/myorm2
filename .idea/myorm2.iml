@@ -2,7 +2,72 @@
 <module type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/adminlte-3.1.0" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/bootstrap" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/bootstrap4-duallistbox" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/bootstrap-colorpicker" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/bootstrap-fileinput" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/bootstrap-slider" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/bootstrap-switch" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/bs-custom-file-input" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/bs-stepper" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/chart.js" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/codemirror" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-autofill" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-bs4" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-buttons" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-colreorder" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-fixedcolumns" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-fixedheader" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-keytable" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-responsive" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-rowgroup" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-rowreorder" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-scroller" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-searchbuilder" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-searchpanes" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/datatables-select" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/daterangepicker" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/dropzone" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/ekko-lightbox" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/fastclick" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/filterizr" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/flag-icon-css" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/flot" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/fontawesome-free" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/fullcalendar" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/icheck-bootstrap" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/inputmask" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/ion-rangeslider" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jquery" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jquery-knob" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jquery-mapael" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jquery-mousewheel" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jquery-ui" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jquery-validation" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jqvmap" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jsgrid" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jsmart-4.0.0" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/jszip" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/local-google-font" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/moment" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/overlayScrollbars" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/pace-progress" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/pdfmake" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/popper" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/raphael" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/select2" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/select2-bootstrap4-theme" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/sparklines" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/summernote" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/sweetalert2" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/sweetalert2-theme-bootstrap-4" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/tempusdominus-bootstrap-4" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/toastr" />
+      <excludeFolder url="file://$MODULE_DIR$/webtool/vendor/uplot" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

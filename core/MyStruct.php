@@ -16,6 +16,7 @@ abstract class MyStruct implements MyBase
     public $name;//显性唯一
     public $title;//标题别称
     public $memo;//备注
+    public $position=255;//备注
 
     public $ctime;//创建
     public $utime;//最后更新时间
@@ -44,6 +45,7 @@ abstract class MyStruct implements MyBase
         $a_data['ctime'] = $this->ctime;
         $a_data['utime'] = $this->utime;
         $a_data['memo'] = $this->memo;
+        $a_data['position'] = $this->position;
         return $a_data;
 
         // TODO: Implement getAsArray() method.
@@ -58,6 +60,7 @@ abstract class MyStruct implements MyBase
         $this->ctime = $a_data['ctime'] ;
         $this->utime = $a_data['utime'] ;
         $this->memo = $a_data['memo'] ;
+        $this->position = $a_data['position'] ;
 
         return $this;
     }

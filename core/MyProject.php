@@ -37,7 +37,7 @@ class MyProject extends MyStruct
         }
 
         $o_app = new MyApp();
-        $o_app->initDefault($new_name);
+        $o_app->init($new_name);
         $new_app_name = $o_app->uuid;
 
         $now = time();

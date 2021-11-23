@@ -17,6 +17,13 @@ interface MyBase
 
 
     /**
+     * 初始化
+     * @param $v1
+     * @return mixed
+     */
+    function init($v1);
+
+    /**
      * 输出字段结构为数组
      * @return array
      */

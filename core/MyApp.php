@@ -31,7 +31,7 @@ class MyApp extends MyStruct
      * app配置
      * @var MyAppConf
      */
-    public $app_conf = null;
+    public $conf_list = null;
     /**
      * 数据库配置
      * @var MyDbConf
@@ -67,7 +67,7 @@ class MyApp extends MyStruct
      * 初始化默认
      * @param $project_id
      */
-    public function initDefault($project_id)
+    public function init($project_id)
     {
 
 
@@ -83,7 +83,7 @@ class MyApp extends MyStruct
 
         $this->model_list = [];
         $this->db_conf = [];
-        $this->app_conf = [];
+        $this->conf_list = [];
 
         /**
          * 创建目录
@@ -136,15 +136,19 @@ class MyApp extends MyStruct
         $a_data['img_icon_id'] = $this->img_icon_id;
         $a_data['img_logo_id'] = $this->img_logo_id;
         $a_data['project_id'] = $this->project_id;
-        $a_data['model_list'] = array();
-        foreach ($this->model_list as $key => $item) {
-            /*@var MyApp $item */
-            $a_data['model_list'][$key] = $item->getAsArray();
+        $a_data['conf_list'] = array();
+
+        foreach ($this->conf_list as $key => $conf) {
+            /*@var MyAppConf $conf */
+            $a_data['conf_list'][$key] = $conf->getAsArray();
         }
+        //TODO db
+        //TODO model
+        $a_data['model_list'] = array();
 
         return $a_data;
 
-        // TODO: Implement getAsArray() method.
+
     }
 
     function parseToObj($a_data)
@@ -154,8 +158,14 @@ class MyApp extends MyStruct
         $this->img_icon_id = $a_data['img_icon_id'];
         $this->img_logo_id = $a_data['img_logo_id'];
         $this->project_id = $a_data['project_id'];
-        $this->model_list = [];
-        // from $a_data['models']
+        $this->conf_list = [];
+        foreach ($a_data['conf_list'] as $key => $conf) {
+            $o_conf = new MyApp();
+            $o_conf->parseToObj($conf);
+            $this->conf_list[$key] = $o_conf;
+        }
+        //TODO db
+        //TODO model
         return $this;
     }
 
@@ -236,14 +246,14 @@ class MyApp extends MyStruct
         /**
          * 判断语言
          */
-        if (!isset($a_app_data['db_conf']) || !isset($a_app_data['app_conf'])) {
+        if (!isset($a_app_data['db_conf']) || !isset($a_app_data['conf_list'])) {
             echo "NO conf defined!!!";
             return null;
         }
 
 
         //db conf ,默认就是java
-        $a_app_conf = $a_app_data['app_conf'];
+        $a_conf_list = $a_app_data['conf_list'];
 
         //db conf ,默认就是mysql
         $a_db_conf = $a_app_data['db_conf'];
@@ -365,12 +375,12 @@ class MyApp extends MyStruct
     public function buildModel(MyModel $model_to_be = null)
     {
         $mm = null;
-        switch ($this->app_conf->lang) {
+        switch ($this->conf_list->lang) {
             case Constant::LANG_JAVA:
-                switch ($this->app_conf->mvc) {
+                switch ($this->conf_list->mvc) {
                     case Constant::MVC_JAVA_SERVLET:
 
-                        $mm = new JavaServletModel($this->app_conf, $this->db_conf, $this->path_output);
+                        $mm = new JavaServletModel($this->conf_list, $this->db_conf, $this->path_output);
                         break;
                     default:
 

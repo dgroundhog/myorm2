@@ -300,7 +300,7 @@ function add_project($project, $new_version_name)
         $o_project->utime = $utime;
 
         $o_app = new MyApp();
-        $o_app->initDefault($o_project->name);
+        $o_app->init($o_project->name);
         $_uuid =  $o_app->uuid;
         $o_app->name = $new_version_name;
         $o_project->version_list[$_uuid] = $o_app;

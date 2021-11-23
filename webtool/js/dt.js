@@ -312,16 +312,16 @@ App.dt.project.loadProject = function (project_name, app_version) {
         $("#txt_curr_version_name").html(_app.name);
         $("#txt_curr_version_title").html(_app.title);
 
-        $("#txt_app_name").val(_app.name);
-        $("#txt_app_title").val(_app.title);
-        $("#txt_app_memo").val(_app.memo);
-        $("#txt_app_ctime").val(_app.ctime);
-        $("#txt_app_utime").val(_app.utime);
+        $(".txt_app_name").val(_app.name);
+        $(".txt_app_title").val(_app.title);
+        $(".txt_app_memo").val(_app.memo);
+        $(".txt_app_ctime").val(_app.ctime);
+        $(".txt_app_utime").val(_app.utime);
         console.log(_app.img_icon_id);
         console.log(_app.img_logo_id);
 
-        $("#img_icon_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _app.img_icon_id);
-        $("#img_logo_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _app.img_logo_id);
+        $(".img_icon_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _app.img_icon_id);
+        $(".img_logo_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _app.img_logo_id);
 
         $("#img_icon_id").val(_app.img_icon_id);
         $("#img_logo_id").val(_app.img_logo_id);
@@ -541,11 +541,20 @@ App.dt.project.onUpdateApp = function (_server_return) {
     var project_name = self.data.curr_project;
     var app_version = self.data.curr_project_version;
 
-    $("#img_icon_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _img_icon_id);
-    $("#img_logo_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _img_logo_id);
-    $("#img_icon_free").attr("src", "");
-    $("#img_logo_free").attr("src", "");
+    $(".img_icon_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _img_icon_id);
+    $(".img_logo_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _img_logo_id);
+    $(".img_icon_free").attr("src", "");
+    $(".img_logo_free").attr("src", "");
 
+    var _app= _project[app_version];
+
+    $(".txt_app_name").val(_app.name);
+    $(".txt_app_title").val(_app.title);
+    $(".txt_app_memo").val(_app.memo);
+    $(".txt_app_ctime").val(_app.ctime);
+    $(".txt_app_utime").val(_app.utime);
+
+    $("#modal_edit_app_info").modal('hide');
     self.succ("更新成功");
 }
 
@@ -720,7 +729,16 @@ App.dt.project.onDeleteApp = function (_server_return) {
     self.data.curr_project_version = "";
     self.menu.render();
 
-    self.project.loadProject(_name,"");
+    var _version_list = _project.version_list;
+
+    for (var ii in _version_list) {
+        //var _version = ii
+        var _version = _version_list[ii];
+        firstVersion = _version.uuid;
+        break;
+    }
+    self.data.curr_project_version = firstVersion;
+    self.project.loadProject(_name,firstVersion);
 
     self.succ("删除成功");
 }
@@ -758,6 +776,9 @@ App.dt.init = function () {
     /**
      * 1.3 app的icon和logo的上传
      */
+    $("#btn_edit_app").click(function () {
+        $("#modal_edit_app_info").modal('show');
+    });
     $('#app_file_logo').fileinput(self.editor.getUploadParam())
         .on('fileuploaded', function (event, data, index, fileId) {
 
