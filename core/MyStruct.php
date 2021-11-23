@@ -12,6 +12,7 @@ include_once(CC_ROOT . "/MyBase.php");
 abstract class MyStruct implements MyBase
 {
 
+    public $scope;//范畴
     public $uuid;//隐形唯一
     public $name;//显性唯一
     public $title;//标题别称
@@ -42,6 +43,7 @@ abstract class MyStruct implements MyBase
     function getBasicAsArray()
     {
         $a_data = array();
+        $a_data['scope'] = $this->scope;
         $a_data['name'] = $this->name;
         $a_data['title'] = $this->title;
         $a_data['uuid'] = $this->uuid;
@@ -59,6 +61,7 @@ abstract class MyStruct implements MyBase
     function parseToBasicObj($a_data)
     {
 
+        $this->scope = $a_data['scope'];
         $this->name = $a_data['name'];
         $this->title = $a_data['title'];
         $this->uuid = $a_data['uuid'];

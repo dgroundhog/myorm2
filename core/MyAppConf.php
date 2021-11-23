@@ -53,6 +53,10 @@ class MyAppConf extends MyStruct
         "has_doc"
     );
 
+    public function __construct()
+    {
+        $this->scope = "APP_CONF";
+    }
 
     function getAsArray()
     {
@@ -69,14 +73,14 @@ class MyAppConf extends MyStruct
     function init($v1)
     {
         //可能外部生成
-        $now = time();
-        $now_str = date("Y-m-d H:i:s", $now);
-        $now_str2 = date("YmdHi", $now);
-        $_uid = uuid();
-        $this->name = $now_str2;
-        $this->title = $now_str2;
-        $this->uuid = $_uid;
-        $this->ctime = $now_str;
-        $this->utime = $now_str;
+//        $now = time();
+//        $now_str = date("Y-m-d H:i:s", $now);
+//        $now_str2 = date("YmdHi", $now);
+//        $_uid = uuid();
+//        $this->name = $now_str2;
+//        $this->title = $now_str2;
+//        $this->uuid = $_uid;
+//        $this->ctime = $now_str;
+//        $this->utime = $now_str;
     }
 }

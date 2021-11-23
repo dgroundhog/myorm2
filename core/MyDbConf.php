@@ -1,11 +1,17 @@
 <?php
+if (!defined("CC_ROOT")) {
+    define('CC_ROOT', realpath(dirname(__FILE__)));
+}
+include_once(CC_ROOT . "/_util.inc.php");
+include_once(CC_ROOT . "/_cc.inc.php");
+include_once(CC_ROOT . "/MyStruct.php");
 
 /**
  * 数据库配置结构
  * Class MyDbConf
  *
  */
-class MyDbConf
+class MyDbConf extends MyStruct
 {
 
     /**
@@ -20,6 +26,13 @@ class MyDbConf
      */
     public $host = "";
 
+    /**
+     * 数据库（文件）
+     * database / service name / sid /sqlite 数据库路径
+     *
+     * @var string
+     */
+    public $database = "";//
 
     /**
      * 主机端口
@@ -42,20 +55,6 @@ class MyDbConf
 
 
     /**
-     * 数据库（文件）
-     * database / service name / sid /sqlite 数据库路径
-     *
-     * @var string
-     */
-    public $database = "";//
-
-    /**
-     * 数据库版本
-     * @var string
-     */
-    public $version = "";
-
-    /**
      * 编码格式
      * @var string
      */
@@ -69,32 +68,29 @@ class MyDbConf
      */
     public $source = "env";
 
-
     /**
-     * MyDbConf constructor.
-     * @param string $driver
-     * @param string $host
-     * @param int $port
-     * @param string $user
-     * @param string $password
-     * @param string $charset
-     * @param string $database
-     * @param string $version
-     * @param string $source
+     * 直接的链接字符串，可以带host-port-db
+     * @var string
      */
-    public function __construct($driver, $host, $port, $user, $password, $database, $charset = "utf8", $version = "", $source = "ini")
-    {
-        $this->driver = $driver;
-        $this->host = $host;
-        $this->port = $port;
-        $this->user = $user;
-        $this->password = $password;
-        $this->database = $database;
-        $this->charset = $charset;
-        $this->version = $version;
-        $this->source = $source;
-    }
+    public $uri = "";
 
+
+    public $basic_keys = array(
+        "driver",
+        "host",
+        "port",
+        "database",
+        "user",
+        "password",
+        "charset",
+        "uri",
+        "source"
+    );
+
+    public function __construct()
+    {
+        $this->scope = "DB_CONF";
+    }
 
     /**
      * 输出字段结构为数组
@@ -102,19 +98,18 @@ class MyDbConf
      */
     public function getAsArray()
     {
-        return array(
-
-            "driver" => $this->driver,
-            "host" => $this->host,
-            "port" => $this->port,
-            "user" => $this->user,
-            "password" => $this->password,
-            "database" => $this->database,
-            "charset " => $this->charset,
-            "version" => $this->version,
-            "source" => $this->source
-        );
+        return $this->getBasicAsArray();
     }
 
 
+    function init($v1)
+    {
+        // TODO: Implement init() method.
+    }
+
+    function parseToObj($a_data)
+    {
+        $this->parseToBasicObj($a_data);
+        return $this;
+    }
 }

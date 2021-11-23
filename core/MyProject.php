@@ -20,7 +20,7 @@ class MyProject extends MyStruct
 
     public function __construct()
     {
-
+$this->scope = "PROJECT";
     }
 
     /**

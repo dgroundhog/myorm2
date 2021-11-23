@@ -88,6 +88,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <?php include("./_4_1_modal_edit_app_info.php"); ?>
     <?php include("./_5_1_modal_edit_app_conf.php"); ?>
+    <?php include("./_6_1_modal_edit_app_db.php"); ?>
 
 
 </div>
@@ -96,6 +97,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <!-- tmpl -->
 <?php include("./_tpl_project_menu_list.php"); ?>
 <?php include("./_tpl_conf_list.php"); ?>
+<?php include("./_tpl_db_list.php"); ?>
 <!-- /tmpl -->
 
 <!-- REQUIRED SCRIPTS -->

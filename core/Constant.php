@@ -27,6 +27,20 @@ class Constant
     const   DB_MYSQL_80 = "mysql80";
     const   DB_SQLITE_30 = "sqlite3";
     const   DB_POSTGRESQL_96 = "postgresql96";
+
+    /**
+     * db source
+     */
+    const   DB_SOURCE_ENV = "env";
+    const   DB_SOURCE_EMBED = "embed";
+
+    /**
+     * db charset
+     */
+    const   DB_CHARSET_GBK = "gbk";
+    const   DB_CHARSET_UTF8 = "utf8";
+    const   DB_CHARSET_UTF8MB4 = "utf8mb4";
+
     /**
      * 条件链接方式
      */
@@ -59,10 +73,30 @@ class Constant
     );
 
     /**
+     * db 来源
+     * @var string[]
+     */
+    public static $a_build_db_source = array(
+        Constant::DB_SOURCE_ENV => "环境变量",
+        Constant::DB_SOURCE_EMBED => "程序配置文件"
+    );
+
+    /**
+     * db编码
+     * @var string[]
+     */
+    public static $a_build_db_charset = array(
+        Constant::DB_CHARSET_UTF8 => "UTF8编码",
+        Constant::DB_CHARSET_UTF8MB4 => "UTF8MB4编码",
+        Constant::DB_SOURCE_EMBED => "GBK编码"
+    );
+
+
+    /**
      * 允许的ui方案，
      * @var string[]
      */
-    public static $a_build_ui= array(
+    public static $a_build_ui = array(
         Constant::UI_NULL => "NO_UI",
         Constant::UI_BOOTADMIN_SIMPLE => "Bootadmin_simple",
         Constant::UI_ADMINLTE_31 => "Adminlte_3.1.0",

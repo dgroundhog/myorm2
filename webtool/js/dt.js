@@ -321,8 +321,8 @@ App.dt.project.loadProject = function (project_name, app_version) {
         $(".txt_app_memo").val(_app.memo);
         $(".txt_app_ctime").val(_app.ctime);
         $(".txt_app_utime").val(_app.utime);
-        console.log(_app.img_icon_id);
-        console.log(_app.img_logo_id);
+        //console.log(_app.img_icon_id);
+        //console.log(_app.img_logo_id);
 
         $(".img_icon_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _app.img_icon_id);
         $(".img_logo_saved").attr("src", "tool.php?act=app_img&project=" + project_name + "&version=" + app_version + "&img_id=" + _app.img_logo_id);
@@ -332,9 +332,10 @@ App.dt.project.loadProject = function (project_name, app_version) {
 
         //其他更新
         self.editor.updateTitle();
-
         //加载配置
         self.project.confLoad();
+        //加载数据库
+        self.project.dbLoad();
     }
 
 }
@@ -957,13 +958,12 @@ App.dt.project.confDrop = function (_uuid) {
         self.fail("未选择配置");
         return;
     } else {
-        bootbox.confirm("确认删除这个配置",function (ret){
-            if(ret){
-                if(undefined != _curr_app.conf_list[_uuid]){
+        bootbox.confirm("确认删除这个配置", function (ret) {
+            if (ret) {
+                if (undefined != _curr_app.conf_list[_uuid]) {
                     delete _curr_app.conf_list[_uuid];
                     self.succ("移除成功");
-                }
-                else{
+                } else {
                     self.fail("移除失败");
                 }
                 self.project.confLoad();
@@ -972,6 +972,136 @@ App.dt.project.confDrop = function (_uuid) {
     }
 
 
+}
+
+
+/**
+ * 加载配置
+ */
+App.dt.project.dbLoad = function () {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本,无法打开配置");
+        return;
+    }
+
+    var tpl = new jSmart(self.getTpl('tpl_db_list'));
+    var res = tpl.fetch(_curr_app);
+    $("#table_db_list").html(res);
+}
+
+
+/**
+ * 保存配置
+ */
+App.dt.project.dbSave = function () {
+    var self = App.dt;
+    var _uuid = $("#txt_db_uuid").val();
+    var _db = new MyDb();
+    var now = App.su.datetime.getCurrentDateTime();
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("保存失败");
+        return;
+    }
+
+    if (App.su.isEmpty(_uuid)) {
+        var new_uuid = App.su.maths.uuid.create();
+        _db.uuid = new_uuid;
+        _db.name = now;
+        _db.ctime = now;
+        _db.utime = now;
+        _uuid = new_uuid;
+    } else {
+        _db = _curr_app.db_list[_uuid];
+        _db.utime = now;
+    }
+
+    _db.driver = $("#sel_db_driver").val();
+    _db.source = $("#sel_db_source").val();
+    _db.host = $("#txt_db_host").val();
+    _db.port = $("#txt_db_port").val();
+    _db.database = $("#txt_db_database").val();
+    _db.user = $("#txt_db_user").val();
+    _db.password = $("#txt_db_passwd").val();
+    _db.charset = $("#sel_db_charset").val();
+    _db.uri = $("#txt_db_uri").val();
+
+
+    console.log(_db);
+
+    _curr_app.db_list[_uuid] = _db;
+    if (self.project.setCurrApp(_curr_app)) {
+        self.succ("暂存成功");
+    } else {
+        self.fail("暂存失败");
+    }
+    $("#modal_edit_app_db").modal('hide');
+    self.project.dbLoad();
+}
+
+/**
+ * 编辑配置
+ */
+App.dt.project.dbEdit = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本2");
+        return;
+    }
+    var _db = new MyDb();
+    if (App.su.isEmpty(_uuid)) {
+        console.log("新的配置2");
+        $("#txt_db_uuid").val("");
+
+    } else {
+        console.log("编辑旧配置2");
+        $("#txt_db_uuid").val(_uuid);
+        _db = _curr_app.db_list[_uuid];
+    }
+    $("#txt_db_host").val(_db.host);
+    $("#txt_db_port").val(_db.port);
+    $("#txt_db_database").val(_db.database);
+    $("#txt_db_user").val(_db.user);
+    $("#txt_db_passwd").val(_db.password);
+    $("#txt_db_uri").val(_db.uri);
+
+    App.su.select.selectByValue($("#sel_db_driver"), _db.driver);
+    App.su.select.selectByValue($("#sel_db_source"), _db.source);
+    App.su.select.selectByValue($("#sel_db_charset"), _db.charset);
+
+    $("#modal_edit_app_db").modal('show');
+
+}
+
+/**
+ * 编辑配置
+ */
+App.dt.project.dbDrop = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(_uuid)) {
+        self.fail("未选择配置");
+        return;
+    } else {
+        bootbox.confirm("确认删除这个数据库配置", function (ret) {
+            if (ret) {
+                if (undefined != _curr_app.db_list[_uuid]) {
+                    delete _curr_app.db_list[_uuid];
+                    self.succ("移除成功");
+                } else {
+                    self.fail("移除失败");
+                }
+                self.project.dbLoad();
+            }
+        });
+    }
 }
 
 
@@ -999,7 +1129,7 @@ App.dt.init = function () {
     });
 
     /**
-     * 1.2 暂存保存一个项目
+     * 1.1 暂存保存一个项目
      */
     $("#btn_save_project").click(function () {
         self.project.update();
@@ -1007,7 +1137,7 @@ App.dt.init = function () {
 
 
     /**
-     * 同步到服务器
+     * 1.1 同步到服务器
      */
     $(".btn_sync_project").click(function () {
         self.project.syncApp();
@@ -1015,7 +1145,7 @@ App.dt.init = function () {
 
 
     /**
-     * 1.3 app的icon和logo的上传
+     * 1.2 app的icon和logo的上传
      */
     $("#btn_edit_app").click(function () {
         if (null != self.project.getCurrApp()) {
@@ -1050,14 +1180,14 @@ App.dt.init = function () {
         });
 
     /**
-     * 1.4 保存app
+     * 1.2 保存app
      */
     $("#btn_save_app").click(function () {
         self.project.updateApp();
     });
 
     /**
-     * 1.5 复制app
+     * 1.2 复制app
      */
     $("#btn_clone_app").click(function () {
 
@@ -1070,14 +1200,14 @@ App.dt.init = function () {
     });
 
     /**
-     * 1.5 删除app
+     * 1.2 删除app
      */
     $("#btn_delete_app").click(function () {
         self.project.deleteApp();
     });
 
     /**
-     * 1.7 添加app
+     * 1.2 添加app
      */
     $("#btn_add_app").click(function () {
         bootbox.prompt("请输入新版本号", function (result) {
@@ -1089,7 +1219,7 @@ App.dt.init = function () {
     });
 
     /**
-     * 1.8 添加app
+     * 1.5 添加app
      */
     $("#btn_edit_conf").click(function () {
         self.project.confEdit("");
@@ -1097,6 +1227,17 @@ App.dt.init = function () {
 
     $("#btn_save_conf").click(function () {
         self.project.confSave();
+    });
+
+    /**
+     * 1.6 数据库
+     */
+    $("#btn_edit_db").click(function () {
+        self.project.dbEdit("");
+    });
+
+    $("#btn_save_db").click(function () {
+        self.project.dbSave();
     });
 
 

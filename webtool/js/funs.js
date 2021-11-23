@@ -16,6 +16,7 @@ StringBuffer.prototype.toString = function () {
 
 function MyFun() {
     this.uuid = "";//唯一码
+    this.scope = "";//范畴
     this.name = "";//名称
     this.title = "";//标题
     this.position = 255;//排序
@@ -25,7 +26,9 @@ function MyFun() {
 
 MyFun.prototype.parseBasic = function (json_one) {
     //解析一个单体
+    console.log(json_one)
     this.uuid = json_one.uuid;
+    this.scope = json_one.scope;
     this.name = json_one.name;
     this.title = json_one.title;
     this.memo = json_one.memo;
@@ -61,7 +64,7 @@ MyProject.prototype.parse = function (json_one) {
     this.curr_version = "";//当前版本号
     this.version_list = {};//版本号列表  k-v
 
-    for(var ii in json_one.version_list){
+    for (var ii in json_one.version_list) {
         var _app = new MyApp();
         _app.parse(json_one.version_list[ii]);
         var _uuid = _app.uuid;
@@ -91,13 +94,15 @@ MyProject.isGoodName = function (_name) {
  */
 function MyApp() {
     MyFun.call(this);
-    this._model_order_ = {};//模型位置  k-v
+
     this._models_ = [];//模型列表
     this.project_id = "";
     this.img_icon_id = "";
     this.img_logo_id = "";
 
-    this.conf_list = [];//配置列表
+    this.conf_list = [];//应用配置列表
+    this.db_list = [];//数据库配置列表
+    this.model_list = [];//模型配置列表
 
 }
 
@@ -115,11 +120,20 @@ MyApp.prototype.parse = function (json_one) {
 
     //配置
     this.conf_list = new Object();
-    for(var ii in json_one.conf_list){
+    for (var ii in json_one.conf_list) {
         var _conf = new MyAppConf();
         _conf.parse(json_one.conf_list[ii]);
         var _uuid = _conf.uuid;
         this.conf_list[_uuid] = _conf;
+    }
+
+    //数据库
+    this.db_list = new Object();
+    for (var ii in json_one.db_list) {
+        var _db = new MyDb();
+        _db.parse(json_one.db_list[ii]);
+        var _uuid = _db.uuid;
+        this.db_list[_uuid] = _db;
     }
 
     // this.version_list = new Object();//版本号列表  k-v
@@ -184,12 +198,56 @@ MyAppConf.prototype.parse = function (json_one) {
     this.parseBasic(json_one);
 
     this.mvc = json_one.mvc;
-    this.ui =json_one.ui;
+    this.ui = json_one.ui;
     this.has_restful = json_one.has_restful;
-    this.has_test =json_one.has_test;
+    this.has_test = json_one.has_test;
     this.has_doc = json_one.has_doc;
 
 };
+
+
+/**
+ * 数据库配置
+ * @constructor
+ */
+function MyDb() {
+    MyFun.call(this);
+    this.driver = "";
+    this.source = "";
+    this.host = "localhost";
+    this.port = "3306";
+    this.database = "db1";
+    this.user = "root";
+    this.password = "";
+    this.charset = "";
+    this.uri = "";
+
+}
+
+//把子类的原型指向通过Object.create创建的中间对象
+MyDb.prototype = Object.create(MyFun.prototype);
+MyDb.prototype.constructor = MyDb;
+
+/**
+ *
+ * @param json_one
+ */
+MyDb.prototype.parse = function (json_one) {
+    //解析一个单体
+    this.parseBasic(json_one);
+    this.driver = json_one.driver;
+    this.source = json_one.source;
+    this.host = json_one.host;
+    this.port = json_one.port;
+    this.database = json_one.database;
+    this.user = json_one.user;
+    this.password = json_one.password;
+    this.charset = json_one.charset;
+    this.uri = json_one.uri;
+    this.password = json_one.password;
+
+};
+
 
 /**
  * 主字段
@@ -212,9 +270,3 @@ function MyFun() {
 function MyWhere() {
 }
 
-/**
- * 数据库配置
- * @constructor
- */
-function MyDb() {
-}

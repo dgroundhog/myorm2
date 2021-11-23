@@ -6,6 +6,7 @@ include_once(CC_ROOT . "/_util.inc.php");
 include_once(CC_ROOT . "/_cc.inc.php");
 include_once(CC_ROOT . "/MyStruct.php");
 include_once(CC_ROOT . "/MyAppConf.php");
+include_once(CC_ROOT . "/MyDbConf.php");
 
 /**
  * 主程序模型
@@ -59,12 +60,9 @@ class MyApp extends MyStruct
         "img_logo_id"
     );
 
-    /**
-     *
-     * MyApp constructor.
-     */
     public function __construct()
     {
+        $this->scope = "APP";
     }
 
     /**
@@ -88,7 +86,7 @@ class MyApp extends MyStruct
 
         $this->model_list = array();
         $this->db_conf = array();
-        $this->conf_list =array();
+        $this->conf_list = array();
 
         /**
          * 创建目录
@@ -138,12 +136,16 @@ class MyApp extends MyStruct
         $a_data = $this->getBasicAsArray();
         $a_data['conf_list'] = array();
         foreach ($this->conf_list as $key => $conf) {
-
-            SeasLog::debug(count($a_data['conf_list']));
-            /*@var MyAppConf $conf */
+            /* @var MyAppConf $conf */
             $a_data['conf_list'][$key] = $conf->getAsArray();
         }
-        //TODO db
+
+        $a_data['db_list'] = array();
+        foreach ($this->db_list as $key => $db) {
+            /* @var MyDbConf $db */
+            $a_data['db_list'][$key] = $db->getAsArray();
+        }
+
         //TODO model
         $a_data['model_list'] = array();
 
@@ -156,14 +158,26 @@ class MyApp extends MyStruct
     {
         $this->parseToBasicObj($a_data);
         $this->conf_list = array();
+        $this->db_list = array();
+        $this->model_list = array();
+        if (isset($a_data['conf_list']) && is_array($a_data['conf_list'])) {
+            foreach ($a_data['conf_list'] as $key => $conf) {
+                $o_conf = new MyAppConf();
+                $o_conf->parseToObj($conf);
+                $this->conf_list[$key] = $o_conf;
+            }
 
-        foreach ($a_data['conf_list'] as $key => $conf) {
-            $o_conf = new MyAppConf();
-            $o_conf->parseToObj($conf);
-            $this->conf_list[$key] = $o_conf;
         }
 
-        //TODO db
+        if (isset($a_data['db_list']) && is_array($a_data['db_list'])) {
+            foreach ($a_data['db_list'] as $key => $db) {
+                $o_db = new MyDbConf();
+                $o_db->parseToObj($db);
+                $this->db_list[$key] = $o_db;
+            }
+        }
+
+
         //TODO model
         return $this;
     }
