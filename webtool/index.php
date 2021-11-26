@@ -64,6 +64,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <!--1.4 数据库基本配置 -->
         <?php include("./_6_session_db.php"); ?>
 
+        <!--1.5 全局字段 -->
+        <?php include("./_7_session_field.php"); ?>
+
     </div><!-- /.container-fluid -->
     <!-- /.content-wrapper -->
 
@@ -89,6 +92,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <?php include("./_4_1_modal_edit_app_info.php"); ?>
     <?php include("./_5_1_modal_edit_app_conf.php"); ?>
     <?php include("./_6_1_modal_edit_app_db.php"); ?>
+    <?php include("./_7_1_modal_edit_field.php"); ?>
 
 
 </div>

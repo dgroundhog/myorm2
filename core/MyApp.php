@@ -38,7 +38,14 @@ class MyApp extends MyStruct
      * 数据库配置
      * @var MyDbConf
      */
-    public $db_conf = null;
+    public $db_list = null;
+
+    /**
+     * 全局字段
+     * @var array
+     */
+    public $field_list = array();
+
     /**
      * 包含的模型，key => MyModel
      * @var array
@@ -85,8 +92,9 @@ class MyApp extends MyStruct
         $this->utime = $now_str;
 
         $this->model_list = array();
-        $this->db_conf = array();
+        $this->db_list = array();
         $this->conf_list = array();
+        $this->field_list = array();
 
         /**
          * 创建目录
@@ -146,6 +154,12 @@ class MyApp extends MyStruct
             $a_data['db_list'][$key] = $db->getAsArray();
         }
 
+        $a_data['field_list'] = array();
+        foreach ($this->db_list as $key => $db) {
+            /* @var MyDbConf $db */
+            $a_data['db_list'][$key] = $db->getAsArray();
+        }
+
         //TODO model
         $a_data['model_list'] = array();
 
@@ -187,15 +201,15 @@ class MyApp extends MyStruct
      */
     public function getDbConf()
     {
-        return $this->db_conf;
+        return $this->db_list;
     }
 
     /**
-     * @param MyDbConf $db_conf
+     * @param MyDbConf $db_list
      */
-    public function setDbConf($db_conf)
+    public function setDbConf($db_list)
     {
-        $this->db_conf = $db_conf;
+        $this->db_list = $db_list;
     }
 
     /**
@@ -259,7 +273,7 @@ class MyApp extends MyStruct
         /**
          * 判断语言
          */
-        if (!isset($a_app_data['db_conf']) || !isset($a_app_data['conf_list'])) {
+        if (!isset($a_app_data['db_list']) || !isset($a_app_data['conf_list'])) {
             echo "NO conf defined!!!";
             return null;
         }
@@ -269,14 +283,14 @@ class MyApp extends MyStruct
         $a_conf_list = $a_app_data['conf_list'];
 
         //db conf ,默认就是mysql
-        $a_db_conf = $a_app_data['db_conf'];
+        $a_db_list = $a_app_data['db_list'];
 
-        if (!isset($a_db_conf['database'])) {
+        if (!isset($a_db_list['database'])) {
             echo "NO database defined!!!";
             return null;
         }
 
-        if (isset($a_db_conf['source']) && $a_db_conf['source'] == "env") {
+        if (isset($a_db_list['source']) && $a_db_list['source'] == "env") {
             //从环境读取的数据
 
         } else {
@@ -285,22 +299,22 @@ class MyApp extends MyStruct
         }
 
         //数据库名或者
-        $database = trim($a_db_conf['database']);
+        $database = trim($a_db_list['database']);
 
-        $driver = isset($a_db_conf['driver']) ? trim($a_db_conf['driver']) : Constant::DB_MYSQL;
-        $host = isset($a_db_conf['host']) ? trim($a_db_conf['host']) : "localhost";
-        $port = isset($a_db_conf['port']) ? trim($a_db_conf['port']) : "3306";
-        $user = isset($a_db_conf['user']) ? trim($a_db_conf['user']) : "root";
-        $password = isset($a_db_conf['password']) ? trim($a_db_conf['password']) : "123456";
+        $driver = isset($a_db_list['driver']) ? trim($a_db_list['driver']) : Constant::DB_MYSQL;
+        $host = isset($a_db_list['host']) ? trim($a_db_list['host']) : "localhost";
+        $port = isset($a_db_list['port']) ? trim($a_db_list['port']) : "3306";
+        $user = isset($a_db_list['user']) ? trim($a_db_list['user']) : "root";
+        $password = isset($a_db_list['password']) ? trim($a_db_list['password']) : "123456";
         //$database
-        $charset = isset($a_db_conf['charset']) ? trim($a_db_conf['charset']) : "utf8";
-        $version = isset($a_db_conf['version']) ? trim($a_db_conf['version']) : "";
+        $charset = isset($a_db_list['charset']) ? trim($a_db_list['charset']) : "utf8";
+        $version = isset($a_db_list['version']) ? trim($a_db_list['version']) : "";
 
-        $version = isset($a_db_conf['version']) ? trim($a_db_conf['version']) : "";
+        $version = isset($a_db_list['version']) ? trim($a_db_list['version']) : "";
 
         $source = "ini";
 
-        $this->db_conf = new MyDbConf($driver, $host, $port, $user, $password, $database, $charset, $version, $source);
+        $this->db_list = new MyDbConf($driver, $host, $port, $user, $password, $database, $charset, $version, $source);
 
         //model_list
         $a_model_list = $a_app_data['model_list'];
@@ -337,9 +351,9 @@ class MyApp extends MyStruct
     public function buildDbConf()
     {
         $dbc = null;
-        switch ($this->db_conf->driver) {
+        switch ($this->db_list->driver) {
             case Constant::DB_MYSQL:
-                $dbc = new DbMysql($this->db_conf, $this->path_output);
+                $dbc = new DbMysql($this->db_list, $this->path_output);
                 break;
             default:
 
@@ -356,9 +370,9 @@ class MyApp extends MyStruct
     public function buildDb(MyModel $model_to_be = null)
     {
         $dbc = null;
-        switch ($this->db_conf->driver) {
+        switch ($this->db_list->driver) {
             case Constant::DB_MYSQL:
-                $dbc = new DbMysql($this->db_conf, $this->path_output);
+                $dbc = new DbMysql($this->db_list, $this->path_output);
                 break;
             default:
 
@@ -393,7 +407,7 @@ class MyApp extends MyStruct
                 switch ($this->conf_list->mvc) {
                     case Constant::MVC_JAVA_SERVLET:
 
-                        $mm = new JavaServletModel($this->conf_list, $this->db_conf, $this->path_output);
+                        $mm = new JavaServletModel($this->conf_list, $this->db_list, $this->path_output);
                         break;
                     default:
 

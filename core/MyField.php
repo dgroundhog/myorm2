@@ -4,22 +4,9 @@
  * Class MyField
  *
  */
-class MyField
+class MyField extends MyStruct
 {
-    
 
-    /**
-     * 字段标识
-     * @var string
-     */
-    public $field_name = "f1";
-
-
-    /**
-     * 字段中文名
-     * @var string
-     */
-    public $field_title = "字段1";
 
     /**
      * 字段类型
@@ -41,12 +28,6 @@ class MyField
      */
     public $auto_increment = false;
 
-    /**
-     * 是否非空
-     * @var bool
-     */
-    public $not_null = false;
-
 
     /**
      * 默认值
@@ -62,91 +43,37 @@ class MyField
 
 
     /**
-     * 帮助提示
-     * @var string
-     */
-    public $help = "帮助提示";
-
-
-    /**
      * 默认过滤器
      * @var string
      */
     public $filter = "string";
 
-    /**
-     * 默认排序
-     * @var int
-     */
-    public $position = 255;
 
     /**
-     * 下面的特殊的输入规则
+     * filter =  regexp  验证正则表达式
+     * @var string
      */
-
+    public $regexp = "";
     /**
      * 通过上传输入
      * @var bool
      */
-    public $input_by_upload = false;
-
-    /**
-     * 通过上传图片输入
-     * @var bool
-     */
-    public $input_by_upload_img = false;
-
-    /**
-     * 通过下拉框输入
-     * @var bool
-     */
-    public $input_by_select = false;
+    public $input_by = "";
 
 
-    /**
-     * 一组key-value组合
-     * @var array
-     */
-    public $kv_list = array();
-
-    /**
-     * 下面的部分为强验证的规则
-     */
-
-    /**
-     * 验证规则
-     * no_rule  无规则
-     * hash_range 散列值
-     * int_range 整数范围
-     * regexp 散列值
-     * @var string
-     */
-    public $valid_rule = "no_rule";
-
-    /**
-     * rule =  regexp  验证正则表达式
-     * @var string
-     */
-    public $valid_regexp = "";
-
-    /**
-     * rule =  int_range 验证最大值
-     * @var int
-     */
-    public $valid_max = 0;
-
-    /**
-     * rule =  int_range 验证最小值
-     * @var string
-     */
-    public $valid_min = 0;
+    public $basic_keys = array(
+        "type",
+        "size",
+        "auto_increment",
+        "default_value",
+        "required",
+        "filter",
+        "regexp",
+        "input_by"
 
 
-    /**
-     * rule =  hash_range 字典可选范围，简单散列值，逗号分割
-     * @var string
-     */
-    public $valid_hash = "";
+    );
+
 
     /**
      * MyField constructor.
@@ -207,4 +134,22 @@ class MyField
     }
 
 
+    function init($v1)
+    {
+        // TODO: Implement init() method.
+        //外部js实现
+    }
+
+    function getAsArray()
+    {
+        return $this->getBasicAsArray();
+        // TODO: Implement getAsArray() method.
+    }
+
+    function parseToObj($a_data)
+    {
+        // TODO: Implement parseToObj() method.
+
+        return $this->parseToBasicObj($a_data);
+    }
 }
