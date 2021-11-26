@@ -336,6 +336,8 @@ App.dt.project.loadProject = function (project_name, app_version) {
         self.project.confLoad();
         //加载数据库
         self.project.dbLoad();
+        //加载全局字段
+        self.project.fieldLoad();
     }
 
 }
@@ -354,6 +356,17 @@ App.dt.editor.updateTitle = function () {
     var _title = tt.toString();
     $("#txt_curr_project").html(_title);
     $(document).attr('title', _title);
+}
+
+App.dt.editor.getBootSwitchVal = function (who) {
+    var _val_bool = $(who).bootstrapSwitch('state');
+    return _val_bool ? "1" : "0";
+}
+
+App.dt.editor.setBootSwitchVal = function (who, val) {
+
+    $(who).bootstrapSwitch('state', (val == "1") ? true : false);
+
 }
 
 App.dt.editor.getUploadParam = function () {
@@ -882,14 +895,10 @@ App.dt.project.confSave = function () {
     _conf.mvc = $("#sel_app_mvc").val();
     _conf.ui = $("#sel_app_ui").val();
 
-    var _conf_has_restful = $("#txt_conf_has_restful").bootstrapSwitch('state');
-    _conf.has_restful = _conf_has_restful ? "1" : "0";
 
-    var _conf_has_doc = $("#txt_conf_has_doc").bootstrapSwitch('state');
-    _conf.has_doc = _conf_has_doc ? "1" : "0";
-
-    var _conf_has_test = $("#txt_conf_has_test").bootstrapSwitch('state');
-    _conf.has_test = _conf_has_test ? "1" : "0";
+    _conf.has_restful = self.editor.getBootSwitchVal("#txt_conf_has_restful");
+    _conf.has_doc = self.editor.getBootSwitchVal("#txt_conf_has_doc");
+    _conf.has_test = self.editor.getBootSwitchVal("#txt_conf_has_test");
 
 
     console.log(_conf);
@@ -917,10 +926,9 @@ App.dt.project.confEdit = function (_uuid) {
     if (App.su.isEmpty(_uuid)) {
         console.log("新的配置");
 
-
-        $("#txt_conf_has_restful").bootstrapSwitch('state', true);
-        $("#txt_conf_has_doc").bootstrapSwitch('state', true);
-        $("#txt_conf_has_test").bootstrapSwitch('state', true);
+        self.editor.setBootSwitchVal("#txt_conf_has_restful", "1");
+        self.editor.setBootSwitchVal("#txt_conf_has_doc", "1");
+        self.editor.setBootSwitchVal("#txt_conf_has_test", "1");
 
         $("#txt_conf_uuid").val("");
 
@@ -932,11 +940,9 @@ App.dt.project.confEdit = function (_uuid) {
         App.su.select.selectByValue($("#sel_app_mvc"), _conf.mvc);
         App.su.select.selectByValue($("#sel_app_ui"), _conf.ui);
 
-
-        $("#txt_conf_has_restful").bootstrapSwitch('state', (_conf.has_restful == "1") ? true : false);
-        $("#txt_conf_has_doc").bootstrapSwitch('state', (_conf.has_doc == "1") ? true : false);
-        $("#txt_conf_has_test").bootstrapSwitch('state', (_conf.has_test == "1") ? true : false);
-
+        self.editor.setBootSwitchVal("#txt_conf_has_restful", _conf.has_restful);
+        self.editor.setBootSwitchVal("#txt_conf_has_doc", _conf.has_doc);
+        self.editor.setBootSwitchVal("#txt_conf_has_test", _conf.has_test);
 
     }
 
@@ -1106,6 +1112,152 @@ App.dt.project.dbDrop = function (_uuid) {
 
 
 /**
+ * 加载字段，全局
+ */
+App.dt.project.fieldLoad = function (model_id) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本,无法打开配置");
+        return;
+    }
+    var tpl = new jSmart(self.getTpl('tpl_field_list'));
+    var res = tpl.fetch(_curr_app);
+    //TODO 需要区分全局字段还是个别字段
+    //排序 arr.sort((a,b) => a.sortNo -  b.sortNo)
+    //当model_id不为空时，用 判断是否全局字段 TODO
+    $("#table_field_list").html(res);
+}
+
+
+/**
+ * 保存字段
+ */
+App.dt.project.fieldSave = function () {
+    var self = App.dt;
+    var _uuid = $("#txt_field_uuid").val();
+    var _model_id = $("#txt_field_model_id").val();
+    //如果modelID 非空，则保存到model节点   TODO
+    var _field = new MyField();
+    var now = App.su.datetime.getCurrentDateTime();
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("保存失败,未打开app");
+        return;
+    }
+    //TODO 判断model _model_id
+
+    if (App.su.isEmpty(_uuid)) {
+        var new_uuid = App.su.maths.uuid.create();
+        _field.uuid = new_uuid;
+        _field.ctime = now;
+        _field.utime = now;
+        _uuid = new_uuid;
+    } else {
+        _field = _curr_app.field_list[_uuid];
+        //TODO 判断model _model_id
+        _field.utime = now;
+    }
+    _field.name = $("#txt_field_name").val();
+    _field.title = $("#txt_field_title").val();
+    _field.memo = $("#txt_field_memo").val();
+    _field.type = $("#sel_field_type").val();
+    _field.size = $("#txt_field_size").val();
+    _field.auto_increment = self.editor.getBootSwitchVal("#txt_field_auto_inc");
+    _field.default_value = $("#txt_field_default_val").val();
+    _field.required = self.editor.getBootSwitchVal("#txt_field_required");
+    _field.filter = $("#sel_field_filter").val();
+    _field.regexp = $("#txt_field_regexp").val();
+    _field.input_by = $("#sel_field_input_by").val();
+    _field.input_hash = $("#txt_field_hash").val();
+    _field.position = $("#txt_field_position").val();
+
+    console.log(_field);
+    _curr_app.field_list[_uuid] = _field;
+    console.log(_curr_app);
+    if (self.project.setCurrApp(_curr_app)) {
+        console.log(self.project.getCurrApp());
+        self.succ("暂存成功");
+    } else {
+        self.fail("暂存失败");
+    }
+    $("#modal_edit_field").modal('hide');
+    self.project.fieldLoad();
+}
+
+/**
+ * 编辑字段
+ */
+App.dt.project.fieldEdit = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本2");
+        return;
+    }
+    //TODO 在这里填入model
+    var _field = new MyField();
+    if (App.su.isEmpty(_uuid)) {
+        console.log("新的配置2");
+        $("#txt_field_uuid").val("");
+    } else {
+        console.log("编辑旧配置2");
+        $("#txt_field_uuid").val(_uuid);
+        _field = _curr_app.field_list[_uuid];
+    }
+
+    $("#txt_field_name").val(_field.name);
+    $("#txt_field_title").val(_field.title);
+    $("#txt_field_memo").val(_field.memo);
+    App.su.select.selectByValue($("#sel_field_type"), _field.type);
+    $("#txt_field_size").val(_field.size);
+    self.editor.setBootSwitchVal("#txt_field_auto_inc", _field.auto_increment);
+    $("#txt_field_default_val").val(_field.default_value);
+    self.editor.setBootSwitchVal("#txt_field_required", _field.required);
+
+    App.su.select.selectByValue($("#sel_field_filter"), _field.filter);
+
+    $("#txt_field_regexp").val(_field.regexp);
+
+    App.su.select.selectByValue($("#sel_field_input_by"), _field.input_by);
+
+    $("#txt_field_hash").val(_field.input_hash);
+    $("#txt_field_position").val(_field.position);
+
+    $("#modal_edit_field").modal('show');
+
+}
+
+/**
+ * 删除字段
+ */
+App.dt.project.fieldDrop = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(_uuid)) {
+        self.fail("未选择字段");
+        return;
+    } else {
+        //TODO 需要区分全局还是局部
+        bootbox.confirm("确认删除这个字段配置", function (ret) {
+            if (ret) {
+                if (undefined != _curr_app.field_list[_uuid]) {
+                    delete _curr_app.field_list[_uuid];
+                    self.succ("移除成功");
+                } else {
+                    self.fail("移除失败");
+                }
+                self.project.fieldLoad();
+            }
+        });
+    }
+}
+
+/**
  * 主程序入口
  */
 App.dt.init = function () {
@@ -1153,7 +1305,6 @@ App.dt.init = function () {
         } else {
             self.fail("当前未打开应用")
         }
-
     });
 
 
@@ -1238,6 +1389,18 @@ App.dt.init = function () {
 
     $("#btn_save_db").click(function () {
         self.project.dbSave();
+    });
+
+    /**
+     * 1.7 全局字段
+     */
+
+    $("#btn_edit_field").click(function () {
+        self.project.fieldEdit("");
+    });
+
+    $("#btn_save_field").click(function () {
+        self.project.fieldSave();
     });
 
 

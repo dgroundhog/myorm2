@@ -14,21 +14,22 @@ StringBuffer.prototype.toString = function () {
     return this._strings_.join("");
 };
 
-function MyFun() {
+function MyStruct() {
     this.uuid = "";//唯一码
     this.scope = "";//范畴
     this.name = "";//名称
     this.title = "";//标题
+    this.memo = "";//备注或者帮助
     this.position = 255;//排序
     this.ctime = "";//创建时间
     this.utime = "";//更新时间
 }
 
-MyFun.prototype.parseBasic = function (json_one) {
+MyStruct.prototype.parseBasic = function (json_one) {
     //解析一个单体
     console.log(json_one)
     this.uuid = json_one.uuid;
-    this.scope = json_one.scope;
+    //this.scope = json_one.scope;
     this.name = json_one.name;
     this.title = json_one.title;
     this.memo = json_one.memo;
@@ -44,14 +45,15 @@ MyFun.prototype.parseBasic = function (json_one) {
  * @constructor
  */
 function MyProject() {
-    MyFun.call(this);
+    MyStruct.call(this);
+    this.scope ="PROJECT";
     this.curr_version = "";//当前版本号
     this.version_list = {};//版本号列表  k-v
     //版本号不排序
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
-MyProject.prototype = Object.create(MyFun.prototype);
+MyProject.prototype = Object.create(MyStruct.prototype);
 MyProject.prototype.constructor = MyProject;
 
 /**
@@ -93,8 +95,8 @@ MyProject.isGoodName = function (_name) {
  * @constructor
  */
 function MyApp() {
-    MyFun.call(this);
-
+    MyStruct.call(this);
+    this.scope ="APP";
     this._models_ = [];//模型列表
     this.project_id = "";
     this.img_icon_id = "";
@@ -102,12 +104,13 @@ function MyApp() {
 
     this.conf_list = [];//应用配置列表
     this.db_list = [];//数据库配置列表
+    this.field_list = [];//全局字段
     this.model_list = [];//模型配置列表
 
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
-MyApp.prototype = Object.create(MyFun.prototype);
+MyApp.prototype = Object.create(MyStruct.prototype);
 MyApp.prototype.constructor = MyApp;
 
 MyApp.prototype.parse = function (json_one) {
@@ -135,6 +138,17 @@ MyApp.prototype.parse = function (json_one) {
         var _uuid = _db.uuid;
         this.db_list[_uuid] = _db;
     }
+
+    //数据库
+    this.field_list = new Object();
+    for (var ii in json_one.field_list) {
+        var _field = new MyField();
+        _field.parse(json_one.field_list[ii]);
+        var _uuid = _field.uuid;
+        this.field_list[_uuid] = _field;
+        //TODO 全局字段不排序
+    }
+
 
     // this.version_list = new Object();//版本号列表  k-v
     //
@@ -176,7 +190,8 @@ function MyModel() {
  * @constructor
  */
 function MyAppConf() {
-    MyFun.call(this);
+    MyStruct.call(this);
+    this.scope ="APP_CONF";
     this.mvc = "";
     this.ui = "";
     this.has_restful = "0";
@@ -186,7 +201,7 @@ function MyAppConf() {
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
-MyAppConf.prototype = Object.create(MyFun.prototype);
+MyAppConf.prototype = Object.create(MyStruct.prototype);
 MyAppConf.prototype.constructor = MyAppConf;
 
 /**
@@ -211,7 +226,8 @@ MyAppConf.prototype.parse = function (json_one) {
  * @constructor
  */
 function MyDb() {
-    MyFun.call(this);
+    MyStruct.call(this);
+    this.scope ="DB_CONF";
     this.driver = "";
     this.source = "";
     this.host = "localhost";
@@ -225,7 +241,7 @@ function MyDb() {
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
-MyDb.prototype = Object.create(MyFun.prototype);
+MyDb.prototype = Object.create(MyStruct.prototype);
 MyDb.prototype.constructor = MyDb;
 
 /**
@@ -254,7 +270,47 @@ MyDb.prototype.parse = function (json_one) {
  * @constructor
  */
 function MyField() {
+    MyStruct.call(this);
+    this.scope ="FIELD";
+    this.type = "STRING";
+    this.size = "255";
+    this.auto_increment = "0";
+    this.default_value = "";
+    this.required = "0";
+    this.filter = "";
+    this.regexp = "";
+    this.input_by = "";
+    this.input_hash = "";
+    this.is_global = "0";//
+
+
 }
+
+//把子类的原型指向通过Object.create创建的中间对象
+MyField.prototype = Object.create(MyStruct.prototype);
+MyField.prototype.constructor = MyField;
+
+/**
+ *
+ * @param json_one
+ */
+MyField.prototype.parse = function (json_one) {
+    //解析一个单体
+    this.parseBasic(json_one);
+
+    this.type = json_one.type;
+    this.size = json_one.size;
+    this.auto_increment = json_one.auto_increment;
+    this.default_value = json_one.default_value;
+    this.required = json_one.required;
+    this.filter = json_one.filter;
+    this.regexp = json_one.regexp;
+    this.input_by = json_one.input_by;
+    this.input_hash = json_one.input_hash;
+    this.is_global = json_one.is_global;
+
+
+};
 
 /**
  * CURD 操作

@@ -7,6 +7,7 @@ include_once(CC_ROOT . "/_cc.inc.php");
 include_once(CC_ROOT . "/MyStruct.php");
 include_once(CC_ROOT . "/MyAppConf.php");
 include_once(CC_ROOT . "/MyDbConf.php");
+include_once(CC_ROOT . "/MyField.php");
 
 /**
  * 主程序模型
@@ -155,9 +156,9 @@ class MyApp extends MyStruct
         }
 
         $a_data['field_list'] = array();
-        foreach ($this->db_list as $key => $db) {
-            /* @var MyDbConf $db */
-            $a_data['db_list'][$key] = $db->getAsArray();
+        foreach ($this->field_list as $key => $o_field) {
+            /* @var MyField $o_field */
+            $a_data['field_list'][$key] = $o_field->getAsArray();
         }
 
         //TODO model
@@ -176,18 +177,26 @@ class MyApp extends MyStruct
         $this->model_list = array();
         if (isset($a_data['conf_list']) && is_array($a_data['conf_list'])) {
             foreach ($a_data['conf_list'] as $key => $conf) {
-                $o_conf = new MyAppConf();
-                $o_conf->parseToObj($conf);
-                $this->conf_list[$key] = $o_conf;
+                $o_obj = new MyAppConf();
+                $o_obj->parseToObj($conf);
+                $this->conf_list[$key] = $o_obj;
             }
 
         }
 
         if (isset($a_data['db_list']) && is_array($a_data['db_list'])) {
             foreach ($a_data['db_list'] as $key => $db) {
-                $o_db = new MyDbConf();
-                $o_db->parseToObj($db);
-                $this->db_list[$key] = $o_db;
+                $o_obj = new MyDbConf();
+                $o_obj->parseToObj($db);
+                $this->db_list[$key] = $o_obj;
+            }
+        }
+
+        if (isset($a_data['field_list']) && is_array($a_data['field_list'])) {
+            foreach ($a_data['field_list'] as $key => $field) {
+                $o_obj = new MyField();
+                $o_obj->parseToObj($field);
+                $this->field_list[$key] = $o_obj;
             }
         }
 
@@ -257,72 +266,11 @@ class MyApp extends MyStruct
 
         if (null != $a_json_data) {
             return $this->parse($a_json_data);
-
         }
         return false;
     }
 
-    /**
-     * 解析模型
-     * @param array $a_app_data
-     * @return bool|void
-     */
-    public function parse($a_app_data = array())
-    {
 
-        /**
-         * 判断语言
-         */
-        if (!isset($a_app_data['db_list']) || !isset($a_app_data['conf_list'])) {
-            echo "NO conf defined!!!";
-            return null;
-        }
-
-
-        //db conf ,默认就是java
-        $a_conf_list = $a_app_data['conf_list'];
-
-        //db conf ,默认就是mysql
-        $a_db_list = $a_app_data['db_list'];
-
-        if (!isset($a_db_list['database'])) {
-            echo "NO database defined!!!";
-            return null;
-        }
-
-        if (isset($a_db_list['source']) && $a_db_list['source'] == "env") {
-            //从环境读取的数据
-
-        } else {
-            //从ini读取的数据
-
-        }
-
-        //数据库名或者
-        $database = trim($a_db_list['database']);
-
-        $driver = isset($a_db_list['driver']) ? trim($a_db_list['driver']) : Constant::DB_MYSQL;
-        $host = isset($a_db_list['host']) ? trim($a_db_list['host']) : "localhost";
-        $port = isset($a_db_list['port']) ? trim($a_db_list['port']) : "3306";
-        $user = isset($a_db_list['user']) ? trim($a_db_list['user']) : "root";
-        $password = isset($a_db_list['password']) ? trim($a_db_list['password']) : "123456";
-        //$database
-        $charset = isset($a_db_list['charset']) ? trim($a_db_list['charset']) : "utf8";
-        $version = isset($a_db_list['version']) ? trim($a_db_list['version']) : "";
-
-        $version = isset($a_db_list['version']) ? trim($a_db_list['version']) : "";
-
-        $source = "ini";
-
-        $this->db_list = new MyDbConf($driver, $host, $port, $user, $password, $database, $charset, $version, $source);
-
-        //model_list
-        $a_model_list = $a_app_data['model_list'];
-
-        foreach ($a_model_list as $a_model) {
-            $this->model_list[] = new MyModel($a_model);
-        }
-    }
 
     /**
      * 导出到json
@@ -352,7 +300,9 @@ class MyApp extends MyStruct
     {
         $dbc = null;
         switch ($this->db_list->driver) {
-            case Constant::DB_MYSQL:
+            case Constant::DB_MYSQL_56:
+            case Constant::DB_MYSQL_57:
+            case Constant::DB_MYSQL_80:
                 $dbc = new DbMysql($this->db_list, $this->path_output);
                 break;
             default:
@@ -371,7 +321,9 @@ class MyApp extends MyStruct
     {
         $dbc = null;
         switch ($this->db_list->driver) {
-            case Constant::DB_MYSQL:
+            case Constant::DB_MYSQL_56:
+            case Constant::DB_MYSQL_57:
+            case Constant::DB_MYSQL_80:
                 $dbc = new DbMysql($this->db_list, $this->path_output);
                 break;
             default:

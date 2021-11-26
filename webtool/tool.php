@@ -29,6 +29,9 @@ $img_id = @$_GET['img_id'];
 if (is_null($_act)) {
     return;
 }
+
+SeasLog::info("act--{$_act}");
+SeasLog::info("req--{$_data}");
 /**
  * 数据目录
  */
@@ -278,6 +281,7 @@ function save_project($project, $version, $data)
         $o_app = new MyApp();
         $o_app->parseToObj($a_app_info);
         $o_app->utime = $utime;
+        //SeasLog::debug($o_app);
         $o_project->version_list[$version] = $o_app;
 
         $a_project_info = $o_project->getAsArray();

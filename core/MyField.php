@@ -61,6 +61,19 @@ class MyField extends MyStruct
     public $input_by = "";
 
 
+    /**
+     * 有限的字典值
+     * @var string
+     */
+    public $input_hash = "";
+
+    /**
+     * 是否全局字段
+     * @var string
+     */
+    public $is_global = "0";
+
+
     public $basic_keys = array(
         "type",
         "size",
@@ -69,37 +82,18 @@ class MyField extends MyStruct
         "required",
         "filter",
         "regexp",
-        "input_by"
-
-
+        "input_by",
+        "input_hash",
+        "is_global"
     );
 
 
     /**
      * MyField constructor.
-     * @param string $field_name
-     * @param string $field_title
-     * @param string $type
-     * @param int $size
-     * @param bool $required
-     * @param string $default_value
-     * @param string $help
      */
-    public function __construct($field_name,
-                                $field_title,
-                                $type = "varchar",
-                                $size = 255,
-                                $required = false,
-                                $default_value = "",
-                                $help = "")
+    public function __construct()
     {
-        $this->field_name = $field_name;
-        $this->field_title = $field_title;
-        $this->type = $type;
-        $this->size = $size;
-        $this->required = $required;
-        $this->default_value = $default_value;
-        $this->help = $help;
+        $this->scope = "FIELD";
     }
 
 
@@ -150,6 +144,8 @@ class MyField extends MyStruct
     {
         // TODO: Implement parseToObj() method.
 
-        return $this->parseToBasicObj($a_data);
+        $this->parseToBasicObj($a_data);
+
+        return $this;
     }
 }

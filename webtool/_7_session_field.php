@@ -7,7 +7,7 @@
                         <h3 class="card-title">5、全局字段配置 <small>一处修改，全部修改</small></h3>
                         <div class="card-tools">
 
-                            <button type="button" class="btn btn-tool" id="btn_edit_db">
+                            <button type="button" class="btn btn-tool" id="btn_edit_field">
                                 <i class="fas fa-plus-circle"></i>
                             </button>
 
@@ -25,16 +25,21 @@
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>时间</th>
-                                <th>驱动</th>
-                                <th>来源</th>
-                                <th>主机</th>
-                                <th>端口</th>
-                                <th>数据库名</th>
-                                <th>账号</th>
-                                <th>密码</th>
-                                <th>编码</th>
-                                <th width="200">直接链接字符串</th>
+                                <th>创建时间</th>
+                                <th>全局变量</th>
+                                <th>排序</th>
+                                <th>字段</th>
+                                <th>字段名</th>
+                                <th>类型</th>
+                                <th>大小</th>
+                                <th>自增</th>
+                                <th>默认值</th>
+                                <th>非空</th>
+                                <th>验证器</th>
+                                <th>正则</th>
+                                <th>输入方法</th>
+                                <th>枚举值</th>
+                                <th>提示</th>
                                 <th>操作</th>
                             </tr>
                             </thead>

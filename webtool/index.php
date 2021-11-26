@@ -102,6 +102,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <?php include("./_tpl_project_menu_list.php"); ?>
 <?php include("./_tpl_conf_list.php"); ?>
 <?php include("./_tpl_db_list.php"); ?>
+<?php include("./_tpl_field_list.php"); ?>
 <!-- /tmpl -->
 
 <!-- REQUIRED SCRIPTS -->
@@ -145,6 +146,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
         })
 
         App.dt.init();
+
+
 
 
     });
