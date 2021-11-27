@@ -8,6 +8,7 @@ include_once(CC_ROOT . "/MyStruct.php");
 include_once(CC_ROOT . "/MyAppConf.php");
 include_once(CC_ROOT . "/MyDbConf.php");
 include_once(CC_ROOT . "/MyField.php");
+include_once(CC_ROOT . "/MyModel.php");
 
 /**
  * 主程序模型
@@ -160,10 +161,11 @@ class MyApp extends MyStruct
             /* @var MyField $o_field */
             $a_data['field_list'][$key] = $o_field->getAsArray();
         }
-
-        //TODO model
         $a_data['model_list'] = array();
-
+        foreach ($this->model_list as $key => $o_model) {
+            /* @var MyModel $o_model */
+            $a_data['model_list'][$key] = $o_model->getAsArray();
+        }
         return $a_data;
 
 
@@ -197,6 +199,14 @@ class MyApp extends MyStruct
                 $o_obj = new MyField();
                 $o_obj->parseToObj($field);
                 $this->field_list[$key] = $o_obj;
+            }
+        }
+
+        if (isset($a_data['model_list']) && is_array($a_data['model_list'])) {
+            foreach ($a_data['model_list'] as $key => $field) {
+                $o_obj = new MyModel();
+                $o_obj->parseToObj($field);
+                $this->model_list[$key] = $o_obj;
             }
         }
 

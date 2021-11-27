@@ -13,19 +13,25 @@ abstract class MyStruct implements MyBase
 {
 
     public $scope;//范畴
+
+
     public $uuid;//隐形唯一
     public $name;//显性唯一
     public $title;//标题别称
+    public $type;//类别
     public $memo;//备注
-    public $position = 255;//备注
-
+    public $position = 255;//排序
     public $ctime;//创建
     public $utime;//最后更新时间
 
+    /**
+     * 各自实现的基本KEY
+     * @var array
+     */
     public $basic_keys = array();
 
     /**
-     * 冗余的项目名字，不可以该名字
+     * 冗余的项目名字，不可以修改
      * @var string
      */
     public $project_id = null;//== project  的name
@@ -46,6 +52,7 @@ abstract class MyStruct implements MyBase
         $a_data['scope'] = $this->scope;
         $a_data['name'] = $this->name;
         $a_data['title'] = $this->title;
+        $a_data['type'] = $this->type;
         $a_data['uuid'] = $this->uuid;
         $a_data['ctime'] = $this->ctime;
         $a_data['utime'] = $this->utime;

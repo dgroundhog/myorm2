@@ -49,7 +49,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <?php include("./_2_sidebar.php"); ?>
     <!-- /Main Sidebar Container -->
 
-
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
         <!-- Content Header (Page header) -->
@@ -66,6 +65,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         <!--1.5 全局字段 -->
         <?php include("./_7_session_field.php"); ?>
+
+        <!--1.6 模型 -->
+        <?php include("./_8_session_model.php"); ?>
+
+        <!--1.6-x 模型设计 -->
+        <session class="content" id="model_design"></session>
 
     </div><!-- /.container-fluid -->
     <!-- /.content-wrapper -->
@@ -93,6 +98,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <?php include("./_5_1_modal_edit_app_conf.php"); ?>
     <?php include("./_6_1_modal_edit_app_db.php"); ?>
     <?php include("./_7_1_modal_edit_field.php"); ?>
+    <?php include("./_8_1_modal_edit_model.php"); ?>
 
 
 </div>
@@ -103,6 +109,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <?php include("./_tpl_conf_list.php"); ?>
 <?php include("./_tpl_db_list.php"); ?>
 <?php include("./_tpl_field_list.php"); ?>
+<?php include("./_tpl_model_list.php"); ?>
+<?php include("./_tpl_model_design.php"); ?>
 <!-- /tmpl -->
 
 <!-- REQUIRED SCRIPTS -->

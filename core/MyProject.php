@@ -5,12 +5,12 @@ if (!defined("CC_ROOT")) {
 include_once(CC_ROOT . "/_util.inc.php");
 include_once(CC_ROOT . "/_cc.inc.php");
 include_once(CC_ROOT . "/MyStruct.php");
+include_once(CC_ROOT . "/MyApp.php");
 
 class MyProject extends MyStruct
 {
     //和js对应的数据结构
     //仅目录有用
-
 
     /**
      * 包含的应用，version => MyApp
@@ -20,7 +20,7 @@ class MyProject extends MyStruct
 
     public function __construct()
     {
-$this->scope = "PROJECT";
+        $this->scope = "PROJECT";
     }
 
     /**

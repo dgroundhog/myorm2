@@ -97,7 +97,7 @@ MyProject.isGoodName = function (_name) {
 function MyApp() {
     MyStruct.call(this);
     this.scope ="APP";
-    this._models_ = [];//模型列表
+
     this.project_id = "";
     this.img_icon_id = "";
     this.img_logo_id = "";
@@ -139,50 +139,87 @@ MyApp.prototype.parse = function (json_one) {
         this.db_list[_uuid] = _db;
     }
 
-    //数据库
+    //全局字段
     this.field_list = new Object();
     for (var ii in json_one.field_list) {
         var _field = new MyField();
         _field.parse(json_one.field_list[ii]);
         var _uuid = _field.uuid;
         this.field_list[_uuid] = _field;
-        //TODO 全局字段不排序
     }
 
-
-    // this.version_list = new Object();//版本号列表  k-v
-    //
-    // $.each(json_one.version_list,function (i, item){
-    //     var _app = new MyApp();
-    //     _app.parse(item);
-    //     var _uuid = _app.uuid;
-    //     this.version_list[_uuid] = _app;
-    // });
-};
-
-/**
- * 追加一个模型
- * @param  _model MyModel
- */
-MyApp.prototype.appendModel = function (_model) {
-    if (!_model instanceof MyModel) {
-        return;
+    //实体模型
+    this.model_list = new Object();
+    for (var ii in json_one.model_list) {
+        var _model = new MyModel();
+        _model.parse(json_one.model_list[ii]);
+        var _uuid = _model.uuid;
+        this.model_list[_uuid] = _model;
     }
-    this._models_.push(_model);
 };
+
 
 /**
  * 主模型
  * @constructor
  */
 function MyModel() {
-    this.uuid = "";//唯一码
-    this.name = "";//名称
-    this._field_order_ = {};//模型位置  k-v
-    this._fields_ = [];//字段列表
-    this._fun_order_ = {};//模型位置  k-v
-    this._funs_ = [];//函数列表
+    MyStruct.call(this);
+    this.scope ="MODEL";
+    this.primary_key = "id";
+    this.fa_icon = "apple";
+    this.table_name = "newtabel";
+
+    this.field_list = [];//全局字段
+    this.idx_list = [];//应用配置列表
+    this.fun_list = [];//操作方法
+
 }
+
+//把子类的原型指向通过Object.create创建的中间对象
+MyModel.prototype = Object.create(MyStruct.prototype);
+MyModel.prototype.constructor = MyModel;
+
+/**
+ *
+ * @param json_one
+ */
+MyModel.prototype.parse = function (json_one) {
+    //解析一个单体
+    this.parseBasic(json_one);
+    this.primary_key = json_one.primary_key;
+    this.fa_icon = json_one.fa_icon;
+    this.table_name = json_one.table_name;
+
+    //字段列表
+    this.field_list = new Object();
+    for (var ii in json_one.field_list) {
+        var _obj = new MyField();
+        _obj.parse(json_one.field_list[ii]);
+        var _uuid = _obj.uuid;
+        this.field_list[_uuid] = _obj;
+        //全局字段仅用uuid和排序位置
+    }
+
+    //索引列表
+    this.idx_list = new Object();
+    for (var ii in json_one.idx_list) {
+        var _obj = new MyIndex();
+        _obj.parse(json_one.idx_list[ii]);
+        var _uuid = _obj.uuid;
+        this.idx_list[_uuid] = _obj;
+    }
+
+    //函数列表
+    this.fun_list = new Object();
+    for (var ii in json_one.fun_list) {
+        var _obj = new MyFun();
+        _obj.parse(json_one.fun_list[ii]);
+        var _uuid = _obj.uuid;
+        this.fun_list[_uuid] = _obj;
+    }
+
+};
 
 
 /**
@@ -317,6 +354,13 @@ MyField.prototype.parse = function (json_one) {
  * @constructor
  */
 function MyFun() {
+}
+
+/**
+ * 索引结构
+ * @constructor
+ */
+function MyIndex() {
 }
 
 /**

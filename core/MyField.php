@@ -13,7 +13,7 @@ class MyField extends MyStruct
      * 有限的几种类型，int string  longblob date datetime
      * @var string
      */
-    public $type = "varchar";
+    //public $type = "varchar";
 
     /**
      * 字段大小
@@ -75,7 +75,6 @@ class MyField extends MyStruct
 
 
     public $basic_keys = array(
-        "type",
         "size",
         "auto_increment",
         "default_value",

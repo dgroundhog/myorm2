@@ -4,9 +4,8 @@
 /**
  * 查询列表的结构
  */
-abstract class MyFun implements MyBase
+ class MyFun extends MyStruct
 {
-
     /**
      * 查询列表的名字
      * @var string
@@ -39,4 +38,19 @@ abstract class MyFun implements MyBase
     {
         return $this->fun_name;
     }
-}
+
+     function init($v1)
+     {
+         // TODO: Implement init() method.
+     }
+
+     function getAsArray()
+     {
+         // TODO: Implement getAsArray() method.
+     }
+
+     function parseToObj($a_data)
+     {
+         // TODO: Implement parseToObj() method.
+     }
+ }

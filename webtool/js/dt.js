@@ -338,6 +338,8 @@ App.dt.project.loadProject = function (project_name, app_version) {
         self.project.dbLoad();
         //加载全局字段
         self.project.fieldLoad();
+        //加载模型
+        self.project.modelLoad();
     }
 
 }
@@ -976,10 +978,7 @@ App.dt.project.confDrop = function (_uuid) {
             }
         });
     }
-
-
 }
-
 
 /**
  * 加载配置
@@ -1257,6 +1256,132 @@ App.dt.project.fieldDrop = function (_uuid) {
     }
 }
 
+
+/**
+ * 加载基本模型
+ */
+App.dt.project.modelLoad = function () {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本,无法打开配置");
+        return;
+    }
+    var tpl = new jSmart(self.getTpl('tpl_model_list'));
+    var res = tpl.fetch(_curr_app);
+    $("#table_model_list").html(res);
+
+    var tpl2 = new jSmart(self.getTpl('tpl_model_design'));
+    var res2 = tpl2.fetch(_curr_app);
+    $("#model_design").html(res2);
+
+
+}
+
+
+/**
+ * 保存模型
+ */
+App.dt.project.modelSave = function () {
+    var self = App.dt;
+    var _uuid = $("#txt_model_uuid").val();
+    var _model = new MyModel();
+    var now = App.su.datetime.getCurrentDateTime();
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("保存失败");
+        return;
+    }
+
+    if (App.su.isEmpty(_uuid)) {
+        var new_uuid = App.su.maths.uuid.create();
+        _model.uuid = new_uuid;
+        _model.ctime = now;
+        _model.utime = now;
+        _uuid = new_uuid;
+    } else {
+        _model = _curr_app.model_list[_uuid];
+        _model.utime = now;
+    }
+
+    _model.name =  $("#txt_model_name").val();
+    _model.title =  $("#txt_model_title").val();
+    _model.memo =  $("#txt_model_memo").val();
+    _model.table_name =  $("#txt_table_name").val();
+    _model.primary_key =  $("#txt_primary_key").val();
+    _model.fa_icon =  $("#txt_model_icon").val();
+
+    console.log(_model);
+
+    _curr_app.model_list[_uuid] = _model;
+    if (self.project.setCurrApp(_curr_app)) {
+        self.succ("暂存成功");
+    } else {
+        self.fail("暂存失败");
+    }
+    $("#modal_edit_model").modal('hide');
+    self.project.modelLoad();
+}
+
+/**
+ * 编辑模型
+ */
+App.dt.project.modelEdit = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(_uuid)) {
+        console.log("新的模型");
+        $("#txt_model_uuid").val("");
+
+    } else {
+        console.log("编辑旧模型");
+        $("#txt_model_uuid").val(_uuid);
+        var _model = _curr_app.model_list[_uuid];
+
+        $("#txt_model_name").val(_model.name);
+        $("#txt_model_title").val(_model.title);
+        $("#txt_model_memo").val(_model.memo);
+        $("#txt_table_name").val(_model.table_name);
+        $("#txt_primary_key").val(_model.primary_key);
+        $("#txt_model_icon").val(_model.fa_icon);
+    }
+
+    $("#modal_edit_model").modal('show');
+
+}
+
+/**
+ * 删除模型
+ */
+App.dt.project.modelDrop = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(_uuid)) {
+        self.fail("未选择模型");
+        return;
+    } else {
+        bootbox.confirm("确认删除这个模型", function (ret) {
+            if (ret) {
+                if (undefined != _curr_app.model_list[_uuid]) {
+                    delete _curr_app.model_list[_uuid];
+                    self.succ("移除成功");
+                } else {
+                    self.fail("移除失败");
+                }
+                self.project.modelLoad();
+            }
+        });
+    }
+}
+
 /**
  * 主程序入口
  */
@@ -1401,6 +1526,17 @@ App.dt.init = function () {
 
     $("#btn_save_field").click(function () {
         self.project.fieldSave();
+    });
+
+    /**
+     * 1.8 实体模型
+     */
+    $("#btn_edit_model").click(function () {
+        self.project.modelEdit("");
+    });
+
+    $("#btn_save_model").click(function () {
+        self.project.modelSave();
     });
 
 
