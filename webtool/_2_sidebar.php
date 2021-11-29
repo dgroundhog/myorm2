@@ -30,7 +30,7 @@
 
         <!-- Sidebar Menu -->
         <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+            <ul class="nav nav-pills nav-sidebar nav-child-indent flex-column" data-widget="treeview" role="menu"
                 id="project_menu_list"
                 data-accordion="false">
                 <!-- Add icons to the links using the .nav-icon class

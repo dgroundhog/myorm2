@@ -1275,6 +1275,12 @@ App.dt.project.modelLoad = function () {
     var res2 = tpl2.fetch(_curr_app);
     $("#model_design").html(res2);
 
+    var tpl3 = new jSmart(self.getTpl('tpl_model_menu'));
+    var res3 = tpl3.fetch(_curr_app);
+    $("#block_model_menu").html(res3);
+
+
+
 
 }
 

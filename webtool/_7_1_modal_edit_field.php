@@ -30,7 +30,7 @@
                         <label for="sel_field_type" class="col-sm-2 col-form-label">类型</label>
                         <div class="col-sm-10">
                             <select id="sel_field_type" class="form-control form-control-sm select2">
-                                <?php foreach (Constant::$a_build_db_field_type as $key => $value) { ?>
+                                <?php foreach (Constant::$a_db_field_type as $key => $value) { ?>
                                     <option value="<?= $key ?>"><?= $value ?></option>
                                 <?php } ?>
                             </select>
@@ -104,7 +104,7 @@
                         <label for="sel_field_input_by" class="col-sm-2 col-form-label">输入方法</label>
                         <div class="col-sm-10">
                             <select id="sel_field_input_by" class="form-control form-control-sm select2">
-                                <?php foreach (Constant::$a_build_db_field_input as $key => $value) { ?>
+                                <?php foreach (Constant::$a_db_field_input as $key => $value) { ?>
                                     <option value="<?= $key ?>"><?= $value ?></option>
                                 <?php } ?>
                             </select>
@@ -128,7 +128,7 @@
                         <label for="sel_field_filter" class="col-sm-2 col-form-label">数据验证</label>
                         <div class="col-sm-10">
                             <select id="sel_field_filter" class="form-control form-control-sm select2">
-                                <?php foreach (Constant::$a_build_db_field_filter as $key => $value) { ?>
+                                <?php foreach (Constant::$a_db_field_filter as $key => $value) { ?>
                                     <option value="<?= $key ?>"><?= $value ?></option>
                                 <?php } ?>
                             </select>

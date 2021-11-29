@@ -111,6 +111,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <?php include("./_tpl_field_list.php"); ?>
 <?php include("./_tpl_model_list.php"); ?>
 <?php include("./_tpl_model_design.php"); ?>
+<?php include("./_tpl_model_menu.php"); ?>
 <!-- /tmpl -->
 
 <!-- REQUIRED SCRIPTS -->

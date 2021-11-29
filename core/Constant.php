@@ -73,10 +73,21 @@ class Constant
     );
 
     /**
+     * 允许的ui方案，
+     * @var string[]
+     */
+    public static $a_build_ui = array(
+        self::UI_NULL => "NO_UI",
+        self::UI_BOOTADMIN_SIMPLE => "Bootadmin_simple",
+        self::UI_ADMINLTE_31 => "Adminlte_3.1.0",
+        self::UI_YAHOO_PURECSS => "Yahoo_purecss",
+    );
+
+    /**
      * db 来源
      * @var string[]
      */
-    public static $a_build_db_source = array(
+    public static $a_db_source = array(
         self::DB_SOURCE_ENV => "环境变量",
         self::DB_SOURCE_EMBED => "程序配置文件"
     );
@@ -85,11 +96,28 @@ class Constant
      * db编码
      * @var string[]
      */
-    public static $a_build_db_charset = array(
+    public static $a_db_charset = array(
         self::DB_CHARSET_UTF8 => "UTF8编码",
         self::DB_CHARSET_UTF8MB4 => "UTF8MB4编码",
         self::DB_SOURCE_EMBED => "GBK编码"
     );
+
+
+    /**
+     * 索引类型
+     */
+    const DB_INDEX_TYPE_UNIQUE = "UNIQUE";
+    const DB_INDEX_TYPE_INDEX = "KEY";
+
+    /**
+     * db 来源
+     * @var string[]
+     */
+    public static $a_db_index_type = array(
+        self::DB_INDEX_TYPE_UNIQUE => "唯一索引",
+        self::DB_INDEX_TYPE_INDEX => "普通索引"
+    );
+
 
     const DB_FIELD_TYPE_BOOL = "bool";
     const DB_FIELD_TYPE_CHAR = "char";
@@ -107,7 +135,7 @@ class Constant
      * db编码
      * @var string[]
      */
-    public static $a_build_db_field_type = array(
+    public static $a_db_field_type = array(
 
         self::DB_FIELD_TYPE_VARCHAR => "字符串",
         self::DB_FIELD_TYPE_INT => "整形",
@@ -133,55 +161,116 @@ class Constant
     const DB_FIELD_FILTER_IP = "IP";
     const DB_FIELD_FILTER_MAC = "MAC";
     const DB_FIELD_FILTER_URL = "URL";
-    const DB_FIELD_FILTER_REGEXP 	 = "REGEXP";
+    const DB_FIELD_FILTER_REGEXP = "REGEXP";
 
     /**
      * 验证功能
      * @var string[]
      */
-    public static $a_build_db_field_filter = array(
-    self::DB_FIELD_FILTER_NULL  => "不验证",
-    self::DB_FIELD_FILTER_INT => "整数",
-    self::DB_FIELD_FILTER_FLOAT  => "浮点数字",
-    self::DB_FIELD_FILTER_BOOL => "布尔",
-    self::DB_FIELD_FILTER_EMAIL  => "电子邮件",
-    self::DB_FIELD_FILTER_DATE => "日期",
-    self::DB_FIELD_FILTER_DATETIME  => "完整时间",
-        self::DB_FIELD_FILTER_DOMAIN  => "域名",
-    self::DB_FIELD_FILTER_IP => "IP-V4格式",
-    self::DB_FIELD_FILTER_MAC  => "网卡MAC地址",
-    self::DB_FIELD_FILTER_URL  => "互联网URL",
-    self::DB_FIELD_FILTER_REGEXP  => "自定义正则表达式"
+    public static $a_db_field_filter = array(
+        self::DB_FIELD_FILTER_NULL => "不验证",
+        self::DB_FIELD_FILTER_INT => "整数",
+        self::DB_FIELD_FILTER_FLOAT => "浮点数字",
+        self::DB_FIELD_FILTER_BOOL => "布尔",
+        self::DB_FIELD_FILTER_EMAIL => "电子邮件",
+        self::DB_FIELD_FILTER_DATE => "日期",
+        self::DB_FIELD_FILTER_DATETIME => "完整时间",
+        self::DB_FIELD_FILTER_DOMAIN => "域名",
+        self::DB_FIELD_FILTER_IP => "IP-V4格式",
+        self::DB_FIELD_FILTER_MAC => "网卡MAC地址",
+        self::DB_FIELD_FILTER_URL => "互联网URL",
+        self::DB_FIELD_FILTER_REGEXP => "自定义正则表达式"
     );
 
     const DB_FIELD_INPUT_DEFAULT = "DEFAULT";
     const DB_FIELD_INPUT_UPLOAD_FILE = "UPLOAD_FILE ";
     const DB_FIELD_INPUT_UPLOAD_IMAGE = "UPLOAD_IMAGE";
     const DB_FIELD_INPUT_SELECT = "SELECT";
-    const DB_FIELD_INPUT_RADIO	 = "RADIO";
-    const DB_FIELD_INPUT_CHECKBOX 	 = "CHECKBOX";
+    const DB_FIELD_INPUT_RADIO = "RADIO";
+    const DB_FIELD_INPUT_CHECKBOX = "CHECKBOX";
 
     /**
      * 输入办法
      * @var string[]
      */
-    public static $a_build_db_field_input = array(
+    public static $a_db_field_input = array(
 
         self::DB_FIELD_INPUT_DEFAULT => "默认输入",
-    self::DB_FIELD_INPUT_UPLOAD_FILE  => "普通文件上传",
-    self::DB_FIELD_INPUT_UPLOAD_IMAGE  => "图片上传",
-    self::DB_FIELD_INPUT_SELECT  => "下拉框",
-    self::DB_FIELD_INPUT_RADIO	 => "单选框",
-    self::DB_FIELD_INPUT_CHECKBOX 	  => "复选框"
+        self::DB_FIELD_INPUT_UPLOAD_FILE => "普通文件上传",
+        self::DB_FIELD_INPUT_UPLOAD_IMAGE => "图片上传",
+        self::DB_FIELD_INPUT_SELECT => "下拉框",
+        self::DB_FIELD_INPUT_RADIO => "单选框",
+        self::DB_FIELD_INPUT_CHECKBOX => "复选框"
     );
+
     /**
-     * 允许的ui方案，
+     * 查询类型
+     */
+    const FUN_TYPE_ADD = "ADD";
+    const FUN_TYPE_DELETE = "DELETE";
+    const FUN_TYPE_UPDATE = "UPDATE";
+    const FUN_TYPE_FETCH = "FETCH";
+    const FUN_TYPE_LIST = "LIST";
+    const FUN_TYPE_LIST_WITH_PAGER = "LIST_WITH_PAGER";
+    const FUN_TYPE_COUNT = "COUNT";
+    const FUN_TYPE_AVG = "AVG";
+    const FUN_TYPE_SUM = "SUM";
+    const FUN_TYPE_MAX = "MAX";
+    const FUN_TYPE_MIN = "MIN";
+
+
+    /**
+     * db 来源
      * @var string[]
      */
-    public static $a_build_ui = array(
-        self::UI_NULL => "NO_UI",
-        self::UI_BOOTADMIN_SIMPLE => "Bootadmin_simple",
-        self::UI_ADMINLTE_31 => "Adminlte_3.1.0",
-        self::UI_YAHOO_PURECSS => "Yahoo_purecss",
+    public static $a_fun_type = array(
+
+        self::FUN_TYPE_ADD => "添加",
+        self::FUN_TYPE_DELETE => "删除",
+        self::FUN_TYPE_UPDATE => "更新",
+        self::FUN_TYPE_FETCH => "获取一个",
+        self::FUN_TYPE_LIST => "获取列表",
+        self::FUN_TYPE_LIST_WITH_PAGER => "获取列表带分页",
+        self::FUN_TYPE_COUNT => "统计个数",
+        self::FUN_TYPE_AVG => "求平均值",
+        self::FUN_TYPE_SUM => "求和",
+        self::FUN_TYPE_MAX => "计算最大值",
+        self::FUN_TYPE_MIN => "计算最小值"
+
     );
+
+    const WHERE_TYPE_EQ = "EQ";//= 等于
+    const WHERE_TYPE_NEQ = "NEQ";//!= 不等于
+    const WHERE_TYPE_GT = "GT";//&GT; 大于
+    const WHERE_TYPE_GTE = "GTE";//&GT;= 大于等于
+    const WHERE_TYPE_LT = "LT";//&LT; 少于
+    const WHERE_TYPE_LTE = "LTE";//&LT;= 少于等于
+    const WHERE_TYPE_KW = "KW";//关键字模糊匹配
+    const WHERE_TYPE_DATE = "DATE";//关键字模糊匹配
+    const WHERE_TYPE_TIME = "TIME";//日期范围内
+    const WHERE_TYPE_IN = "IN";//离散量范围内
+    const WHERE_TYPE_NOTIN = "NOTIN";//离散量范围外
+    const WHERE_TYPE_BETWEEN = "BETWEEN";//标量范围内
+    const WHERE_TYPE_NOTBETWEEN = "BETWEEN";//标量范围外
+
+    /**
+     *  查询条件
+     * @var string[]
+     */
+    public static $a_where_type = array(
+        self::WHERE_TYPE_EQ => "= 等于",
+        self::WHERE_TYPE_NEQ => "!= 不等于",
+        self::WHERE_TYPE_GT => "&gt; 大于",
+        self::WHERE_TYPE_GTE => "&gt;= 大于等于",
+        self::WHERE_TYPE_LT => "&lt; 少于",
+        self::WHERE_TYPE_LTE => "&lt;= 少于等于",
+        self::WHERE_TYPE_KW => "关键字模糊匹配",
+        self::WHERE_TYPE_DATE => "日期范围内",
+        self::WHERE_TYPE_TIME => "时间范围内",
+        self::WHERE_TYPE_IN => "离散量范围内",
+        self::WHERE_TYPE_NOTIN => "离散量范围外",
+        self::WHERE_TYPE_BETWEEN => "标量范围内",
+        self::WHERE_TYPE_NOTBETWEEN => "标量范围外"
+    );
+
 }

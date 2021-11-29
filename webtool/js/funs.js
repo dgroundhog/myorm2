@@ -346,8 +346,28 @@ MyField.prototype.parse = function (json_one) {
     this.input_hash = json_one.input_hash;
     this.is_global = json_one.is_global;
 
-
 };
+
+/**
+ * 主字段微小版本
+ * @constructor
+ */
+function MyFieldTiny() {
+
+    this.uuid ="";
+    this.name = "STRING";
+    this.position = "255";
+}
+
+/**
+ *
+ * @param json_one
+ */
+MyFieldTiny.prototype.parse = function (json_one) {
+    this.uuid =json_one.uuid;
+    this.name = json_one.name;
+    this.position = json_one.position;
+}
 
 /**
  * CURD 操作

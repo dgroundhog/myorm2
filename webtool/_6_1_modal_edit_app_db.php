@@ -25,7 +25,7 @@
                         <label for="sel_db_source" class="col-sm-2 col-form-label">来源</label>
                         <div class="col-sm-10">
                             <select id="sel_db_source" class="form-control form-control-sm select2">
-                                <?php foreach (Constant::$a_build_db_source as $key => $value) { ?>
+                                <?php foreach (Constant::$a_db_source as $key => $value) { ?>
                                     <option value="<?= $key ?>"><?= $value ?></option>
                                 <?php } ?>
                             </select>
@@ -81,7 +81,7 @@
                         <label for="sel_db_charset" class="col-sm-2 col-form-label">数据库编码</label>
                         <div class="col-sm-10">
                             <select id="sel_db_charset" class="form-control form-control-sm select2">
-                                <?php foreach (Constant::$a_build_db_charset as $key => $value) { ?>
+                                <?php foreach (Constant::$a_db_charset as $key => $value) { ?>
                                     <option value="<?= $key ?>"><?= $value ?></option>
                                 <?php } ?>
                             </select>

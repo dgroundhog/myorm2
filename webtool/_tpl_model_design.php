@@ -6,7 +6,11 @@
                 <div class="col-lg-12">
                     <div class="card card-danger card-outline">
                         <div class="card-header">
-                            <h3 class="card-title">--模型设计 <small>{$model.name} - {$model.title}</small></h3>
+                            <h3 class="card-title">
+                                <a name="model_{$model.uuid}">
+                                --模型设计 <small>{$model.name} - {$model.title}</small>
+                                </a>
+                            </h3>
                             <div class="card-tools">
 
 
@@ -23,12 +27,16 @@
                         <div class="card-header">
                             <h3 class="card-title">模型字段配置 <small></small></h3>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool" id="btn_edit_field2">
-                                    <i class="fas fa-plus-circle"></i> 增加一个全局字段
+                                <button type="button" class="btn btn-tool"
+                                        onclick="javascript:App.dt.project.fieldEdit2('{$model.uuid}','');"
+                                >
+                                    <i class="fas fa-plus-circle"></i> 增加全局字段
                                 </button>
 
-                                <button type="button" class="btn btn-tool" id="btn_edit_field3">
-                                    <i class="fas fa-plus"></i> 增加一个私有字段
+                                <button type="button" class="btn btn-tool btn_edit_field3" id="btn_edit_field3_{$model.uuid}"
+                                        onclick="javascript:App.dt.project.fieldEdit3('{$model.uuid}','');"
+                                >
+                                    <i class="fas fa-plus"></i> 增加私有字段
                                 </button>
 
 
@@ -79,10 +87,119 @@
                                     <td class="text-right py-0 align-middle">
                                         <div class="btn-group btn-group-sm">
                                             <a href="###" class="btn btn-info"
-                                               onclick="javascript:App.dt.project.fieldEdit('{$field.uuid}');"
+                                               onclick="javascript:App.dt.project.fieldEdit('{$field.uuid}','{$model.uuid}');"
                                             ><i class="fas fa-edit"></i> 改</a>
                                             <a href="###" class="btn btn-danger"
-                                               onclick="javascript:App.dt.project.fieldDrop('{$field.uuid}');"
+                                               onclick="javascript:App.dt.project.fieldDrop('{$field.uuid}','{$model.uuid}');"
+                                            ><i class="fas fa-trash"></i> 删</a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                {/foreach}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <hr class="mb-2">
+
+                        <div class="card-header">
+                            <h3 class="card-title">索引列表 <small></small></h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool "
+                                        onclick="javascript:App.dt.project.editIndex1('{$model.uuid}');"
+                                >
+                                    <i class="fas fa-plus-circle"></i> 增加唯一索引
+                                </button>
+                                <button type="button" class="btn btn-tool"
+                                        onclick="javascript:App.dt.project.editIndex2('{$model.uuid}');"
+                                >
+                                    <i class="fas fa-plus"></i> 增加普通索引
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>创建时间</th>
+                                    <th>类型</th>
+                                    <th>名称</th>
+                                    <th>字段列表</th>
+                                    <th>备注</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {foreach $model.idx_list as $i => $idx}
+
+                                <tr>
+                                    <td>{$idx.ctime}</td>
+                                    <td>{$idx.type}</td>
+                                    <td>{$idx.name}</td>
+                                    <td>{$idx.input_hash}</td>
+                                    <td>{$idx.memo}</td>
+
+                                    <td class="text-right py-0 align-middle">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="###" class="btn btn-info"
+                                               onclick="javascript:App.dt.project.editIndex2('{$model.uuid}','{$field.uuid}');"
+                                            ><i class="fas fa-edit"></i> 改</a>
+                                            <a href="###" class="btn btn-danger"
+                                               onclick="javascript:App.dt.project.indexDrop('{$model.uuid}','{$field.uuid}');"
+                                            ><i class="fas fa-trash"></i> 删</a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                {/foreach}
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                        <hr class="mb-2">
+
+                        <div class="card-header">
+                            <h3 class="card-title">查询列表 <small></small></h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool "
+                                        onclick="javascript:App.dt.project.funEdit1('{$model.uuid}');"
+                                >
+                                    <i class="fas fa-plus-circle"></i> 增加一个函数
+                                </button>
+
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>创建时间</th>
+                                    <th>类型</th>
+                                    <th>名称</th>
+                                    <th>字段列表</th>
+                                    <th>备注</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {foreach $model.idx_list as $i => $idx}
+
+                                <tr>
+                                    <td>{$idx.ctime}</td>
+                                    <td>{$idx.type}</td>
+                                    <td>{$idx.name}</td>
+                                    <td>{$idx.input_hash}</td>
+                                    <td>{$idx.memo}</td>
+
+                                    <td class="text-right py-0 align-middle">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="###" class="btn btn-info"
+                                               onclick="javascript:App.dt.project.editIndex2('{$model.uuid}','{$field.uuid}');"
+                                            ><i class="fas fa-edit"></i> 改</a>
+                                            <a href="###" class="btn btn-danger"
+                                               onclick="javascript:App.dt.project.indexDrop('{$model.uuid}','{$field.uuid}');"
                                             ><i class="fas fa-trash"></i> 删</a>
                                         </div>
                                     </td>
