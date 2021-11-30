@@ -18,6 +18,7 @@ function MyStruct() {
     this.uuid = "";//唯一码
     this.scope = "";//范畴
     this.name = "";//名称
+    this.type = "";//类型
     this.title = "";//标题
     this.memo = "";//备注或者帮助
     this.position = 255;//排序
@@ -27,15 +28,17 @@ function MyStruct() {
 
 MyStruct.prototype.parseBasic = function (json_one) {
     //解析一个单体
-    console.log(json_one)
+    //console.log(json_one)
     this.uuid = json_one.uuid;
     //this.scope = json_one.scope;
+    this.type = json_one.type;
     this.name = json_one.name;
     this.title = json_one.title;
     this.memo = json_one.memo;
     this.position = json_one.position;
     this.ctime = json_one.ctime;
     this.utime = json_one.utime;
+
 
 };
 
@@ -339,7 +342,6 @@ MyField.prototype.parse = function (json_one) {
     //解析一个单体
     this.parseBasic(json_one);
 
-    this.type = json_one.type;
     this.size = json_one.size;
     this.auto_increment = json_one.auto_increment;
     this.default_value = json_one.default_value;
@@ -352,39 +354,48 @@ MyField.prototype.parse = function (json_one) {
 
 };
 
-/**
- * 主字段微小版本
- * @constructor
- */
-function MyFieldTiny() {
 
-    this.uuid ="";
-    this.name = "STRING";
-    this.position = "255";
-}
 
-/**
- *
- * @param json_one
- */
-MyFieldTiny.prototype.parse = function (json_one) {
-    this.uuid =json_one.uuid;
-    this.name = json_one.name;
-    this.position = json_one.position;
-}
 
-/**
- * CURD 操作
- * @constructor
- */
-function MyFun() {
-}
 
 /**
  * 索引结构
  * @constructor
  */
 function MyIndex() {
+    MyStruct.call(this);
+    this.scope ="INDEX";
+    this.type = "KEY";
+    this.field_list = [];//索引字段
+}
+
+
+//把子类的原型指向通过Object.create创建的中间对象
+MyIndex.prototype = Object.create(MyStruct.prototype);
+MyIndex.prototype.constructor = MyIndex;
+
+/**
+ *
+ * @param json_one
+ */
+MyIndex.prototype.parse = function (json_one) {
+    //解析一个单体
+    this.parseBasic(json_one);
+
+    this.field_list = new Object();
+    for (var ii in json_one.field_list) {
+        var _field = new MyField();
+        _field.parse(json_one.field_list[ii]);
+        var _uuid = _field.uuid;
+        this.field_list[_uuid] = _field;
+    }
+};
+
+/**
+ * CURD 操作
+ * @constructor
+ */
+function MyFun() {
 }
 
 /**

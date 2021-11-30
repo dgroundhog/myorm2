@@ -9,6 +9,8 @@ include_once(CC_ROOT . "/MyAppConf.php");
 include_once(CC_ROOT . "/MyDbConf.php");
 include_once(CC_ROOT . "/MyField.php");
 include_once(CC_ROOT . "/MyModel.php");
+include_once(CC_ROOT . "/MyIndex.php");
+include_once(CC_ROOT . "/MyFun.php");
 
 /**
  * 主程序模型

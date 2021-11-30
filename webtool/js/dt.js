@@ -996,7 +996,7 @@ App.dt.project.confDrop = function (_uuid) {
                     delete _curr_app.conf_list[_uuid];
                     self.succ("移除成功");
                 } else {
-                    self.fail("移除失败");
+                    self.fail("移除失败1");
                 }
                 self.project.confLoad();
             }
@@ -1126,7 +1126,7 @@ App.dt.project.dbDrop = function (_uuid) {
                     delete _curr_app.db_list[_uuid];
                     self.succ("移除成功");
                 } else {
-                    self.fail("移除失败");
+                    self.fail("移除失败2");
                 }
                 self.project.dbLoad();
             }
@@ -1187,21 +1187,19 @@ App.dt.project.fieldSave = function () {
     var _uuid = $("#txt_field_uuid").val();
     var _model_id = $("#txt_field_model_id").val();
     //如果modelID 非空，则保存到model节点   TODO
-    var _field = new MyField();
+
     var now = App.su.datetime.getCurrentDateTime();
     var _curr_app = self.project.getCurrApp();
     if (null == _curr_app) {
         self.fail("保存失败,未打开app");
         return;
     }
-    //TODO 判断model _model_id
     var _new_name = $("#txt_field_name").val();
     if (!MyProject.isGoodName(_new_name)) {
         self.fail("请输入合法的字段名，字母开头，可包含字母、数字和下划线");
         return;
     }
-    _field.name = _new_name;
-
+    var _field = new MyField();
     if (App.su.isEmpty(_uuid)) {
         var new_uuid = App.su.maths.uuid.create();
         _field.uuid = new_uuid;
@@ -1226,7 +1224,7 @@ App.dt.project.fieldSave = function () {
         }
         _field.utime = now;
     }
-
+    _field.name = _new_name;
     _field.title = $("#txt_field_title").val();
     _field.memo = $("#txt_field_memo").val();
     _field.type = $("#sel_field_type").val();
@@ -1262,6 +1260,7 @@ App.dt.project.fieldSave = function () {
         self.fail("暂存失败");
     }
     $("#modal_edit_field").modal('hide');
+    self.project.fieldLoad();
     self.project.modelLoad();
 }
 
@@ -1332,27 +1331,48 @@ App.dt.project.fieldEdit = function (_uuid, _model_id) {
 /**
  * 删除字段
  */
-App.dt.project.fieldDrop = function (_uuid) {
+App.dt.project.fieldDrop = function (_uuid, _model_id) {
     var self = App.dt;
     var _curr_app = self.project.getCurrApp();
     if (null == _curr_app) {
         self.fail("未选择应用版本");
         return;
     }
+    var _curr_model = null;
+    //需要区分全局还是局部
+    if (!App.su.isEmpty(_model_id)) {
+        _curr_model = self.project.getCurrModel(_model_id);
+        if (null == _curr_model) {
+            self.fail("未选择有效模型");
+            return;
+        }
+    }
+
     if (App.su.isEmpty(_uuid)) {
         self.fail("未选择字段");
         return;
     } else {
-        //TODO 需要区分全局还是局部
         bootbox.confirm("确认删除这个字段配置", function (ret) {
             if (ret) {
-                if (undefined != _curr_app.field_list[_uuid]) {
+                if (!App.su.isEmpty(_model_id)) {
+                    //_curr_model = self.project.getCurrModel(_model_id);
+                    if (undefined != _curr_model.field_list[_uuid]) {
+                        delete _curr_model.field_list[_uuid];
+                        self.succ("移除成功1-fieldDrop");
+                    } else {
+                        self.fail("移除失败1-fieldDrop");
+                    }
+                    _curr_app.model_list[_model_id] = _curr_model;
+                    self.project.setCurrApp(_curr_app);
+                } else if (undefined != _curr_app.field_list[_uuid]) {
                     delete _curr_app.field_list[_uuid];
-                    self.succ("移除成功");
+                    self.project.setCurrApp(_curr_app);
+                    self.succ("移除成功2-fieldDrop");
                 } else {
-                    self.fail("移除失败");
+                    self.fail("移除失败2-fieldDrop");
                 }
                 self.project.fieldLoad();
+                self.project.modelLoad();
             }
         });
     }
@@ -1514,10 +1534,10 @@ App.dt.project.modelDrop = function (_uuid) {
                         self.succ("移除成功");
                         self.project.modelLoad();
                     } else {
-                        self.fail("移除失败1");
+                        self.fail("移除失败4");
                     }
                 } else {
-                    self.fail("移除失败2");
+                    self.fail("移除失败5");
                 }
                 self.project.modelLoad();
             }
@@ -1526,8 +1546,8 @@ App.dt.project.modelDrop = function (_uuid) {
 }
 
 function deepCopy(obj) {
-    if(obj==null){
-        return  null;
+    if (obj == null) {
+        return null;
     }
     const keys = Object.keys(obj);
     const values = Object.values(obj);
@@ -1541,6 +1561,72 @@ function deepCopy(obj) {
     }
     return newObj;
 }
+
+function clone(item) {
+    if (!item) {
+        return item;
+    } // null, undefined values check
+
+    var types = [Number, String, Boolean],
+        result;
+
+    // normalizing primitives if someone did new String('aaa'), or new Number('444');
+    types.forEach(function (type) {
+        if (item instanceof type) {
+            result = type(item);
+        }
+    });
+
+    if (typeof result == "undefined") {
+        if (Object.prototype.toString.call(item) === "[object Array]") {
+            result = [];
+            item.forEach(function (child, index, array) {
+                result[index] = clone(child);
+            });
+        } else if (typeof item == "object") {
+            // testing that this is DOM
+            if (item.nodeType && typeof item.cloneNode == "function") {
+                result = item.cloneNode(true);
+            } else if (!item.prototype) { // check that this is a literal
+                if (item instanceof Date) {
+                    result = new Date(item);
+                } else {
+                    // it is an object literal
+                    result = {};
+                    for (var i in item) {
+                        result[i] = clone(item[i]);
+                    }
+                }
+            } else {
+                // depending what you would like here,
+                // just keep the reference, or create new object
+                if (false && item.constructor) {
+                    // would not advice to do that, reason? Read below
+                    result = new item.constructor();
+                } else {
+                    result = item;
+                }
+            }
+        } else {
+            result = item;
+        }
+    }
+    return result;
+}
+
+function copy2(aObject) {
+    if (!aObject) {
+        return aObject;
+    }
+    let v;
+    let bObject = Array.isArray(aObject) ? [] : {};
+    for (const k in aObject) {
+        v = aObject[k];
+        bObject[k] = (typeof v === "object") ? copy2(v) : v;
+    }
+    return bObject;
+}
+
 
 /**
  * 复制模型
@@ -1627,11 +1713,11 @@ App.dt.project.modelImportGlobalFieldDone = function () {
     var _curr_app = self.project.getCurrApp();
     var _field_g = _curr_app.field_list;
     //遍历选中的值
-    $("#sel_index_field").empty();
+    //$("#sel_index_field").empty();
     $("#sel_global_field option:selected").each(function () {
         var _fid = $(this).val();
         if (undefined != _field_g[_fid]) {
-            _model.field_list[_fid] = _field_g[_fid];
+            _model.field_list[_fid] = deepCopy(_field_g[_fid]);
         }
     });
     $("#modal_import_global_field").modal("hide");
@@ -1645,17 +1731,15 @@ App.dt.project.modelImportGlobalFieldDone = function () {
 App.dt.project.modelIndexEdit = function (model_id, index_id) {
     var self = App.dt;
     var _curr_app = self.project.getCurrApp();
-    if (null == _curr_app) {
-        self.fail("未选择应用版本");
-        return;
-    }
-    if (App.su.isEmpty(model_id) || undefined == _curr_app.model_list[model_id]) {
+    var _curr_model = self.project.getCurrModel(model_id);
+    if (null == _curr_model) {
         self.fail("未选择目标模型");
         return;
     }
-    var _model = _curr_app.model_list[model_id];
-    $("#txt_model_index_mid").val(model_id);
 
+    var _indexOld = new Object();
+
+    $("#txt_model_index_mid").val(model_id);
     if (App.su.isEmpty(index_id)) {
         console.log("新的索引");
         $("#txt_model_index_iid").val("");
@@ -1663,19 +1747,158 @@ App.dt.project.modelIndexEdit = function (model_id, index_id) {
     } else {
         console.log("编辑旧索引");
         $("#txt_model_index_iid").val(index_id);
-        var _idx = _model.idx_list[index_id];
-
+        var _idx = _curr_model.idx_list[index_id];
         $("#txt_index_name").val(_idx.name);
         $("#txt_index_memo").val(_idx.memo);
+        _indexOld = _idx.field_list;
 
-        // $("#sel_index_type").val(_model.table_name);
-        // $("#sel_index_field").val(_model.primary_key);
+        App.su.select.selectByValue("#sel_index_type", _idx.type);
 
     }
+    console.log("过滤可用于索引的字段")
+    var _index2b = new Object();
+    for (var ii in _curr_model.field_list) {
+        var ff = _curr_model.field_list[ii];
+        console.log(ff)
+        var typeU = ff.type.toUpperCase();
+        if (typeU == 'INT'
+            || typeU == 'CHAR'
+            || typeU == 'STRING'
+            || typeU == 'LONGINT'
+            || typeU == 'DATE'
+            || typeU == 'DATETIME'
+        ) {
+            _index2b[ii] = ff;
+        }
+    }
+
+    var sel_index = $("#sel_index_field");
+    sel_index.empty();
+    //
+    for (var ii in _index2b) {
+        var ff = _index2b[ii];
+        var o = document.createElement("option");
+        var _uuid = ff.uuid;
+        o.value = _uuid;
+        o.text = ff.name + " | " + ff.title;
+        if (undefined != _indexOld[_uuid]) {
+            o.selected = "selected";
+        }
+        sel_index[0].options.add(o);
+    }
+    //
+    sel_index.bootstrapDualListbox('refresh');
 
     $("#modal_edit_index").modal('show');
 
 }
+
+/**
+ * 完成全局字段导入
+ */
+App.dt.project.modelIndexSave = function () {
+    var self = App.dt;
+    //
+    var _model_id = $("#txt_model_index_mid").val();
+    //console.log("_model_id--" + _model_id)
+    var _curr_model = self.project.getCurrModel(_model_id);
+    if (null == _curr_model) {
+        self.fail("未选择目标模型");
+        return;
+    }
+    var _curr_app = self.project.getCurrApp();
+    var _name = $("#txt_index_name").val();
+    if (!MyProject.isGoodName(_name)) {
+        self.fail("请输入合法的索引名，字母开头，可包含字母、数字和下划线");
+        return;
+    }
+    var _idx = new MyIndex();
+    var now = App.su.datetime.getCurrentDateTime();
+    var _uuid = $("#txt_model_index_iid").val();
+    if (App.su.isEmpty(_uuid)) {
+        var new_uuid = App.su.maths.uuid.create();
+        _idx.uuid = new_uuid;
+        _idx.ctime = now;
+    } else {
+        _idx = _curr_model.idx_list[_uuid];
+    }
+    _idx.utime = now;
+    _idx.name = _name;
+    _idx.memo = $("#txt_index_memo").val();
+    _idx.type = $("#sel_index_type").val();
+
+    console.log("过滤可用于索引的字段")
+    var _index2b = new Object();
+    for (var ii in _curr_model.field_list) {
+        var ff = _curr_model.field_list[ii];
+        var typeU = ff.type.toUpperCase();
+        if (typeU == 'INT'
+            || typeU == 'CHAR'
+            || typeU == 'STRING'
+            || typeU == 'LONGINT'
+            || typeU == 'DATE'
+            || typeU == 'DATETIME'
+        ) {
+            _index2b[ii] = ff;
+        }
+    }
+    _idx.field_list = new Object();
+    //遍历选中的值
+    $("#sel_index_field option:selected").each(function () {
+        var _fid = $(this).val();
+        if (undefined != _index2b[_fid]) {
+            _idx.field_list[_fid] = _index2b[_fid];
+        }
+    });
+    _curr_model.idx_list[_idx.uuid] = _idx;
+
+    $("#modal_edit_index").modal("hide");
+    //重新加载
+    self.project.modelLoad();
+};
+
+/**
+ * 删除索引
+ */
+App.dt.project.modelIndexDrop = function (model_id, index_id) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    var _curr_model = self.project.getCurrModel(model_id);
+    console.log(_curr_model);
+    if (null == _curr_model) {
+        self.fail("未选择目标模型");
+        return;
+    }
+    if (App.su.isEmpty(index_id)) {
+        self.fail("未选择索引");
+        return;
+    } else {
+        bootbox.confirm("确认删除这个索引？", function (ret) {
+            if (ret) {
+                if (undefined != _curr_model.idx_list[index_id]) {
+                    delete _curr_model.idx_list[index_id];
+                    _curr_app.model_list[model_id] = _curr_model;
+                    if (self.project.setCurrApp(_curr_app)) {
+                        self.succ("移除成功--modelIndexDrop");
+                        self.project.modelLoad();
+                    } else {
+                        self.fail("移除失败1-modelIndexDrop");
+                    }
+                } else {
+                    self.fail("移除失败2-modelIndexDrop");
+                }
+                self.project.modelLoad();
+            }
+        });
+    }
+
+
+
+    var sel_index = $("#sel_index_field");
+
+
+}
+
 
 /**
  * 主程序入口

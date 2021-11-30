@@ -23,8 +23,6 @@ class MyIndex extends MyStruct
         // TODO: Implement init() method.
     }
 
-
-
     function getAsArray()
     {
         $a_data = $this->getBasicAsArray();

@@ -119,17 +119,17 @@ class Constant
     );
 
 
-    const DB_FIELD_TYPE_BOOL = "bool";
-    const DB_FIELD_TYPE_CHAR = "char";
-    const DB_FIELD_TYPE_VARCHAR = "string";
-    const DB_FIELD_TYPE_TEXT = "text";
-    const DB_FIELD_TYPE_LONGTEXT = "text";
-    const DB_FIELD_TYPE_INT = "int";
-    const DB_FIELD_TYPE_LONG = "longint";
-    const DB_FIELD_TYPE_BLOB = "blob";
-    const DB_FIELD_TYPE_LONGBLOB = "longblob";
-    const DB_FIELD_TYPE_DATE = "date";
-    const DB_FIELD_TYPE_DATETIME = "datetime";
+    const DB_FIELD_TYPE_BOOL = "BOOL";
+    const DB_FIELD_TYPE_CHAR = "CHAR";
+    const DB_FIELD_TYPE_VARCHAR = "STRING";
+    const DB_FIELD_TYPE_TEXT = "TEXT";
+    const DB_FIELD_TYPE_LONGTEXT = "LONGTEXT";
+    const DB_FIELD_TYPE_INT = "INT";
+    const DB_FIELD_TYPE_LONGINT = "LONGINT";//big int
+    const DB_FIELD_TYPE_BLOB = "BLOB";
+    const DB_FIELD_TYPE_LONGBLOB = "LONGBLOB";
+    const DB_FIELD_TYPE_DATE = "DATE";
+    const DB_FIELD_TYPE_DATETIME = "DATETIME";
 
     /**
      * db编码
@@ -143,7 +143,7 @@ class Constant
         self::DB_FIELD_TYPE_CHAR => "单字符",
         self::DB_FIELD_TYPE_TEXT => "普通文本",
         self::DB_FIELD_TYPE_LONGTEXT => "长文本",
-        self::DB_FIELD_TYPE_LONG => "长整形",
+        self::DB_FIELD_TYPE_LONGINT => "长整形",
         self::DB_FIELD_TYPE_BLOB => "BLOB",
         self::DB_FIELD_TYPE_BOOL => "布尔",
         self::DB_FIELD_TYPE_DATE => "日期",

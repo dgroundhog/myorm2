@@ -45,7 +45,6 @@
                     </div>
 
 
-
                     <div class="form-group row">
                         <label for="txt_index_memo" class="col-sm-2 col-form-label">备注</label>
                         <div class="col-sm-10">
@@ -55,13 +54,16 @@
                     </div>
 
 
-                    <input type="hidden" id="txt_model_index_mid" />
-                    <input type="hidden" id="txt_model_index_iid" />
+                    <input type="hidden" id="txt_model_index_mid"/>
+                    <input type="hidden" id="txt_model_index_iid"/>
                 </form>
             </div>
             <div class="modal-footer justify-content-between">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="btn_save_index">保存</button>
+                <button type="button" class="btn btn-primary"
+                        onclick="javascript:App.dt.project.modelIndexSave();"
+                >保存
+                </button>
             </div>
         </div>
         <!-- /.modal-content -->
