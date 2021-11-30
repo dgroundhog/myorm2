@@ -59,7 +59,7 @@
                         <label for="txt_field_auto_inc" class="col-sm-2 col-form-label">自动增长</label>
                         <div class="col-sm-10">
                             <input type="checkbox" id="txt_field_auto_inc" checked data-bootstrap-switch
-                                   data-off-color="danger" data-on-color="success">
+                                   data-off-color="danger" data-on-color="success"/>
                         </div>
                     </div>
 

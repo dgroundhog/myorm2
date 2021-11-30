@@ -24,6 +24,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <title>Starter</title>
     <link rel="icon" href="./img/RC30.gif" type="image/x-icon"/>
     <link rel="shortcut icon" href="./img/RC30.gif" type="image/x-icon"/>
+    <!-- jquery-ui -->
+    <link rel="stylesheet" href="./vendor/jquery-ui/jquery-ui.min.css">
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="./vendor/local-google-font/local.google.fonts.css">
     <!-- Font Awesome Icons -->
@@ -35,10 +37,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="stylesheet" href="./vendor/select2-bootstrap4-theme/select2-bootstrap4.min.css">
     <!-- Bootstrap-Fileinput -->
     <link rel="stylesheet" href="./vendor/bootstrap-fileinput/css/fileinput.min.css">
+    <!-- Bootstrap4 Duallistbox -->
+    <link rel="stylesheet" href="./vendor/bootstrap4-duallistbox/bootstrap-duallistbox.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="./vendor/adminlte-3.1.0/css/adminlte.min.css">
 </head>
-<body class="hold-transition sidebar-mini layout-navbar-fixed" >
+<body class="hold-transition sidebar-mini layout-navbar-fixed">
 <div class="wrapper">
 
     <!-- Navbar -->
@@ -99,7 +103,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <?php include("./_6_1_modal_edit_app_db.php"); ?>
     <?php include("./_7_1_modal_edit_field.php"); ?>
     <?php include("./_8_1_modal_edit_model.php"); ?>
-
+    <?php include("./_8_2_modal_edit_index.php"); ?>
+    <?php include("./_8_3_modal_import_global_field.php"); ?>
 
 </div>
 <!-- ./wrapper -->
@@ -118,6 +123,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 <!-- jQuery -->
 <script src="./vendor/jquery/jquery.min.js"></script>
+<!-- jquery-ui -->
+<script src="./vendor/jquery-ui/jquery-ui.min.js"></script>
 <!-- Bootstrap 4 -->
 <script src="./vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- Toastr -->
@@ -134,6 +141,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="./vendor/bootstrap-fileinput/js/fileinput.min.js"></script>
 <script src="./vendor/bootstrap-fileinput/js/locales/zh.js"></script>
 <script src="./vendor/bootstrap-fileinput/themes/fas/theme.min.js"></script>
+<!-- Bootstrap4 Duallistbox -->
+<script src="./vendor/bootstrap4-duallistbox/jquery.bootstrap-duallistbox.min.js"></script>
 <!-- AdminLTE App -->
 <script src="./vendor/adminlte-3.1.0/js/adminlte.min.js"></script>
 
@@ -149,14 +158,28 @@ scratch. This page gets rid of all links and provides the needed markup only.
     $(function () {
         //Initialize Select2 Elements
         $('.select2').select2();
-
+        //
         $("input[data-bootstrap-switch]").each(function () {
             $(this).bootstrapSwitch('state', $(this).prop('checked'));
-        })
-
+        });
+        //
+        $('.duallistbox').bootstrapDualListbox({
+            nonSelectedListLabel: '可选字段',
+            selectedListLabel: '已选字段',
+            filterTextClear: '展示所有',
+            filterPlaceHolder: '过滤搜索',
+            moveSelectedLabel: "添加",
+            moveAllLabel: '添加所有',
+            removeSelectedLabel: "移除",
+            removeAllLabel: '移除所有',
+            infoText: '共{0}个',
+            infoTextFiltered: '搜索到{0}个 ,共{1}个',
+            infoTextEmpty: '列表为空',
+            selectorMinimalHeight: 200,
+            moveOnSelect: false,
+        });
+        //
         App.dt.init();
-
-
 
 
     });

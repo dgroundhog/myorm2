@@ -117,6 +117,7 @@ MyApp.prototype.parse = function (json_one) {
     //解析一个单体
     this.parseBasic(json_one);
 
+    //
     this.project_id = json_one.project_id;
     this.img_icon_id = json_one.img_icon_id;
     this.img_logo_id = json_one.img_logo_id;
@@ -156,6 +157,8 @@ MyApp.prototype.parse = function (json_one) {
         var _uuid = _model.uuid;
         this.model_list[_uuid] = _model;
     }
+
+    //
 };
 
 

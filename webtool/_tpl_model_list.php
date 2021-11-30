@@ -18,12 +18,14 @@
                 <a href="###" class="btn btn-info"
                    onclick="javascript:App.dt.project.modelEdit('{$model.uuid}');"
                 ><i class="fas fa-edit"></i> 编辑</a>
+                <a href="###" class="btn btn-success"
+                   onclick="javascript:App.dt.project.modelCopy('{$model.uuid}');"
+                ><i class="fas fa-copy"></i> 复制</a>
                 <a href="###" class="btn btn-danger"
                    onclick="javascript:App.dt.project.modelDrop('{$model.uuid}');"
                 ><i class="fas fa-trash"></i> 删除</a>
             </div>
         </td>
     </tr>
-
     {/foreach}
 <?php echo '</script>'; ?>

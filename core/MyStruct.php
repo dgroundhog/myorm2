@@ -75,6 +75,7 @@ abstract class MyStruct implements MyBase
         $this->ctime = $a_data['ctime'];
         $this->utime = $a_data['utime'];
         $this->memo = $a_data['memo'];
+        $this->type = $a_data['type'];
         $this->position = $a_data['position'];
 
         foreach ($this->basic_keys as $key) {

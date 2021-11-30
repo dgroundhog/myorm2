@@ -812,6 +812,27 @@ App.dt.project.getCurrProject = function () {
  * 获取当前应用
  * null or MyApp
  */
+App.dt.project.getCurrModel = function (model_id) {
+
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        //self.fail("未选择应用版本");
+        console.log("目标应用--空");
+        return null;
+    }
+    if (App.su.isEmpty(model_id) || undefined == _curr_app.model_list[model_id]) {
+        //self.fail("未选择目标模型");
+        console.log("目标模型--空");
+        return null;
+    }
+    return _curr_app.model_list[model_id];
+}
+
+/**
+ * 获取当前应用
+ * null or MyApp
+ */
 App.dt.project.getCurrApp = function () {
     var self = App.dt;
     var _curr_project = self.data.curr_project;
@@ -962,6 +983,7 @@ App.dt.project.confDrop = function (_uuid) {
         self.fail("未选择应用版本");
         return;
     }
+    //
     if (App.su.isEmpty(_uuid)) {
         self.fail("未选择配置");
         return;
@@ -1066,6 +1088,7 @@ App.dt.project.dbEdit = function (_uuid) {
         $("#txt_db_uuid").val(_uuid);
         _db = _curr_app.db_list[_uuid];
     }
+
     $("#txt_db_host").val(_db.host);
     $("#txt_db_port").val(_db.port);
     $("#txt_db_database").val(_db.database);
@@ -1113,19 +1136,44 @@ App.dt.project.dbDrop = function (_uuid) {
 /**
  * 加载字段，全局
  */
-App.dt.project.fieldLoad = function (model_id) {
+App.dt.project.fieldLoad = function () {
     var self = App.dt;
     var _curr_app = self.project.getCurrApp();
     if (null == _curr_app) {
         self.fail("未选择应用版本,无法打开配置");
         return;
     }
+    var _old_list = _curr_app.field_list;
     var tpl = new jSmart(self.getTpl('tpl_field_list'));
     var res = tpl.fetch(_curr_app);
-    //TODO 需要区分全局字段还是个别字段
     //排序 arr.sort((a,b) => a.sortNo -  b.sortNo)
-    //当model_id不为空时，用 判断是否全局字段 TODO
-    $("#table_field_list").html(res);
+    var g_field_list = $("#table_field_list");
+    g_field_list.html(res);
+    g_field_list.sortable({
+        stop: function () {
+            var _new_list = new Object();
+            var iii = 0
+            g_field_list.find(".field_row").each(function () {
+                var _me = $(this);
+                var _uuid = _me.attr("title");
+                if (undefined != _old_list[_uuid]) {
+                    iii++;
+                    var _field = _old_list[_uuid];
+                    _field.position = iii;
+                    _new_list[_uuid] = _field;
+                }
+            });
+            console.log(_new_list);
+            _curr_app.field_list = _new_list;
+            if (self.project.setCurrApp(_curr_app)) {
+                console.log(self.project.getCurrApp());
+                self.succ("更新成功");
+                self.project.fieldLoad();
+            } else {
+                self.fail("更新失败");
+            }
+        }
+    });
 }
 
 
@@ -1145,19 +1193,33 @@ App.dt.project.fieldSave = function () {
         return;
     }
     //TODO 判断model _model_id
+    var _new_name = $("#txt_field_name").val();
+    if (!MyProject.isGoodName(_new_name)) {
+        self.fail("请输入合法的字段名，字母开头，可包含字母、数字和下划线");
+        return;
+    }
 
     if (App.su.isEmpty(_uuid)) {
         var new_uuid = App.su.maths.uuid.create();
         _field.uuid = new_uuid;
         _field.ctime = now;
         _field.utime = now;
+        if (App.su.isEmpty(_model_id)) {
+            _field.is_global = 1;
+        } else {
+            _field.is_global = 0;
+        }
         _uuid = new_uuid;
     } else {
         _field = _curr_app.field_list[_uuid];
-        //TODO 判断model _model_id
+
         _field.utime = now;
     }
-    _field.name = $("#txt_field_name").val();
+
+
+    _field.name = _new_name;
+
+
     _field.title = $("#txt_field_title").val();
     _field.memo = $("#txt_field_memo").val();
     _field.type = $("#sel_field_type").val();
@@ -1170,9 +1232,21 @@ App.dt.project.fieldSave = function () {
     _field.input_by = $("#sel_field_input_by").val();
     _field.input_hash = $("#txt_field_hash").val();
     _field.position = $("#txt_field_position").val();
-
+    //TODO 去重复
     console.log(_field);
-    _curr_app.field_list[_uuid] = _field;
+    if (App.su.isEmpty(_model_id)) {
+        console.log("全局字段");
+        _curr_app.field_list[_uuid] = _field;
+    } else {
+        console.log("私有字段");
+        var _model = self.project.getCurrModel(_model_id);
+        if (null == _model) {
+            self.fail("保存失败,未打开model");
+            return;
+        }
+        _model.field_list[_uuid] = _field;
+        _curr_app.model_list[_model_id] = _model;
+    }
     console.log(_curr_app);
     if (self.project.setCurrApp(_curr_app)) {
         console.log(self.project.getCurrApp());
@@ -1187,22 +1261,46 @@ App.dt.project.fieldSave = function () {
 /**
  * 编辑字段
  */
-App.dt.project.fieldEdit = function (_uuid) {
+App.dt.project.fieldEdit = function (_uuid, _model_id) {
     var self = App.dt;
     var _curr_app = self.project.getCurrApp();
     if (null == _curr_app) {
         self.fail("未选择应用版本2");
         return;
     }
+
     //TODO 在这里填入model
     var _field = new MyField();
-    if (App.su.isEmpty(_uuid)) {
-        console.log("新的配置2");
-        $("#txt_field_uuid").val("");
+
+
+    if (App.su.isEmpty(_model_id)) {
+        console.log("全局字段");
+        $("#txt_field_model_id").val("");
+        if (App.su.isEmpty(_uuid)) {
+            console.log("新的字段1");
+            $("#txt_field_uuid").val("");
+        } else {
+            console.log("编辑旧字段1");
+            $("#txt_field_uuid").val(_uuid);
+            _field = _curr_app.field_list[_uuid];
+        }
     } else {
-        console.log("编辑旧配置2");
-        $("#txt_field_uuid").val(_uuid);
-        _field = _curr_app.field_list[_uuid];
+        console.log("私有字段");
+        $("#txt_field_model_id").val(_model_id);
+
+        if (App.su.isEmpty(_uuid)) {
+            console.log("新的字段2");
+            $("#txt_field_uuid").val("");
+        } else {
+            console.log("编辑旧字段2");
+            $("#txt_field_uuid").val(_uuid);
+            var _model = self.project.getCurrModel(_model_id);
+            if (null == _model) {
+                self.fail("打开失败,未打开model");
+                return;
+            }
+            _field = _model.field_list[_uuid];
+        }
     }
 
     $("#txt_field_name").val(_field.name);
@@ -1279,11 +1377,42 @@ App.dt.project.modelLoad = function () {
     var res3 = tpl3.fetch(_curr_app);
     $("#block_model_menu").html(res3);
 
-
-
-
+    $(".m_sort_field_list").each(function () {
+        var _mm = $(this);
+        var _model_id = _mm.attr("title");
+        var _model = self.project.getCurrModel(_model_id);
+        if (_model == null) {
+            return;
+        }
+        var _old_list = _model.field_list;
+        _mm.sortable({
+            stop: function () {
+                var _new_list = new Object();
+                var iii = 0
+                _mm.find(".field_row").each(function () {
+                    var _me = $(this);
+                    var _uuid = _me.attr("title");
+                    if (undefined != _old_list[_uuid]) {
+                        iii++;
+                        var _field = _old_list[_uuid];
+                        _field.position = iii;
+                        _new_list[_uuid] = _field;
+                    }
+                });
+                console.log(_new_list);
+                _model.field_list = _new_list;
+                _curr_app.model_list[_model_id] = _model;
+                if (self.project.setCurrApp(_curr_app)) {
+                    console.log(self.project.getCurrApp());
+                    self.succ("更新成功");
+                    self.project.fieldLoad();
+                } else {
+                    self.fail("更新失败");
+                }
+            }
+        }).disableSelection();
+    });
 }
-
 
 /**
  * 保存模型
@@ -1310,12 +1439,12 @@ App.dt.project.modelSave = function () {
         _model.utime = now;
     }
 
-    _model.name =  $("#txt_model_name").val();
-    _model.title =  $("#txt_model_title").val();
-    _model.memo =  $("#txt_model_memo").val();
-    _model.table_name =  $("#txt_table_name").val();
-    _model.primary_key =  $("#txt_primary_key").val();
-    _model.fa_icon =  $("#txt_model_icon").val();
+    _model.name = $("#txt_model_name").val();
+    _model.title = $("#txt_model_title").val();
+    _model.memo = $("#txt_model_memo").val();
+    _model.table_name = $("#txt_table_name").val();
+    _model.primary_key = $("#txt_primary_key").val();
+    _model.fa_icon = $("#txt_model_icon").val();
 
     console.log(_model);
 
@@ -1386,6 +1515,112 @@ App.dt.project.modelDrop = function (_uuid) {
             }
         });
     }
+}
+
+/**
+ * 导入全局字段
+ * @param model_id
+ */
+App.dt.project.modelImportGlobalField = function (model_id) {
+    var self = App.dt;
+    //
+    $("#sel_index_field").empty();
+    var _model = self.project.getCurrModel(model_id);
+    if (null == _model) {
+        self.fail("未选择目标模型");
+        return;
+    }
+    //
+    var _curr_app = self.project.getCurrApp();
+    $("#txt_model_global_field_mid").val(model_id);
+
+    var _field_g = _curr_app.field_list;
+    var _field_m = _model.field_list;
+    var sel_import = $("#sel_global_field");
+    sel_import.empty();
+    //
+    for (var ii in _field_g) {
+        var ff = _field_g[ii];
+        var o = document.createElement("option");
+        var _uuid = ff.uuid;
+        o.value = _uuid;
+        o.text = ff.name + " | " + ff.title;
+        if (undefined != _field_m[_uuid]) {
+            o.selected = "selected";
+        }
+        sel_import[0].options.add(o);
+    }
+    //
+    sel_import.bootstrapDualListbox('refresh');
+    $("#modal_import_global_field").modal("show");
+};
+
+/**
+ * 完成全局字段导入
+ */
+App.dt.project.modelImportGlobalFieldDone = function () {
+    var self = App.dt;
+    //
+    var _model_id = $("#txt_model_global_field_mid").val();
+    console.log("_model_id--" + _model_id)
+
+    var _model = self.project.getCurrModel(_model_id);
+    if (null == _model) {
+        self.fail("未选择目标模型");
+        return;
+    }
+    //
+    var _curr_app = self.project.getCurrApp();
+    var _field_g = _curr_app.field_list;
+    //遍历选中的值
+    $("#sel_index_field").empty();
+    $("#sel_global_field option:selected").each(function () {
+        var _fid = $(this).val();
+        if (undefined != _field_g[_fid]) {
+            _model.field_list[_fid] = _field_g[_fid];
+        }
+    });
+    $("#modal_import_global_field").modal("hide");
+    //重新加载
+    self.project.modelLoad();
+};
+
+/**
+ * 编辑模型
+ */
+App.dt.project.modelIndexEdit = function (model_id, index_id) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(model_id) || undefined == _curr_app.model_list[model_id]) {
+        self.fail("未选择目标模型");
+        return;
+    }
+    var _model = _curr_app.model_list[model_id];
+    $("#txt_model_index_mid").val(model_id);
+
+    if (App.su.isEmpty(index_id)) {
+        console.log("新的索引");
+        $("#txt_model_index_iid").val("");
+
+    } else {
+        console.log("编辑旧索引");
+        $("#txt_model_index_iid").val(index_id);
+        var _idx = _model.idx_list[index_id];
+
+        $("#txt_index_name").val(_idx.name);
+        $("#txt_index_memo").val(_idx.memo);
+
+        // $("#sel_index_type").val(_model.table_name);
+        // $("#sel_index_field").val(_model.primary_key);
+
+    }
+
+    $("#modal_edit_index").modal('show');
+
 }
 
 /**
@@ -1543,6 +1778,10 @@ App.dt.init = function () {
 
     $("#btn_save_model").click(function () {
         self.project.modelSave();
+    });
+
+    $("#btn_confirm_import").click(function () {
+        self.project.modelImportGlobalFieldDone();
     });
 
 

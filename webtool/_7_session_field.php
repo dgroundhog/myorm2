@@ -19,14 +19,14 @@
                             <button type="button" class="btn btn-tool" data-card-widget="maximize"><i
                                         class="fas fa-expand"></i>
                             </button>
+
                         </div>
                     </div>
                     <div class="card-body p-0">
-                        <table class="table">
+                        <table class="table table-striped table-sm ">
                             <thead>
                             <tr>
                                 <th>创建时间</th>
-                                <th>全局变量</th>
                                 <th>排序</th>
                                 <th>字段</th>
                                 <th>字段名</th>
@@ -43,7 +43,7 @@
                                 <th>操作</th>
                             </tr>
                             </thead>
-                            <tbody id="table_field_list">
+                            <tbody id="table_field_list" class="g_sort_field_list">
 
                             </tbody>
                         </table>

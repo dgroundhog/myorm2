@@ -1,9 +1,10 @@
 <?php echo '<script id="tpl_field_list" type="text/x-jsmart-tmpl">' ?>
     {foreach $field_list as $i => $field}
-
-    <tr>
-        <td>{$field.ctime}</td>
-        <td>{$field.is_global}</td>
+    <tr class="field_row" title="{$field.uuid}">
+        <td style="cursor: move;">
+            <i class="fa fa-sort" ></i>
+            {$field.ctime}
+        </td>
         <td>{$field.position}</td>
         <td>{$field.name}</td>
         <td>{$field.title}</td>
