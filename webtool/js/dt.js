@@ -8,6 +8,8 @@ if (typeof App == "undefined") {
     App = {};
 }
 App.dt = {};
+
+
 /**
  * 使用toastr做提示
  * @param _msg
@@ -1198,6 +1200,7 @@ App.dt.project.fieldSave = function () {
         self.fail("请输入合法的字段名，字母开头，可包含字母、数字和下划线");
         return;
     }
+    _field.name = _new_name;
 
     if (App.su.isEmpty(_uuid)) {
         var new_uuid = App.su.maths.uuid.create();
@@ -1211,14 +1214,18 @@ App.dt.project.fieldSave = function () {
         }
         _uuid = new_uuid;
     } else {
-        _field = _curr_app.field_list[_uuid];
-
+        if (App.su.isEmpty(_model_id)) {
+            _field = _curr_app.field_list[_uuid];
+        } else {
+            var _model = self.project.getCurrModel(_model_id);
+            if (null == _model) {
+                self.fail("保存失败1,未打开model");
+                return;
+            }
+            _field = _model.field_list[_uuid];
+        }
         _field.utime = now;
     }
-
-
-    _field.name = _new_name;
-
 
     _field.title = $("#txt_field_title").val();
     _field.memo = $("#txt_field_memo").val();
@@ -1255,7 +1262,7 @@ App.dt.project.fieldSave = function () {
         self.fail("暂存失败");
     }
     $("#modal_edit_field").modal('hide');
-    self.project.fieldLoad();
+    self.project.modelLoad();
 }
 
 /**
@@ -1268,11 +1275,8 @@ App.dt.project.fieldEdit = function (_uuid, _model_id) {
         self.fail("未选择应用版本2");
         return;
     }
-
     //TODO 在这里填入model
     var _field = new MyField();
-
-
     if (App.su.isEmpty(_model_id)) {
         console.log("全局字段");
         $("#txt_field_model_id").val("");
@@ -1376,7 +1380,6 @@ App.dt.project.modelLoad = function () {
     var tpl3 = new jSmart(self.getTpl('tpl_model_menu'));
     var res3 = tpl3.fetch(_curr_app);
     $("#block_model_menu").html(res3);
-
     $(".m_sort_field_list").each(function () {
         var _mm = $(this);
         var _model_id = _mm.attr("title");
@@ -1399,13 +1402,13 @@ App.dt.project.modelLoad = function () {
                         _new_list[_uuid] = _field;
                     }
                 });
-                console.log(_new_list);
+                //console.log(_new_list);
                 _model.field_list = _new_list;
                 _curr_app.model_list[_model_id] = _model;
                 if (self.project.setCurrApp(_curr_app)) {
-                    console.log(self.project.getCurrApp());
+                    //console.log(self.project.getCurrApp());
                     self.succ("更新成功");
-                    self.project.fieldLoad();
+                    self.project.modelLoad();
                 } else {
                     self.fail("更新失败");
                 }
@@ -1507,14 +1510,65 @@ App.dt.project.modelDrop = function (_uuid) {
             if (ret) {
                 if (undefined != _curr_app.model_list[_uuid]) {
                     delete _curr_app.model_list[_uuid];
-                    self.succ("移除成功");
+                    if (self.project.setCurrApp(_curr_app)) {
+                        self.succ("移除成功");
+                        self.project.modelLoad();
+                    } else {
+                        self.fail("移除失败1");
+                    }
                 } else {
-                    self.fail("移除失败");
+                    self.fail("移除失败2");
                 }
                 self.project.modelLoad();
             }
         });
     }
+}
+
+function deepCopy(obj) {
+    if(obj==null){
+        return  null;
+    }
+    const keys = Object.keys(obj);
+    const values = Object.values(obj);
+    const newObj = {};
+
+    for (let i = 0; i < keys.length; i++) {
+        if (typeof values[i] == 'object') {
+            values[i] = deepCopy(values[i]);
+        }
+        newObj[keys[i]] = values[i];
+    }
+    return newObj;
+}
+
+/**
+ * 复制模型
+ */
+App.dt.project.modelCopy = function (_uuid) {
+    var self = App.dt;
+    var _model = self.project.getCurrModel(_uuid)
+    if (null == _model) {
+        self.fail("未选择模型版本");
+        return;
+    }
+    var _curr_app = self.project.getCurrApp();
+    //var _model = _curr_app.model_list[_uuid];
+    var _new_uuid = App.su.maths.uuid.create();
+    var _model2 = deepCopy(_model);
+    _model2.uuid = _new_uuid
+    _model2.name = _model.name + "2";
+    _model2.title = _model.title + "2";
+    _curr_app.model_list[_new_uuid] = _model2;
+
+    if (self.project.setCurrApp(_curr_app)) {
+        self.succ("复制成功");
+        self.project.modelLoad();
+    } else {
+        self.fail("复制失败");
+    }
+
+
 }
 
 /**

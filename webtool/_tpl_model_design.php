@@ -34,14 +34,11 @@
                                 <i class="fas fa-plus-circle"></i> 导入全局字段
                             </button>
 
-                            <button type="button" class="btn btn-tool btn_edit_field3"
-                                    id="btn_edit_field3_{$model.uuid}"
-                                    onclick="javascript:App.dt.project.fieldEdit3('{$model.uuid}','');"
+                            <button type="button" class="btn btn-tool"
+                                    onclick="javascript:App.dt.project.fieldEdit('','{$model.uuid}');"
                             >
                                 <i class="fas fa-plus"></i> 增加私有字段
                             </button>
-
-
                         </div>
                     </div>
                     <div class="card-body p-0">

@@ -40,6 +40,7 @@ MyStruct.prototype.parseBasic = function (json_one) {
 };
 
 
+
 /**
  * 主APP的结构
  * @constructor
