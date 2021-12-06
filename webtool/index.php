@@ -105,6 +105,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <?php include("./_8_1_modal_edit_model.php"); ?>
     <?php include("./_8_2_modal_edit_index.php"); ?>
     <?php include("./_8_3_modal_import_global_field.php"); ?>
+    <?php include("./_8_4_modal_edit_fun.php"); ?>
 
 </div>
 <!-- ./wrapper -->
@@ -148,10 +149,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 <script src="./js/app.js"></script>
-<script src="./js/conf.js"></script>
-<script src="./js/funs.js"></script>
-<script src="./js/dt.js"></script>
-
+<script src="./js/funs.js?_t=<?php echo time();?>"></script>
+<script src="./js/dt.js?_t=<?php echo time();?>"></script>
 
 <script type="text/javascript">
 

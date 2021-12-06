@@ -38,10 +38,7 @@ MyStruct.prototype.parseBasic = function (json_one) {
     this.position = json_one.position;
     this.ctime = json_one.ctime;
     this.utime = json_one.utime;
-
-
 };
-
 
 
 /**
@@ -50,7 +47,7 @@ MyStruct.prototype.parseBasic = function (json_one) {
  */
 function MyProject() {
     MyStruct.call(this);
-    this.scope ="PROJECT";
+    this.scope = "PROJECT";
     this.curr_version = "";//当前版本号
     this.version_list = {};//版本号列表  k-v
     //版本号不排序
@@ -100,7 +97,7 @@ MyProject.isGoodName = function (_name) {
  */
 function MyApp() {
     MyStruct.call(this);
-    this.scope ="APP";
+    this.scope = "APP";
 
     this.project_id = "";
     this.img_icon_id = "";
@@ -172,7 +169,7 @@ MyApp.prototype.parse = function (json_one) {
  */
 function MyModel() {
     MyStruct.call(this);
-    this.scope ="MODEL";
+    this.scope = "MODEL";
     this.primary_key = "id";
     this.fa_icon = "apple";
     this.table_name = "newtabel";
@@ -235,7 +232,7 @@ MyModel.prototype.parse = function (json_one) {
  */
 function MyAppConf() {
     MyStruct.call(this);
-    this.scope ="APP_CONF";
+    this.scope = "APP_CONF";
     this.mvc = "";
     this.ui = "";
     this.has_restful = "0";
@@ -271,7 +268,7 @@ MyAppConf.prototype.parse = function (json_one) {
  */
 function MyDb() {
     MyStruct.call(this);
-    this.scope ="DB_CONF";
+    this.scope = "DB_CONF";
     this.driver = "";
     this.source = "";
     this.host = "localhost";
@@ -315,7 +312,7 @@ MyDb.prototype.parse = function (json_one) {
  */
 function MyField() {
     MyStruct.call(this);
-    this.scope ="FIELD";
+    this.scope = "FIELD";
     this.type = "STRING";
     this.size = "255";
     this.auto_increment = "0";
@@ -341,7 +338,6 @@ MyField.prototype.constructor = MyField;
 MyField.prototype.parse = function (json_one) {
     //解析一个单体
     this.parseBasic(json_one);
-
     this.size = json_one.size;
     this.auto_increment = json_one.auto_increment;
     this.default_value = json_one.default_value;
@@ -351,12 +347,7 @@ MyField.prototype.parse = function (json_one) {
     this.input_by = json_one.input_by;
     this.input_hash = json_one.input_hash;
     this.is_global = json_one.is_global;
-
 };
-
-
-
-
 
 /**
  * 索引结构
@@ -364,11 +355,10 @@ MyField.prototype.parse = function (json_one) {
  */
 function MyIndex() {
     MyStruct.call(this);
-    this.scope ="INDEX";
+    this.scope = "INDEX";
     this.type = "KEY";
     this.field_list = [];//索引字段
 }
-
 
 //把子类的原型指向通过Object.create创建的中间对象
 MyIndex.prototype = Object.create(MyStruct.prototype);
@@ -396,12 +386,122 @@ MyIndex.prototype.parse = function (json_one) {
  * @constructor
  */
 function MyFun() {
+    MyStruct.call(this);
+    this.scope = "FUN";
+    this.type = "";
+    this.return_all = "1";
+    this.where = null;
+    this.field_list = [];//操作字段
+    this.group_field = "";
+    this.group_by = "";
+    this.order_enable = "0";
+    this.order_by = "";
+    this.order_dir = "";
+}
+
+//把子类的原型指向通过Object.create创建的中间对象
+MyFun.prototype = Object.create(MyStruct.prototype);
+MyFun.prototype.constructor = MyFun;
+
+/**
+ *
+ * @param json_one
+ */
+MyFun.prototype.parse = function (json_one) {
+    //解析一个单体
+    this.parseBasic(json_one);
+
+    this.type = json_one.type;
+    this.return_all = json_one.type;
+    this.where = json_one.where;
+    this.group_field = json_one.group_field;
+    this.group_by = json_one.group_by;
+    this.order_enable = json_one.order_enable;
+    this.order_by = json_one.order_by;
+    this.order_dir = json_one.order_dir;
+
+    this.field_list = new Object();
+    for (var ii in json_one.field_list) {
+        var _field = new MyField();
+        _field.parse(json_one.field_list[ii]);
+        var _uuid = _field.uuid;
+        this.field_list[_uuid] = _field;
+    }
 }
 
 /**
- * 查询条件
+ * 查询条件组合
+ * 允许嵌套
  * @constructor
  */
 function MyWhere() {
+    MyStruct.call(this);
+    this.scope = "WHERE";
+    this.joiner = "AND";
+    this.level = 0;
+    this.parent_where = null;
+    this.cond_list = [];//操作字段
+    this.where_list = [];//操作字段
 }
 
+//把子类的原型指向通过Object.create创建的中间对象
+MyWhere.prototype = Object.create(MyStruct.prototype);
+MyWhere.prototype.constructor = MyWhere;
+
+/**
+ *
+ * @param json_one
+ */
+MyWhere.prototype.parse = function (json_one) {
+    //解析一个单体
+    this.parseBasic(json_one);
+
+    this.joiner = json_one.joiner;
+    this.level = json_one.level;
+    this.parent_where = json_one.parent_where;
+
+    this.cond_list = new Object();
+    for (var ii in json_one.cond_list) {
+        var _cond = new MyCond();
+        _cond.parse(json_one.cond_list[ii]);
+        var _uuid = _cond.uuid;
+        this.cond_list[_uuid] = _cond;
+    }
+
+    this.where_list = new Object();
+    for (var ii in json_one.where_list) {
+        var _where = new MyWhere();
+        _where.parse(json_one.where_list[ii]);
+        var _uuid = _where.uuid;
+        this.where_list[_uuid] = _where;
+    }
+}
+
+/**
+ * 最小查询条件
+ * @constructor
+ */
+function MyCond() {
+    MyStruct.call(this);
+    this.scope = "COND";
+    this.type = "EQ";
+    this.field = "";
+    this.v1 = "@@";
+    this.v2 = "@@";
+}
+
+//把子类的原型指向通过Object.create创建的中间对象
+MyCond.prototype = Object.create(MyStruct.prototype);
+MyCond.prototype.constructor = MyCond;
+
+/**
+ * @param json_one
+ */
+MyCond.prototype.parse = function (json_one) {
+    //解析一个单体
+    this.parseBasic(json_one);
+    this.type = "EQ";
+    this.field = "";
+    this.v1 = "";
+    this.v2 = "";
+}

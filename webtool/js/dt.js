@@ -4,6 +4,12 @@
  * 依赖toastr
  * 一旦提交，全部提交
  */
+
+/**
+ * @@ 外部输入
+ * ## 所建立的内部聚合函数，如果存在
+ */
+
 if (typeof App == "undefined") {
     App = {};
 }
@@ -962,8 +968,10 @@ App.dt.project.confEdit = function (_uuid) {
         $("#txt_conf_uuid").val(_uuid);
         var _conf = _curr_app.conf_list[_uuid];
 
-        App.su.select.selectByValue($("#sel_app_mvc"), _conf.mvc);
-        App.su.select.selectByValue($("#sel_app_ui"), _conf.ui);
+
+        $("#sel_app_mvc").val(_conf.mvc);
+        $("#sel_app_ui").val(_conf.ui);
+
 
         self.editor.setBootSwitchVal("#txt_conf_has_restful", _conf.has_restful);
         self.editor.setBootSwitchVal("#txt_conf_has_doc", _conf.has_doc);
@@ -1098,9 +1106,9 @@ App.dt.project.dbEdit = function (_uuid) {
     $("#txt_db_passwd").val(_db.password);
     $("#txt_db_uri").val(_db.uri);
 
-    App.su.select.selectByValue($("#sel_db_driver"), _db.driver);
-    App.su.select.selectByValue($("#sel_db_source"), _db.source);
-    App.su.select.selectByValue($("#sel_db_charset"), _db.charset);
+    $("#sel_db_driver").val(_db.driver);
+    $("#sel_db_source").val(_db.source);
+    $("#sel_db_charset").val(_db.charset);
 
     $("#modal_edit_app_db").modal('show');
 
@@ -1309,17 +1317,22 @@ App.dt.project.fieldEdit = function (_uuid, _model_id) {
     $("#txt_field_name").val(_field.name);
     $("#txt_field_title").val(_field.title);
     $("#txt_field_memo").val(_field.memo);
-    App.su.select.selectByValue($("#sel_field_type"), _field.type);
+
+
+    $("#sel_field_type").val(_field.type);
+
     $("#txt_field_size").val(_field.size);
     self.editor.setBootSwitchVal("#txt_field_auto_inc", _field.auto_increment);
     $("#txt_field_default_val").val(_field.default_value);
     self.editor.setBootSwitchVal("#txt_field_required", _field.required);
 
-    App.su.select.selectByValue($("#sel_field_filter"), _field.filter);
+
+    $("#sel_field_filter").val(_field.filter);
 
     $("#txt_field_regexp").val(_field.regexp);
 
-    App.su.select.selectByValue($("#sel_field_input_by"), _field.input_by);
+
+    $("#sel_field_input_by").val(_field.input_by);
 
     $("#txt_field_hash").val(_field.input_hash);
     $("#txt_field_position").val(_field.position);
@@ -1752,7 +1765,8 @@ App.dt.project.modelIndexEdit = function (model_id, index_id) {
         $("#txt_index_memo").val(_idx.memo);
         _indexOld = _idx.field_list;
 
-        App.su.select.selectByValue("#sel_index_type", _idx.type);
+
+        $("#sel_index_type").val(_idx.type);
 
     }
     console.log("过滤可用于索引的字段")
@@ -1891,12 +1905,238 @@ App.dt.project.modelIndexDrop = function (model_id, index_id) {
             }
         });
     }
+}
+
+App.dt.editor.ccOption = function (val, txt, isSel) {
+    var o = document.createElement("option");
+    o.value = val;
+    o.text = txt;
+    if (undefined != isSel && isSel == true) {
+        o.selected = "selected";
+    }
+    return o;
+}
+
+/**
+ * 创建功能函数
+ * @param model_id
+ * @param fun_id
+ */
+App.dt.project.modelFunEdit = function (model_id, fun_id) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    var _curr_model = self.project.getCurrModel(model_id);
+    if (null == _curr_model) {
+        self.fail("未选择目标模型for fun");
+        return;
+    }
+    $("#txt_model_fun_mid").val(model_id);
+    console.log("过滤可用于索引的字段2")
+    var _fieldCanIndex = new Object();
+    for (var ii in _curr_model.field_list) {
+        var ff = _curr_model.field_list[ii];
+        console.log(ff)
+        var typeU = ff.type.toUpperCase();
+        if (typeU == 'INT'
+            || typeU == 'CHAR'
+            || typeU == 'STRING'
+            || typeU == 'LONGINT'
+            || typeU == 'DATE'
+            || typeU == 'DATETIME'
+        ) {
+            _fieldCanIndex[ii] = ff;
+        }
+    }
+    //其他单选字段
+    var sel_fun_group_by = $("#sel_fun_group_by");
+    var sel_fun_group_field = $("#sel_fun_group_field");
+    var sel_fun_order_by = $("#sel_fun_order_by");
+    //
+    sel_fun_group_by.empty();
+    sel_fun_group_field.empty();
+    sel_fun_order_by.empty();
+    var o1 = self.editor.ccOption("@@", "不可用或者外部输入");
+    var o2 = self.editor.ccOption("@@", "不可用或者外部输入");
+    var o3 = self.editor.ccOption("@@", "不可用或者外部输入");
+
+    sel_fun_group_by[0].options.add(o1);
+    sel_fun_group_field[0].options.add(o2);
+    sel_fun_order_by[0].options.add(o3);
+
+    for (var ii in _fieldCanIndex) {
+        var ff = _fieldCanIndex[ii];
+
+        var _uuid = ff.uuid;
+        var _txt = ff.name + " | " + ff.title;
+        var _sel = (undefined != _fieldCanIndex[_uuid]) ? true : false;
+        var o1 = self.editor.ccOption(_uuid, _txt, _sel);
+        var o2 = self.editor.ccOption(_uuid, _txt, _sel);
+        var o3 = self.editor.ccOption(_uuid, _txt, _sel);
+
+        sel_fun_group_by[0].options.add(o1);
+        sel_fun_group_field[0].options.add(o2);
+        sel_fun_order_by[0].options.add(o3);
+
+    }
+
+    var o = self.editor.ccOption("##", "聚合新健");
+    sel_fun_order_by[0].options.add(o);
+
+    var _funFieldSelected = new Object();
+    if (App.su.isEmpty(fun_id)) {
+        console.log("新的函数");
+        $("#txt_model_fun_fid").val("");
+
+        $("#txt_fun_name").val("");
+        $("#txt_fun_title").val("");
+        $("#txt_fun_memo").val("");
+
+        sel_fun_group_by.val("@@");
+        sel_fun_group_field.val("@@");
+        sel_fun_order_by.val("@@");
+        $("#sel_fun_order_dir").val("@@");
+
+        self.editor.setBootSwitchVal("#txt_fun_return_all", "1");
+        self.editor.setBootSwitchVal("#txt_fun_order_enable", "0");
+
+    } else {
+        console.log("编辑旧函数");
+        $("#txt_model_fun_fid").val(fun_id);
+        var o_fun = _curr_model.fun_list[fun_id];
+        $("#txt_fun_name").val(o_fun.name);
+        $("#txt_fun_title").val(o_fun.title);
+        $("#txt_fun_memo").val(o_fun.memo);
+        //TODO 其他辅助字段
+        _funFieldSelected = o_fun.field_list;
+        sel_fun_group_by.val(o_fun.group_by);
+        sel_fun_group_field.val(o_fun.group_field);
+        sel_fun_order_by.val(o_fun.order_by);
+        $("#sel_fun_order_dir").val(o_fun.order_dir);
+
+        self.editor.setBootSwitchVal("#txt_fun_return_all", o_fun.return_all);
+        self.editor.setBootSwitchVal("#txt_fun_order_enable", o_fun.order_enable);
+    }
+    //需要操作的字段
+    var sel_fun_field = $("#sel_fun_field");
+    sel_fun_field.empty();
+    for (var ii in _curr_model.field_list) {
+        var ff = _curr_model.field_list[ii];
+        var _uuid = ff.uuid;
+        var _txt = ff.name + " | " + ff.title;
+        var _sel = (undefined != _funFieldSelected[_uuid]) ? true : false;
+        var o = self.editor.ccOption(_uuid, _txt, _sel);
+        sel_fun_field[0].options.add(o);
+    }
+    sel_fun_field.bootstrapDualListbox('refresh');
 
 
+    //
+    $("#modal_edit_fun").modal('show');
+}
 
-    var sel_index = $("#sel_index_field");
+/**
+ * 穿件基本的增删改查，注意
+ * 需要主键
+ */
+App.dt.project.modelFunInitBasic = function () {
+
+}
+
+/**
+ * 完成全局字段导入
+ */
+App.dt.project.modelFunSave = function () {
+    var self = App.dt;
+    var _model_id = $("#txt_model_fun_mid").val();
+    var _curr_app = self.project.getCurrApp();
+    var _curr_model = self.project.getCurrModel(_model_id);
+    if (null == _curr_model) {
+        self.fail("未选择目标模型");
+        return;
+    }
+    var _name = $("#txt_fun_name").val();
+    if (!MyProject.isGoodName(_name)) {
+        self.fail("请输入合法的索引名，字母开头，可包含字母、数字和下划线");
+        return;
+    }
+    var o_fun = new MyFun();
+    var now = App.su.datetime.getCurrentDateTime();
+    var _uuid = $("#txt_model_fun_fid").val();
+    if (App.su.isEmpty(_uuid)) {
+        var new_uuid = App.su.maths.uuid.create();
+        o_fun.uuid = new_uuid;
+        o_fun.ctime = now;
+    } else {
+        o_fun = _curr_model.fun_list[_uuid];
+        //一般情况不再判断
+    }
+
+    o_fun.utime = now;
+    o_fun.name = _name;
+    o_fun.title = $("#txt_fun_title").val();
+    o_fun.memo = $("#txt_fun_memo").val();
+    o_fun.type = $("#sel_fun_type").val();
+
+    o_fun.return_all = self.editor.getBootSwitchVal("#txt_fun_return_all");
+    o_fun.group_by = $("#sel_fun_group_by").val();
+    o_fun.group_field = $("#sel_fun_group_field").val();
+
+    o_fun.order_enable = self.editor.getBootSwitchVal("#txt_fun_order_enable");
+    o_fun.order_by = $("#sel_fun_order_by").val();
+    o_fun.order_dir = $("#sel_fun_order_dir").val();
 
 
+    console.log("过滤可用于操作的的字段")
+
+    o_fun.field_list = new Object();
+    //遍历选中的值
+    $("#sel_fun_field option:selected").each(function () {
+        var _fid = $(this).val();
+        if (undefined != _curr_model.field_list[_fid]) {
+            o_fun.field_list[_fid] = _curr_model.field_list[_fid];
+        }
+    });
+    _curr_model.fun_list[o_fun.uuid] = o_fun;
+    console.log(o_fun);
+    $("#modal_edit_fun").modal("hide");
+    //重新加载
+    self.project.modelLoad();
+};
+
+/**
+ * 删除索引
+ */
+App.dt.project.modelFunDrop = function (model_id, fun_id) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    var _curr_model = self.project.getCurrModel(model_id);
+    console.log(_curr_model);
+    if (null == _curr_model) {
+        self.fail("未选择目标模型");
+        return;
+    }
+    if (App.su.isEmpty(fun_id)) {
+        self.fail("未选择函数");
+        return;
+    } else {
+        bootbox.confirm("确认删除这个函数？", function (ret) {
+            if (ret) {
+                if (undefined != _curr_model.fun_list[fun_id]) {
+                    delete _curr_model.fun_list[fun_id];
+                    _curr_app.model_list[model_id] = _curr_model;
+                    if (self.project.setCurrApp(_curr_app)) {
+                        self.succ("移除成功--modelFunDrop");
+                        self.project.modelLoad();
+                    } else {
+                        self.fail("移除失败1-modelFunDrop");
+                    }
+                } else {
+                    self.fail("移除失败2-modelFunDrop");
+                }
+                self.project.modelLoad();
+            }
+        });
+    }
 }
 
 

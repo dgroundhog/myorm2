@@ -2,15 +2,11 @@
 
 
 /**
- * 条件定义
+ * 条件定义,最多支持二级嵌套
  * Class MyWhere
  */
-class MyWhere implements MyBase
+class MyWhere extends MyStruct
 {
-
-
-  
-
 
     /**
      * 查询列表的名字
@@ -18,102 +14,94 @@ class MyWhere implements MyBase
      */
     public $joiner =Constant::WHERE_JOIN_AND;
 
+    /**
+     * 嵌套级别，最多2级
+     * @var int
+     */
+    public $level = 0;
+
+    /**
+     * 父级id
+     * @var string
+     */
+    public $parent_where = "";
 
     /**
      * 查询列表的名字
      * @var string
      */
-    public $type = "eq";
+    public $cond_list= [];
 
 
     /**
-     * 查询列表的名字
-     * 当key为数组时，内部为or关系
-     * @var string|array
+     * 潜逃条件组合 MyWhere
+     * @var array
      */
-    public $key = null;
+    public $where_list= [];
 
     /**
      * MyWhere constructor.
-     * @param string $joiner
-     * @param string $type
-     * @param array|string $key
      */
-    public function __construct($joiner, $type, $key)
+    public function __construct()
     {
-        $this->joiner = $joiner;
-        $this->type = $type;
-        $this->key = $key;
+        $this->scope = "WHERE";
     }
 
-    /**
-     * 获取查询条件
-     * @return array
-     */
-    static $conditions = array(
-        'eq', //等于
-        'neq', //不等于
-        'gt', //大于
-        'gte', //大于等于
-        'lt', //少于
-        'lte', //少于等于
-        '=', //等于
-        '!=', //不等于
-        '>', //大于
-        '>=', //大于等于
-        '<', //少于
-        '<=', //少于等于
-        'kw', //关键字模糊匹配
-        'date', //日期范围
-        'time', //时间范围
-        'in', //离散量范围内
-        'notin', //离散量范围外
-        'between', //标量范围内
-        'notbetween' //标量范围外
+    public $basic_keys = array(
+        //type
+        "joiner",
+        "level",
+        "parent_where"
     );
-
 
     /**
      * 获取数组结构
      * @return array
      */
-    public function getAsArray()
+    function getAsArray()
     {
-        return array(
-            "joiner" => $this->joiner,
-            "type" => $this->type,
-            "key" => $this->key
-        );
+        $a_data = $this->getBasicAsArray();
+        $a_data['where_list'] = array();
+        foreach ($this->where_list as $key => $o_where) {
+            /* @var MyWhere $o_where */
+            $a_data['where_list'][$key] = $o_where->getAsArray();
+        }
+
+        $a_data['cond_list'] = array();
+        foreach ($this->cond_list as $key => $o_cond) {
+            /* @var MyCond $o_cond */
+            $a_data['cond_list'][$key] = $o_cond->getAsArray();
+        }
+        return $a_data;
+
     }
 
-
-    /**
-     * @inheritDoc
-     */
-    static function parseToObj($a_data)
+    function parseToObj($a_data)
     {
-        /**
-         * 解析一个条件
-         */
-        if (isset($a_data['joiner']) && isset($a_data['type']) && isset($a_data['key'])) {
+        $this->parseToBasicObj($a_data);
+        $this->where_list = array();
+        $this->cond_list = array();
 
-            $joiner = $a_data['joiner'];
-            $type = $a_data['type'];
-            $key = $a_data['key'];
-
-            if ($joiner != Constant::WHERE_JOIN_OR) {
-                //默认与
-                $joiner = Constant::WHERE_JOIN_AND;
+        if (isset($a_data['cond_list']) && is_array($a_data['cond_list'])) {
+            foreach ($a_data['cond_list'] as $key => $cond) {
+                $o_obj = new MyCond();
+                $o_obj->parseToObj($cond);
+                $this->cond_list[$key] = $o_obj;
             }
-
-            if (!in_array($type, self::$conditions)) {
-                //默认等于
-                $type = "=";
-            }
-            //在这里不判断key
-            return new MyWhere($joiner, $type, $key);
-
         }
-        return null;
+
+        if (isset($a_data['where_list']) && is_array($a_data['where_list'])) {
+            foreach ($a_data['where_list'] as $key => $where) {
+                $o_obj = new MyWhere();
+                $o_obj->parseToObj($where);
+                $this->where_list[$key] = $o_obj;
+            }
+        }
+        return $this;
+    }
+
+    function init($v1)
+    {
+        // TODO: Implement init() method.
     }
 }

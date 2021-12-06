@@ -8,6 +8,7 @@ if (!defined("WT_ROOT")) {
     define('WT_ROOT', realpath(dirname(__FILE__)));
 }
 SeasLog::setBasePath(WT_ROOT . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "logs");
+include_once(WT_ROOT . "/../core/Constant.php");
 include_once(WT_ROOT . "/../core/MyProject.php");
 include_once(WT_ROOT . "/../core/MyApp.php");
 //接受参数

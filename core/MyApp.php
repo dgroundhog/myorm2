@@ -11,6 +11,8 @@ include_once(CC_ROOT . "/MyField.php");
 include_once(CC_ROOT . "/MyModel.php");
 include_once(CC_ROOT . "/MyIndex.php");
 include_once(CC_ROOT . "/MyFun.php");
+include_once(CC_ROOT . "/MyWhere.php");
+include_once(CC_ROOT . "/MyCond.php");
 
 /**
  * 主程序模型
@@ -211,9 +213,6 @@ class MyApp extends MyStruct
                 $this->model_list[$key] = $o_obj;
             }
         }
-
-
-        //TODO model
         return $this;
     }
 
@@ -356,8 +355,6 @@ class MyApp extends MyStruct
                 $dbc->ccProc($o_model);
             }
         }
-
-
     }
 
     /**
@@ -401,7 +398,5 @@ class MyApp extends MyStruct
                 $mm->ccDoc($o_model);
             }
         }
-
-
     }
 }

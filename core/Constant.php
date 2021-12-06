@@ -49,8 +49,8 @@ class Constant
     /**
      * 条件链接方式
      */
-    const   WHERE_TYPE_AND = "AND";
-    const   WHERE_TYPE_OR = "OR";
+    const   COND_TYPE_AND = "AND";
+    const   COND_TYPE_OR = "OR";
     /**
      * 允许的mvc方案，目前先默认一下，后续再扩展
      * @var string[]
@@ -213,11 +213,10 @@ class Constant
     const FUN_TYPE_LIST = "LIST";
     const FUN_TYPE_LIST_WITH_PAGER = "LIST_WITH_PAGER";
     const FUN_TYPE_COUNT = "COUNT";
-    const FUN_TYPE_AVG = "AVG";
-    const FUN_TYPE_SUM = "SUM";
-    const FUN_TYPE_MAX = "MAX";
-    const FUN_TYPE_MIN = "MIN";
-
+    const FUN_TYPE_LIST_WITH_AVG = "AVG";
+    const FUN_TYPE_LIST_WITH_SUM = "SUM";
+    const FUN_TYPE_LIST_WITH_MAX = "MAX";
+    const FUN_TYPE_LIST_WITH_MIN = "MIN";
 
     /**
      * db 来源
@@ -232,45 +231,45 @@ class Constant
         self::FUN_TYPE_LIST => "获取列表",
         self::FUN_TYPE_LIST_WITH_PAGER => "获取列表带分页",
         self::FUN_TYPE_COUNT => "统计个数",
-        self::FUN_TYPE_AVG => "求平均值",
-        self::FUN_TYPE_SUM => "求和",
-        self::FUN_TYPE_MAX => "计算最大值",
-        self::FUN_TYPE_MIN => "计算最小值"
+        self::FUN_TYPE_LIST_WITH_AVG => "获取列表-带聚合平均值",
+        self::FUN_TYPE_LIST_WITH_SUM => "获取列表-带聚合求和",
+        self::FUN_TYPE_LIST_WITH_MAX => "获取列表-带聚合计算最大值",
+        self::FUN_TYPE_LIST_WITH_MIN => "获取列表-带聚合计算最小值"
 
     );
 
-    const WHERE_TYPE_EQ = "EQ";//= 等于
-    const WHERE_TYPE_NEQ = "NEQ";//!= 不等于
-    const WHERE_TYPE_GT = "GT";//&GT; 大于
-    const WHERE_TYPE_GTE = "GTE";//&GT;= 大于等于
-    const WHERE_TYPE_LT = "LT";//&LT; 少于
-    const WHERE_TYPE_LTE = "LTE";//&LT;= 少于等于
-    const WHERE_TYPE_KW = "KW";//关键字模糊匹配
-    const WHERE_TYPE_DATE = "DATE";//关键字模糊匹配
-    const WHERE_TYPE_TIME = "TIME";//日期范围内
-    const WHERE_TYPE_IN = "IN";//离散量范围内
-    const WHERE_TYPE_NOTIN = "NOTIN";//离散量范围外
-    const WHERE_TYPE_BETWEEN = "BETWEEN";//标量范围内
-    const WHERE_TYPE_NOTBETWEEN = "BETWEEN";//标量范围外
+    const COND_TYPE_EQ = "EQ";//= 等于
+    const COND_TYPE_NEQ = "NEQ";//!= 不等于
+    const COND_TYPE_GT = "GT";//&GT; 大于
+    const COND_TYPE_GTE = "GTE";//&GT;= 大于等于
+    const COND_TYPE_LT = "LT";//&LT; 少于
+    const COND_TYPE_LTE = "LTE";//&LT;= 少于等于
+    const COND_TYPE_KW = "KW";//关键字模糊匹配
+    const COND_TYPE_DATE = "DATE";//关键字模糊匹配
+    const COND_TYPE_TIME = "TIME";//日期范围内
+    const COND_TYPE_IN = "IN";//离散量范围内
+    const COND_TYPE_NOTIN = "NOTIN";//离散量范围外
+    const COND_TYPE_BETWEEN = "BETWEEN";//标量范围内
+    const COND_TYPE_NOTBETWEEN = "BETWEEN";//标量范围外
 
     /**
      *  查询条件
      * @var string[]
      */
-    public static $a_where_type = array(
-        self::WHERE_TYPE_EQ => "= 等于",
-        self::WHERE_TYPE_NEQ => "!= 不等于",
-        self::WHERE_TYPE_GT => "&gt; 大于",
-        self::WHERE_TYPE_GTE => "&gt;= 大于等于",
-        self::WHERE_TYPE_LT => "&lt; 少于",
-        self::WHERE_TYPE_LTE => "&lt;= 少于等于",
-        self::WHERE_TYPE_KW => "关键字模糊匹配",
-        self::WHERE_TYPE_DATE => "日期范围内",
-        self::WHERE_TYPE_TIME => "时间范围内",
-        self::WHERE_TYPE_IN => "离散量范围内",
-        self::WHERE_TYPE_NOTIN => "离散量范围外",
-        self::WHERE_TYPE_BETWEEN => "标量范围内",
-        self::WHERE_TYPE_NOTBETWEEN => "标量范围外"
+    public static $a_cond_type = array(
+        self::COND_TYPE_EQ => "= 等于",
+        self::COND_TYPE_NEQ => "!= 不等于",
+        self::COND_TYPE_GT => "&gt; 大于",
+        self::COND_TYPE_GTE => "&gt;= 大于等于",
+        self::COND_TYPE_LT => "&lt; 少于",
+        self::COND_TYPE_LTE => "&lt;= 少于等于",
+        self::COND_TYPE_KW => "关键字模糊匹配",
+        self::COND_TYPE_DATE => "日期范围内",
+        self::COND_TYPE_TIME => "时间范围内",
+        self::COND_TYPE_IN => "离散量范围内",
+        self::COND_TYPE_NOTIN => "离散量范围外",
+        self::COND_TYPE_BETWEEN => "标量范围内",
+        self::COND_TYPE_NOTBETWEEN => "标量范围外"
     );
 
 }
