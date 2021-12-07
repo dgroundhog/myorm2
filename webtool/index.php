@@ -118,6 +118,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <?php include("./_tpl_model_list.php"); ?>
 <?php include("./_tpl_model_design.php"); ?>
 <?php include("./_tpl_model_menu.php"); ?>
+<?php include("./_tpl_model_where.php"); ?>
 <!-- /tmpl -->
 
 <!-- REQUIRED SCRIPTS -->
@@ -174,7 +175,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             infoText: '共{0}个',
             infoTextFiltered: '搜索到{0}个 ,共{1}个',
             infoTextEmpty: '列表为空',
-            selectorMinimalHeight: 200,
+            selectorMinimalHeight: 150,
             moveOnSelect: false,
         });
         //

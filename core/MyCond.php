@@ -15,7 +15,8 @@ class MyCond extends MyStruct
     public $field = "";
     public $v1 = "";//普通，hash用逗号分隔 @NOW @@ 外部输入
     public $v2 = "";
-    public $input_by = "";//输入类型
+    public $v1_type = "";//V1输入类型
+    public $v2_type = "";//V2输入类型
 
     /**
      * MyWhere constructor.
@@ -28,10 +29,11 @@ class MyCond extends MyStruct
 
     public $basic_keys = array(
         //type
-        "input_by",
+        "field",
         "v1",
         "v2",
-        "field"
+        "v1_type",
+        "v2_type"
     );
 
     /**
@@ -40,7 +42,7 @@ class MyCond extends MyStruct
      */
     function getAsArray()
     {
-        return  $this->getBasicAsArray();
+        return $this->getBasicAsArray();
     }
 
     function parseToObj($a_data)

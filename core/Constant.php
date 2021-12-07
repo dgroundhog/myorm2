@@ -250,7 +250,7 @@ class Constant
     const COND_TYPE_IN = "IN";//离散量范围内
     const COND_TYPE_NOTIN = "NOTIN";//离散量范围外
     const COND_TYPE_BETWEEN = "BETWEEN";//标量范围内
-    const COND_TYPE_NOTBETWEEN = "BETWEEN";//标量范围外
+    const COND_TYPE_NOTBETWEEN = "NOTBETWEEN";//标量范围外
 
     /**
      *  查询条件
@@ -270,6 +270,21 @@ class Constant
         self::COND_TYPE_NOTIN => "离散量范围外",
         self::COND_TYPE_BETWEEN => "标量范围内",
         self::COND_TYPE_NOTBETWEEN => "标量范围外"
+    );
+
+
+    const COND_VAl_TYPE_FUN = "FUN";//db内部函数
+    const COND_VAl_TYPE_INPUT = "INPUT";//外部输入
+    const COND_VAl_TYPE_FIXED = "FIXED";//固定值
+
+    /**
+     *  查询条件
+     * @var string[]
+     */
+    public static $a_cond_val_type = array(
+        self::COND_VAl_TYPE_INPUT => "外部输入",
+        self::COND_VAl_TYPE_FUN => "内部函数",
+        self::COND_VAl_TYPE_FIXED => "固定值"
     );
 
 }

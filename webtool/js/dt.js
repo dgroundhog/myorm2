@@ -1932,7 +1932,7 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
     }
     $("#txt_model_fun_mid").val(model_id);
     console.log("过滤可用于索引的字段2")
-    var _fieldCanIndex = new Object();
+    self.project.curr_fieldCanIndex = new Object();
     for (var ii in _curr_model.field_list) {
         var ff = _curr_model.field_list[ii];
         console.log(ff)
@@ -1944,7 +1944,7 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
             || typeU == 'DATE'
             || typeU == 'DATETIME'
         ) {
-            _fieldCanIndex[ii] = ff;
+            self.project.curr_fieldCanIndex[ii] = ff;
         }
     }
     //其他单选字段
@@ -1963,12 +1963,12 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
     sel_fun_group_field[0].options.add(o2);
     sel_fun_order_by[0].options.add(o3);
 
-    for (var ii in _fieldCanIndex) {
-        var ff = _fieldCanIndex[ii];
+    for (var ii in self.project.curr_fieldCanIndex) {
+        var ff = self.project.curr_fieldCanIndex[ii];
 
         var _uuid = ff.uuid;
         var _txt = ff.name + " | " + ff.title;
-        var _sel = (undefined != _fieldCanIndex[_uuid]) ? true : false;
+        var _sel = (undefined != self.project.curr_fieldCanIndex[_uuid]) ? true : false;
         var o1 = self.editor.ccOption(_uuid, _txt, _sel);
         var o2 = self.editor.ccOption(_uuid, _txt, _sel);
         var o3 = self.editor.ccOption(_uuid, _txt, _sel);
@@ -2139,6 +2139,179 @@ App.dt.project.modelFunDrop = function (model_id, fun_id) {
     }
 }
 
+/**
+ * 全局临时条件
+ * @type {MyWhere}
+ */
+App.dt.project.curr_where = new MyWhere();
+App.dt.project.curr_fieldCanIndex = new Object();
+
+/**
+ * 初始化渲染一个查询条件
+ * cond_list
+ * where_list
+ */
+App.dt.project.modelFunWhereInit = function () {
+    var self = App.dt;
+    var a_data = new Object();
+    a_data['where0'] = self.project.curr_where;
+    a_data['model_field_list'] = self.project.curr_fieldCanIndex;
+
+    var tpl = new jSmart(self.getTpl('tpl_model_where'));
+    var res = tpl.fetch(a_data);
+    $("#block_where").html(res);
+}
+
+/**
+ * 添加一个查询条件组合
+ *
+ * @param par 父亲节点
+ * @param type
+ */
+App.dt.project.modelFunWhereAdd = function (model_id, par, type) {
+
+    var self = App.dt;
+    var o_where = new MyWhere();
+    if (par == '') {
+        if (self.project.curr_where == null) {
+            self.fail("当前已经添加了一个根条件");
+            return;
+        }
+        console.log("添加根查询条件");
+        o_where.uuid = App.su.maths.uuid.create();
+        o_where.type = type;
+        self.project.curr_where = o_where;
+    }
+    self.project.modelFunWhereInit();
+}
+
+/**
+ * 删除一个查询条件组合
+ */
+App.dt.project.modelFunWhereDrop = function () {
+
+}
+
+
+/**
+ * 编辑一个查询条件
+ */
+App.dt.project.modelFunCondEdit = function (where_id, cond_id) {
+    var self = App.dt;
+    if (undefined == self.project.curr_where || null == self.project.curr_where) {
+        self.fail("非法任务流程--modelFunCondEdit");
+        return;
+    }
+
+    var sel_fun_cond_field = $("#sel_fun_cond_field");
+    var sel_fun_cond_type = $("#sel_fun_cond_type");
+    var sel_fun_cond_v1_type = $("#sel_fun_cond_v1_type");
+    var sel_fun_cond_v2_type = $("#sel_fun_cond_v2_type");
+    sel_fun_cond_field.empty();
+    for (var ii in self.project.curr_fieldCanIndex) {
+        var ff = self.project.curr_fieldCanIndex[ii];
+        var _uuid = ff.uuid;
+        var _txt = ff.name + " | " + ff.title;
+        var _sel = (undefined != self.project.curr_fieldCanIndex[_uuid]) ? true : false;
+        var o = self.editor.ccOption(_uuid, _txt, _sel);
+        sel_fun_cond_field[0].options.add(o);
+    }
+    var o = self.editor.ccOption("##", "聚合新健");
+    sel_fun_cond_field[0].options.add(o);
+
+
+    $("#txt_where_uuid").val(where_id);
+    if (App.su.isEmpty(cond_id)) {
+        console.log("编辑新条件");
+
+        $("#txt_fun_cond_v1").val("");
+        $("#txt_fun_cond_v2").val("");
+        $("#txt_cond_uuid").val("");
+
+
+    } else {
+        console.log("编辑旧条件");
+        //var _currCond =  new MyCond();
+        var _currCond = null;
+        if (undefined != self.project.curr_where.cond_list[cond_id]) {
+            _currCond = self.project.curr_where.cond_list[cond_id];
+        } else {
+            if (undefined != self.project.curr_where.where_list[where_id]) {
+                var _where2 = self.project.curr_where.where_list[where_id];
+                _currCond = _where2.cond_list[cond_id];
+            }
+        }
+        if (null == _currCond) {
+            self.fail("非法任务流程2--modelFunCondEdit");
+            return;
+        }
+        sel_fun_cond_type.val(_currCond.type);
+        sel_fun_cond_v1_type.val(_currCond.v1_type);
+        sel_fun_cond_v2_type.val(_currCond.v2_type);
+        $("#txt_fun_cond_v1").val(_currCond.v1);
+        $("#txt_fun_cond_v2").val(_currCond.v2);
+        //cond_id
+        $("#txt_cond_uuid").val(_currCond.uuid);
+    }
+
+
+}
+
+/**
+ * 保存一个查询条件
+ */
+App.dt.project.modelFunCondSave = function () {
+    var self = App.dt;
+    var _cond_id = $("#txt_cond_uuid").val();
+    var _where_id = $("#txt_where_uuid").val();
+
+    var _currCond = null;
+    if (!App.su.isEmpty(_cond_id)) {
+        if (undefined != self.project.curr_where.cond_list[_cond_id]) {
+            _currCond = self.project.curr_where.cond_list[_cond_id];
+        } else {
+            if (undefined != self.project.curr_where.where_list[_where_id]) {
+                var _where2 = self.project.curr_where.where_list[_where_id];
+                _currCond = _where2.cond_list[_cond_id];
+            }
+        }
+    }
+    var _now = App.su.datetime.getCurrentDateTime();
+    if (null == _currCond) {
+        console.log("保存新配置");
+        _currCond = new MyCond();
+        _cond_id = App.su.maths.uuid.create();
+        _currCond.uuid = _cond_id;
+        _currCond.ctime = _now;
+    } else {
+        console.log("保存旧配置");
+    }
+    _currCond.utime = _now;
+    _currCond.field = $("#sel_fun_cond_field").val();
+    _currCond.type = $("#sel_fun_cond_type").val();
+    _currCond.v1_type = $("#sel_fun_cond_v1_type").val();
+    _currCond.v2_type = $("#sel_fun_cond_v2_type").val();
+    _currCond.v1 = $("#txt_fun_cond_v1").val();
+    _currCond.v2 = $("#txt_fun_cond_v2").val();
+
+    if (undefined != self.project.curr_where.where_list[_where_id]) {
+        self.project.curr_where.where_list[_where_id].cond_list[_cond_id] = _currCond;
+    } else {
+        self.project.curr_where.cond_list[_cond_id] = _currCond;
+    }
+
+    self.succ("临时添加");
+    self.project.modelFunWhereInit();
+
+}
+
+
+/**
+ * 删除一个查询条件
+ */
+App.dt.project.modelFunCondDrop = function () {
+
+}
 
 /**
  * 主程序入口
@@ -2299,6 +2472,10 @@ App.dt.init = function () {
 
     $("#btn_confirm_import").click(function () {
         self.project.modelImportGlobalFieldDone();
+    });
+
+    $("#btn_save_cond").click(function () {
+        self.project.modelFunCondSave();
     });
 
 

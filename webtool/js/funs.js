@@ -437,8 +437,7 @@ MyFun.prototype.parse = function (json_one) {
 function MyWhere() {
     MyStruct.call(this);
     this.scope = "WHERE";
-    this.joiner = "AND";
-    this.level = 0;
+    this.type = "AND";
     this.parent_where = null;
     this.cond_list = [];//操作字段
     this.where_list = [];//操作字段
@@ -456,8 +455,7 @@ MyWhere.prototype.parse = function (json_one) {
     //解析一个单体
     this.parseBasic(json_one);
 
-    this.joiner = json_one.joiner;
-    this.level = json_one.level;
+    this.type = json_one.type;
     this.parent_where = json_one.parent_where;
 
     this.cond_list = new Object();
@@ -488,6 +486,8 @@ function MyCond() {
     this.field = "";
     this.v1 = "@@";
     this.v2 = "@@";
+    this.v1_type = "@@";
+    this.v2_type = "@@";
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
@@ -500,8 +500,10 @@ MyCond.prototype.constructor = MyCond;
 MyCond.prototype.parse = function (json_one) {
     //解析一个单体
     this.parseBasic(json_one);
-    this.type = "EQ";
-    this.field = "";
-    this.v1 = "";
-    this.v2 = "";
+    this.type = json_one.type;
+    this.field = json_one.field;
+    this.v1 =json_one.v1;
+    this.v2 = json_one.v2;
+    this.v1_type = json_one.v1_type;
+    this.v2_type = json_one.v2_type;
 }

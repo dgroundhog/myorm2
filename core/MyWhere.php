@@ -9,18 +9,6 @@ class MyWhere extends MyStruct
 {
 
     /**
-     * 查询列表的名字
-     * @var string
-     */
-    public $joiner =Constant::WHERE_JOIN_AND;
-
-    /**
-     * 嵌套级别，最多2级
-     * @var int
-     */
-    public $level = 0;
-
-    /**
      * 父级id
      * @var string
      */
@@ -49,8 +37,6 @@ class MyWhere extends MyStruct
 
     public $basic_keys = array(
         //type
-        "joiner",
-        "level",
         "parent_where"
     );
 
