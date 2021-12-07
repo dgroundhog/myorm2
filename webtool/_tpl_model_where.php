@@ -1,7 +1,11 @@
 <?php echo '<script id="tpl_model_where" type="text/x-jsmart-tmpl">' ?>
+    {if $where0 != null}
+
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">{if $where0.type eq 'AND'} 与 {else} 或 {/if} 组合</h3>
+            <h3 class="card-title">
+                <i class="fa fa-tree"></i>
+                {if $where0.type eq 'AND'} 与 {else} 或 {/if} 组合</h3>
             <div class="card-tools">
 
                 <button type="button" class="btn btn-tool "
@@ -12,12 +16,12 @@
                 <button type="button" class="btn btn-tool "
                         onclick="javascript:App.dt.project.modelFunWhereAdd('{$where0.uuid}','AND');"
                 >
-                    <i class="fas fa-plus-circle"></i> 与嵌套
+                    <i class="fas fa-plus-circle"></i> [与]子嵌套
                 </button>
                 <button type="button" class="btn btn-tool "
                         onclick="javascript:App.dt.project.modelFunWhereAdd('{$where0.uuid}','OR');"
                 >
-                    <i class="fas fa-plus-circle"></i> 或嵌套
+                    <i class="fas fa-plus-circle"></i> [或]子嵌套
                 </button>
 
                 <button type="button" class="btn btn-tool "
@@ -39,7 +43,7 @@
                         <tr>
                             <td>
                                 {if $cond_field eq '##'}
-                                聚合的结果健
+                                聚合新健
                                 {else}
                                 {foreach $model_field_list as $ii => $iff4}
                                 {if $cond_field eq $iff4.uuid} {$iff4.name}{/if}
@@ -68,7 +72,10 @@
                             <td colspan="7">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h3 class="card-title">{if $where1.type eq 'AND'} 与 {else} 或 {/if} 子嵌套组合</h3>
+                                        <h3 class="card-title">
+                                            <i class="fa fa-tree"></i>
+
+                                            {if $where1.type eq 'AND'} 与 {else} 或 {/if} 子嵌套组合</h3>
                                         <div class="card-tools">
                                             <button type="button" class="btn btn-tool "
                                                     onclick="javascript:App.dt.project.modelFunCondEdit('{$where1.uuid}','');"
@@ -97,7 +104,7 @@
                                                     <tr>
                                                         <td>
                                                             {if $cond_field eq '##'}
-                                                            聚合的结果健
+                                                            聚合新健
                                                             {else}
                                                             {foreach $model_field_list as $ii => $iff4}
                                                             {if $cond_field eq $iff4.uuid} {$iff4.name}{/if}
@@ -113,10 +120,10 @@
                                                         <td class="text-right py-0 align-middle">
                                                             <div class="btn-group btn-group-sm">
                                                                 <a href="###" class="btn btn-info"
-                                                                   onclick="javascript:App.dt.project.modelFunCondEdit('{$where0.uuid}','{$cond.uuid}');"
+                                                                   onclick="javascript:App.dt.project.modelFunCondEdit('{$where1.uuid}','{$cond.uuid}');"
                                                                 ><i class="fas fa-edit"></i> 改</a>
                                                                 <a href="###" class="btn btn-danger"
-                                                                   onclick="javascript:App.dt.project.modelFunCondDrop('{$where0.uuid}','{$cond.uuid}');"
+                                                                   onclick="javascript:App.dt.project.modelFunCondDrop('{$where1.uuid}','{$cond.uuid}');"
                                                                 ><i class="fas fa-trash"></i> 删</a>
                                                             </div>
                                                         </td>
@@ -140,5 +147,5 @@
         <!-- /.card-footer -->
     </div>
     <!-- /.card -->
-
+    {/if}
 <?php echo '</script>'; ?>

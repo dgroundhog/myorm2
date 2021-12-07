@@ -19,7 +19,9 @@
                                 <div class="col-sm-10">
                                     <select id="sel_fun_type" class="form-control form-control-sm select2">
                                         <?php foreach (Constant::$a_fun_type as $key => $value) { ?>
-                                            <option value="<?= $key ?>"><?= $value ?></option>
+                                            <option value="<?= $key ?>">
+                                                <?= $key ?> ｜ <?= $value ?>
+                                            </option>
                                         <?php } ?>
                                     </select>
                                 </div>
@@ -149,11 +151,11 @@
                                 <div class="card-tools">
                                     <button class="btn btn-tool" type="button"
                                             onclick="javascript:App.dt.project.modelFunWhereAdd('','AND');">
-                                        <i class="fas fa-plus-circle"></i> 与
+                                        <i class="fas fa-plus-circle"></i> 与条件组合
                                     </button>
                                     <button class="btn btn-tool" type="button"
                                             onclick="javascript:App.dt.project.modelFunWhereAdd('','OR');">
-                                        <i class="fas fa-plus-circle"></i> 或
+                                        <i class="fas fa-plus-circle"></i> 或条件组合
                                     </button>
                                 </div>
                             </div>
@@ -161,7 +163,7 @@
 
                             </div>
 
-                            <div class="card-footer">
+                            <div class="card-footer" id="block_edit_mode_conf">
                                 <form class="form-horizontal ">
                                     <div class="form-group row">
                                         <label for="sel_fun_cond_field" class="col-sm-4 col-form-label">操作字段</label>
@@ -177,7 +179,9 @@
                                         <div class="col-sm-8">
                                             <select id="sel_fun_cond_type" class="form-control form-control-sm select2">
                                                 <?php foreach (Constant::$a_cond_type as $key => $value) { ?>
-                                                    <option value="<?= $key ?>"><?= $value ?></option>
+                                                    <option value="<?= $key ?>">
+                                                        <?= $key ?> ｜ <?= $value ?>
+                                                        </option>
                                                 <?php } ?>
                                             </select>
                                         </div>
@@ -189,7 +193,9 @@
                                             <select id="sel_fun_cond_v1_type"
                                                     class="form-control form-control-sm select2">
                                                 <?php foreach (Constant::$a_cond_val_type as $key => $value) { ?>
-                                                    <option value="<?= $key ?>"><?= $value ?></option>
+                                                    <option value="<?= $key ?>">
+                                                        <?= $key ?> ｜ <?= $value ?>
+                                                    </option>
                                                 <?php } ?>
                                             </select>
                                         </div>
@@ -198,7 +204,7 @@
                                     <div class="form-group row">
                                         <label for="txt_fun_cond_v1" class="col-sm-4 col-form-label">参数1</label>
                                         <div class="col-sm-8">
-                                <textarea class="form-control form-control-sm" rows="2"
+                                <textarea class="form-control form-control-sm" rows="1"
                                           id="txt_fun_cond_v1"></textarea>
                                         </div>
                                     </div>
@@ -210,7 +216,9 @@
                                             <select id="sel_fun_cond_v2_type"
                                                     class="form-control form-control-sm select2">
                                                 <?php foreach (Constant::$a_cond_val_type as $key => $value) { ?>
-                                                    <option value="<?= $key ?>"><?= $value ?></option>
+                                                    <option value="<?= $key ?>">
+                                                        <?= $key ?> ｜ <?= $value ?>
+                                                    </option>
                                                 <?php } ?>
                                             </select>
                                         </div>
@@ -223,24 +231,19 @@
                                                    id="txt_fun_cond_v2"/>
                                         </div>
                                     </div>
-
                                     <div class="form-group row">
                                         <label for="btn_save_cond" class="col-sm-4 col-form-label"></label>
                                         <div class="col-sm-8">
-                                            <button class="btn btn-success btn-sm" id="txt_fun_cond_v2">
+                                            <button type="button" class="btn btn-success btn-sm" id="btn_save_cond">
                                                 保存条件
                                             </button>
                                         </div>
                                     </div>
-
-
                                     <input type="hidden" id="txt_cond_uuid"/>
                                     <input type="hidden" id="txt_where_uuid"/>
                                 </form>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
 

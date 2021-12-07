@@ -210,13 +210,13 @@ class Constant
     const FUN_TYPE_DELETE = "DELETE";
     const FUN_TYPE_UPDATE = "UPDATE";
     const FUN_TYPE_FETCH = "FETCH";
-    const FUN_TYPE_LIST = "LIST";
-    const FUN_TYPE_LIST_WITH_PAGER = "LIST_WITH_PAGER";
-    const FUN_TYPE_COUNT = "COUNT";
-    const FUN_TYPE_LIST_WITH_AVG = "AVG";
-    const FUN_TYPE_LIST_WITH_SUM = "SUM";
-    const FUN_TYPE_LIST_WITH_MAX = "MAX";
-    const FUN_TYPE_LIST_WITH_MIN = "MIN";
+    const FUN_TYPE_COUNT = "COUNT";//普通统计，返回个数
+    const FUN_TYPE_LIST = "LIST";//普通列表
+    const FUN_TYPE_LIST_WITH_COUNT = "LIST_COUNT";
+    const FUN_TYPE_LIST_WITH_AVG = "LIST_AVG";
+    const FUN_TYPE_LIST_WITH_SUM = "LIST_SUM";
+    const FUN_TYPE_LIST_WITH_MAX = "LIST_MAX";
+    const FUN_TYPE_LIST_WITH_MIN = "LIST_MIN";
 
     /**
      * db 来源
@@ -227,15 +227,14 @@ class Constant
         self::FUN_TYPE_ADD => "添加",
         self::FUN_TYPE_DELETE => "删除",
         self::FUN_TYPE_UPDATE => "更新",
-        self::FUN_TYPE_FETCH => "获取一个",
-        self::FUN_TYPE_LIST => "获取列表",
-        self::FUN_TYPE_LIST_WITH_PAGER => "获取列表带分页",
+        self::FUN_TYPE_FETCH => "按主键获取一个",
         self::FUN_TYPE_COUNT => "统计个数",
+        self::FUN_TYPE_LIST => "获取列表",
+        self::FUN_TYPE_LIST_WITH_COUNT => "聚合统计",
         self::FUN_TYPE_LIST_WITH_AVG => "获取列表-带聚合平均值",
         self::FUN_TYPE_LIST_WITH_SUM => "获取列表-带聚合求和",
         self::FUN_TYPE_LIST_WITH_MAX => "获取列表-带聚合计算最大值",
         self::FUN_TYPE_LIST_WITH_MIN => "获取列表-带聚合计算最小值"
-
     );
 
     const COND_TYPE_EQ = "EQ";//= 等于

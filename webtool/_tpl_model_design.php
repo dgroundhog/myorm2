@@ -1,6 +1,6 @@
 <?php echo '<script id="tpl_model_design" type="text/x-jsmart-tmpl">' ?>
- {assign var="model_total" value=$model_list|count}
- {assign var="model_inc" value=1}
+    {assign var="model_total" value=$model_list|count}
+    {assign var="model_inc" value=1}
     {foreach $model_list as $i => $model}
     <div class="container-fluid">
         <div class="row">
@@ -9,7 +9,8 @@
                     <div class="card-header">
                         <h3 class="card-title">
                             <a name="model_{$model.uuid}">
-                                <i class="fa fa-cubes"></i> ({$model_inc++} / {$model_total}) 模型设计 <small>{$model.name} - {$model.title}</small>
+                                <i class="fa fa-cubes"></i> ({$model_inc++} / {$model_total}) 模型设计 <small>{$model.name}
+                                    - {$model.title}</small>
                             </a>
                         </h3>
                         <div class="card-tools">
@@ -67,7 +68,7 @@
                             {foreach $model.field_list as $i => $field}
                             <tr class="field_row" title="{$field.uuid}">
                                 <td style="cursor: move;">
-                                    <i class="fa fa-sort" ></i>
+                                    <i class="fa fa-sort"></i>
                                     {$field.ctime}
                                 </td>
                                 <td>{if $field.is_global==1}全局{else}私有{/if}</td>
@@ -138,9 +139,9 @@
                                 <td>{$idx.type}</td>
                                 <td>{$idx.name}</td>
                                 <td>
-                                        {foreach $idx.field_list as $ii => $iff}
-                                       <strong>{$iff.name}, </strong>
-                                        {/foreach}
+                                    {foreach $idx.field_list as $ii => $iff}
+                                    <strong>{$iff.name}, </strong>
+                                    {/foreach}
 
                                 </td>
                                 <td>{$idx.memo}</td>
@@ -179,13 +180,14 @@
                         <table class="table table-striped table-sm ">
                             <thead>
                             <tr>
-                                <th>创建时间</th>
                                 <th>类型</th>
                                 <th>名称</th>
                                 <th>操作字段</th>
                                 <th>聚合字段</th>
                                 <th>分组键</th>
                                 <th>条件列表</th>
+                                <th>分页</th>
+                                <th>页大小</th>
                                 <th>排序键</th>
                                 <th>排序方向</th>
                                 <th>备注</th>
@@ -197,7 +199,7 @@
                             {foreach $model.fun_list as $i => $fun}
 
                             <tr>
-                                <td>{$fun.ctime}</td>
+
                                 <td>{$fun.type}</td>
                                 <td>{$fun.name}</td>
 
@@ -218,12 +220,12 @@
                                     {if $fun.group_field eq '@@'}
                                     无
                                     {else}
-                                        {assign var="fun_group_field" value=$fun.group_field}
-                                        {foreach $model_field_list as $ii => $iff2}
-                                            {if $fun_group_field eq $iff2.uuid}
-                                            <strong>{$iff2.name}</strong>
-                                            {/if}
-                                        {/foreach}
+                                    {assign var="fun_group_field" value=$fun.group_field}
+                                    {foreach $model_field_list as $ii => $iff2}
+                                    {if $fun_group_field eq $iff2.uuid}
+                                    <strong>{$iff2.name}</strong>
+                                    {/if}
+                                    {/foreach}
                                     {/if}
                                 </td>
 
@@ -231,40 +233,135 @@
                                     {if $fun.group_by=='-1'}
                                     无
                                     {else}
-                                        {assign var="fun_group_by" value=$fun.group_by}
-                                        {foreach $model_field_list as $ii => $iff3}
-                                        {if $fun_group_by eq $iff3.uuid}
-                                        <strong>{$iff3.name}</strong>
-                                        {/if}
-                                        {/foreach}
+                                    {assign var="fun_group_by" value=$fun.group_by}
+                                    {foreach $model_field_list as $ii => $iff3}
+                                    {if $fun_group_by eq $iff3.uuid}
+                                    <strong>{$iff3.name}</strong>
+                                    {/if}
+                                    {/foreach}
                                     {/if}
                                 </td>
 
                                 <td>
-                                    WHERE TODO
+                                    {if $fun.where != null}
+                                    {assign var="where0" value=$fun.where}
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <span>-
+                                                {if $where0.type eq 'OR'} 或 {else} 与 {/if} 组合</span>
+                                        </div>
+                                        <!-- /.card-header -->
+                                        <div class="card-body p-0">
+                                            <div class="card">
+                                                <div class="card-body p-1">
+                                                    <table class="table table-striped table-sm">
+                                                        {foreach $where0.cond_list as $i => $cond}
+                                                        {assign var="cond_field" value=$cond.field}
+                                                        <tr>
+                                                            <td>
+                                                                {if $cond_field eq '##'}
+                                                                聚合新健
+                                                                {else}
+                                                                {foreach $model_field_list as $ii => $iff4}
+                                                                {if $cond_field eq $iff4.uuid} {$iff4.name}{/if}
+                                                                {/foreach}
+                                                                {/if}
+                                                            </td>
+                                                            <td>{$cond.type}</td>
+                                                            <td>{$cond.v1_type}</td>
+                                                            <td>{$cond.v1}</td>
+                                                            <td>{$cond.v2_type}</td>
+                                                            <td>{$cond.v2}</td>
+                                                        </tr>
+                                                        {/foreach}
+                                                        {foreach $where0.where_list as $i => $where1}
+                                                        <tr>
+                                                            <td colspan="6">
+                                                                <div class="card">
+                                                                    <div class="card-header">
+                                                                        <span>-
+                                                                            {if $where1.type eq 'AND'} 与 {else} 或 {/if}
+                                                                            子嵌套组合</span>
+
+                                                                        <!-- /.card-tools -->
+                                                                    </div>
+                                                                    <!-- /.card-header -->
+                                                                    <div class="card-body p-0">
+                                                                        <div class="card">
+                                                                            <div class="card-body p-1">
+                                                                                <table class="table table-striped table-sm">
+                                                                                    {assign var="sub_cond_list"
+                                                                                    value=$where1.cond_list}
+                                                                                    {foreach $sub_cond_list as $ii =>
+                                                                                    $cond}
+                                                                                    {assign var="cond_field"
+                                                                                    value=$cond.field}
+                                                                                    <tr>
+                                                                                        <td>
+                                                                                            {if $cond_field eq '##'}
+                                                                                            聚合新健
+                                                                                            {else}
+                                                                                            {foreach $model_field_list
+                                                                                            as $ii => $iff4}
+                                                                                            {if $cond_field eq
+                                                                                            $iff4.uuid}
+                                                                                            {$iff4.name}{/if}
+                                                                                            {/foreach}
+                                                                                            {/if}
+                                                                                        </td>
+                                                                                        <td>{$cond.type}</td>
+                                                                                        <td>{$cond.v1_type}</td>
+                                                                                        <td>{$cond.v1}</td>
+                                                                                        <td>{$cond.v2_type}</td>
+                                                                                        <td>{$cond.v2}</td>
+                                                                                    </tr>
+                                                                                    {/foreach}
+                                                                                </table>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- /.card-body -->
+                                                                    <!-- /.card-footer -->
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        {/foreach}
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- /.card-body -->
+                                        <!-- /.card-footer -->
+                                    </div>
+                                    {/if}
+
+
                                 </td>
+
+                                <td>{$fun.pager_enable}</td>
+                                <td>{$fun.pager_size}</td>
 
                                 <td>
                                     {if $fun.order_enable=='0'}
                                     不排序
                                     {else}
-                                        {assign var="fun_order_by" value=$fun.order_by}
-                                        {if $fun_order_by eq '@@'}
-                                        外部输入
-                                        {else if $fun_order_by eq '##'}
-                                        聚合的结果健
-                                        {else}
-                                            {foreach $model_field_list as $ii => $iff4}
-                                                {if $fun_order_by eq $iff4.uuid} {$iff4.name}{/if}
-                                            {/foreach}
-                                        {/if}
+                                    {assign var="fun_order_by" value=$fun.order_by}
+                                    {if $fun_order_by eq '@@'}
+                                    外部输入
+                                    {else if $fun_order_by eq '##'}
+                                    聚合的结果健
+                                    {else}
+                                    {foreach $model_field_list as $ii => $iff4}
+                                    {if $fun_order_by eq $iff4.uuid} {$iff4.name}{/if}
+                                    {/foreach}
+                                    {/if}
                                     {/if}
                                 </td>
                                 <td>
                                     {if $fun.order_dir=='@@'}
-                                        外部输入
+                                    外部输入
                                     {else}
-                                        {$fun.order_dir}
+                                    {$fun.order_dir}
                                     {/if}
                                 </td>
 

@@ -45,6 +45,9 @@ class MyFun extends MyStruct
     public $order_by = "";//排序字段，为空时外部输入
     public $order_dir = "";//排序方向，默认DESC，为空时外部输入
 
+    public $pager_enable = 0;//是否需要排序
+    public $pager_size = 20;//排序字段，为空时外部输入
+
     public $basic_keys = array(
         "return_all",
         "group_field",
@@ -52,6 +55,8 @@ class MyFun extends MyStruct
         "order_enable",
         "order_by",
         "order_dir",
+        "pager_enable",
+        "pager_size",
     );
 
     /**

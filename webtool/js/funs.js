@@ -397,6 +397,9 @@ function MyFun() {
     this.order_enable = "0";
     this.order_by = "";
     this.order_dir = "";
+    this.pager_enable = "";//是否需要排序
+    this.pager_size = "";//排序字段，为空时外部输入
+
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
@@ -413,12 +416,22 @@ MyFun.prototype.parse = function (json_one) {
 
     this.type = json_one.type;
     this.return_all = json_one.type;
-    this.where = json_one.where;
+    //this.where = json_one.where;
     this.group_field = json_one.group_field;
     this.group_by = json_one.group_by;
     this.order_enable = json_one.order_enable;
     this.order_by = json_one.order_by;
     this.order_dir = json_one.order_dir;
+
+    this.pager_enable = json_one.pager_enable;
+    this.pager_size = json_one.pager_size;
+
+    this.where = null;
+    if(undefined != json_one.where && null != json_one.where ){
+        var o_where  =  new MyWhere();
+        o_where.parse(json_one.where);
+        this.where = o_where;
+    }
 
     this.field_list = new Object();
     for (var ii in json_one.field_list) {
