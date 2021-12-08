@@ -1,6 +1,5 @@
 <?php echo '<script id="tpl_model_where" type="text/x-jsmart-tmpl">' ?>
-    {if $where0 != null}
-
+    {if $where0 && $where0.uuid}
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">

@@ -243,12 +243,14 @@
                                 </td>
 
                                 <td>
-                                    {if $fun.where != null}
+                                    {if $fun.where && $fun.where.uuid}
                                     {assign var="where0" value=$fun.where}
                                     <div class="card">
                                         <div class="card-header">
                                             <span>-
-                                                {if $where0.type eq 'OR'} 或 {else} 与 {/if} 组合</span>
+                                                {if $where0.type eq 'OR'} 或 {else} 与 {/if} 组合
+                                             {$where0.cond_list|count}
+                                            </span>
                                         </div>
                                         <!-- /.card-header -->
                                         <div class="card-body p-0">
@@ -276,37 +278,34 @@
                                                         {/foreach}
                                                         {foreach $where0.where_list as $i => $where1}
                                                         <tr>
-                                                            <td colspan="6">
+                                                            <td class="p-1" colspan="6">
                                                                 <div class="card">
                                                                     <div class="card-header">
-                                                                        <span>-
+                                                                        <span>- -
                                                                             {if $where1.type eq 'AND'} 与 {else} 或 {/if}
-                                                                            子嵌套组合</span>
+                                                                            子嵌套组合 {$where1.cond_list|count}
+                                                                        </span>
 
                                                                         <!-- /.card-tools -->
                                                                     </div>
                                                                     <!-- /.card-header -->
-                                                                    <div class="card-body p-0">
+                                                                    <div class="card-body p-1">
                                                                         <div class="card">
                                                                             <div class="card-body p-1">
                                                                                 <table class="table table-striped table-sm">
-                                                                                    {assign var="sub_cond_list"
-                                                                                    value=$where1.cond_list}
-                                                                                    {foreach $sub_cond_list as $ii =>
-                                                                                    $cond}
-                                                                                    {assign var="cond_field"
-                                                                                    value=$cond.field}
+                                                                                    {assign var="sub_cond_list" value=$where1.cond_list}
+                                                                                    {foreach $sub_cond_list as $ii => $cond}
+                                                                                    {assign var="cond_field" value=$cond.field}
                                                                                     <tr>
                                                                                         <td>
                                                                                             {if $cond_field eq '##'}
                                                                                             聚合新健
                                                                                             {else}
-                                                                                            {foreach $model_field_list
-                                                                                            as $ii => $iff4}
-                                                                                            {if $cond_field eq
-                                                                                            $iff4.uuid}
-                                                                                            {$iff4.name}{/if}
-                                                                                            {/foreach}
+                                                                                                {foreach $model_field_list  as $ii => $iff4}
+                                                                                                    {if $cond_field eq $iff4.uuid}
+                                                                                                        {$iff4.name}
+                                                                                                    {/if}
+                                                                                                {/foreach}
                                                                                             {/if}
                                                                                         </td>
                                                                                         <td>{$cond.type}</td>
@@ -366,7 +365,7 @@
                                 </td>
 
 
-                                <td>{$idx.memo}</td>
+                                <td>{$fun.memo}</td>
 
                                 <td class="text-right py-0 align-middle">
                                     <div class="btn-group btn-group-sm">

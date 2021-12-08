@@ -33,8 +33,7 @@ App.dt.succ = function (_msg) {
 //加密、解密算法封装：
 App.dt.base64 = {
     // private property
-    _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-    // public method for encoding
+    _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", // public method for encoding
     encode: function (input) {
         var output = "";
         var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
@@ -53,9 +52,7 @@ App.dt.base64 = {
             } else if (isNaN(chr3)) {
                 enc4 = 64;
             }
-            output = output +
-                this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
-                this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
+            output = output + this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) + this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
         }
         return output;
     },
@@ -143,34 +140,28 @@ App.dt.aPost = function (_data, _callback) {
     var self = App.dt;
     var _uuid = App.su.maths.uuid.create();
     $.ajax({
-            url: "./tool.php?_r=" + _uuid,
-            type: 'POST',
-            data: _data,
-            dataType: 'json',
-            // processData: false,
-            // 告诉jQuery不要去处理发送的数据
-            // contentType: false,
-            // 告诉jQuery不要去设置Content-Type请求头
-            success: function (responseStr) {
-                console.log(responseStr);
-                if (responseStr.code == "ok") {
-                    _callback(responseStr.data);
+        url: "./tool.php?_r=" + _uuid, type: 'POST', data: _data, dataType: 'json', // processData: false,
+        // 告诉jQuery不要去处理发送的数据
+        // contentType: false,
+        // 告诉jQuery不要去设置Content-Type请求头
+        success: function (responseStr) {
+            console.log(responseStr);
+            if (responseStr.code == "ok") {
+                _callback(responseStr.data);
+            } else {
+                if (typeof responseStr == "undefined") {
+                    self.fail("501");
+                } else if (typeof responseStr.msg == "undefined") {
+                    self.fail(responseStr);
                 } else {
-                    if (typeof responseStr == "undefined") {
-                        self.fail("501");
-                    } else if (typeof responseStr.msg == "undefined") {
-                        self.fail(responseStr);
-                    } else {
-                        self.fail(responseStr.msg);
-                    }
+                    self.fail(responseStr.msg);
                 }
-            },
-            error: function (responseStr) {
-                console.log(responseStr);
-                self.fail("服务器异常，请稍后再试--" + responseStr);
             }
+        }, error: function (responseStr) {
+            console.log(responseStr);
+            self.fail("服务器异常，请稍后再试--" + responseStr);
         }
-    );
+    });
 }
 
 /**
@@ -381,18 +372,11 @@ App.dt.editor.setBootSwitchVal = function (who, val) {
 
 App.dt.editor.getUploadParam = function () {
     return {
-        showCancel: false,
-        showPreview: false,
-        theme: 'fas',
-        language: 'zh',
-        uploadUrl: function () {
+        showCancel: false, showPreview: false, theme: 'fas', language: 'zh', uploadUrl: function () {
             return 'img_upload.php?_rnd=' + App.su.maths.uuid.create();
-        },
-        allowedFileExtensions: ['jpg', 'png', 'gif'],
-        uploadExtraData: function () {
+        }, allowedFileExtensions: ['jpg', 'png', 'gif'], uploadExtraData: function () {
             return {
-                project: App.dt.data.curr_project,
-                version: App.dt.data.curr_project_version
+                project: App.dt.data.curr_project, version: App.dt.data.curr_project_version
             };
         }
     }
@@ -725,11 +709,8 @@ App.dt.project.onCloneApp = function (_server_return) {
     var _name = _project.name;
     //self.data.projects[_name] = _project;
     self.data.projects[_name] = _project;
-
     self.menu.render();
-
     self.project.loadProject(_name, _app_version);
-
     self.succ("复制成功");
 }
 
@@ -972,15 +953,12 @@ App.dt.project.confEdit = function (_uuid) {
         $("#sel_app_mvc").val(_conf.mvc);
         $("#sel_app_ui").val(_conf.ui);
 
-
         self.editor.setBootSwitchVal("#txt_conf_has_restful", _conf.has_restful);
         self.editor.setBootSwitchVal("#txt_conf_has_doc", _conf.has_doc);
         self.editor.setBootSwitchVal("#txt_conf_has_test", _conf.has_test);
-
     }
-
     $("#modal_edit_app_conf").modal('show');
-
+    $('.select2').change();
 }
 
 /**
@@ -996,7 +974,7 @@ App.dt.project.confDrop = function (_uuid) {
     //
     if (App.su.isEmpty(_uuid)) {
         self.fail("未选择配置");
-        return;
+
     } else {
         bootbox.confirm("确认删除这个配置", function (ret) {
             if (ret) {
@@ -1111,7 +1089,7 @@ App.dt.project.dbEdit = function (_uuid) {
     $("#sel_db_charset").val(_db.charset);
 
     $("#modal_edit_app_db").modal('show');
-
+    $('.select2').change();
 }
 
 /**
@@ -1126,7 +1104,7 @@ App.dt.project.dbDrop = function (_uuid) {
     }
     if (App.su.isEmpty(_uuid)) {
         self.fail("未选择配置");
-        return;
+
     } else {
         bootbox.confirm("确认删除这个数据库配置", function (ret) {
             if (ret) {
@@ -1161,7 +1139,7 @@ App.dt.project.fieldLoad = function () {
     g_field_list.html(res);
     g_field_list.sortable({
         stop: function () {
-            var _new_list = new Object();
+            var _new_list = {};
             var iii = 0
             g_field_list.find(".field_row").each(function () {
                 var _me = $(this);
@@ -1337,8 +1315,9 @@ App.dt.project.fieldEdit = function (_uuid, _model_id) {
     $("#txt_field_hash").val(_field.input_hash);
     $("#txt_field_position").val(_field.position);
 
-    $("#modal_edit_field").modal('show');
 
+    $("#modal_edit_field").modal('show');
+    $('.select2').change();
 }
 
 /**
@@ -1363,7 +1342,7 @@ App.dt.project.fieldDrop = function (_uuid, _model_id) {
 
     if (App.su.isEmpty(_uuid)) {
         self.fail("未选择字段");
-        return;
+
     } else {
         bootbox.confirm("确认删除这个字段配置", function (ret) {
             if (ret) {
@@ -1406,6 +1385,7 @@ App.dt.project.modelLoad = function () {
     var res = tpl.fetch(_curr_app);
     $("#table_model_list").html(res);
 
+    console.log(_curr_app);
     var tpl2 = new jSmart(self.getTpl('tpl_model_design'));
     var res2 = tpl2.fetch(_curr_app);
     $("#model_design").html(res2);
@@ -1423,7 +1403,7 @@ App.dt.project.modelLoad = function () {
         var _old_list = _model.field_list;
         _mm.sortable({
             stop: function () {
-                var _new_list = new Object();
+                var _new_list = {};
                 var iii = 0
                 _mm.find(".field_row").each(function () {
                     var _me = $(this);
@@ -1522,7 +1502,7 @@ App.dt.project.modelEdit = function (_uuid) {
     }
 
     $("#modal_edit_model").modal('show');
-
+    $('.select2').change();
 }
 
 /**
@@ -1537,7 +1517,7 @@ App.dt.project.modelDrop = function (_uuid) {
     }
     if (App.su.isEmpty(_uuid)) {
         self.fail("未选择模型");
-        return;
+
     } else {
         bootbox.confirm("确认删除这个模型", function (ret) {
             if (ret) {
@@ -1580,8 +1560,7 @@ function clone(item) {
         return item;
     } // null, undefined values check
 
-    var types = [Number, String, Boolean],
-        result;
+    var types = [Number, String, Boolean], result;
 
     // normalizing primitives if someone did new String('aaa'), or new Number('444');
     types.forEach(function (type) {
@@ -1750,7 +1729,7 @@ App.dt.project.modelIndexEdit = function (model_id, index_id) {
         return;
     }
 
-    var _indexOld = new Object();
+    var _indexOld = {};
 
     $("#txt_model_index_mid").val(model_id);
     if (App.su.isEmpty(index_id)) {
@@ -1770,18 +1749,12 @@ App.dt.project.modelIndexEdit = function (model_id, index_id) {
 
     }
     console.log("过滤可用于索引的字段")
-    var _index2b = new Object();
+    var _index2b = {};
     for (var ii in _curr_model.field_list) {
         var ff = _curr_model.field_list[ii];
         console.log(ff)
         var typeU = ff.type.toUpperCase();
-        if (typeU == 'INT'
-            || typeU == 'CHAR'
-            || typeU == 'STRING'
-            || typeU == 'LONGINT'
-            || typeU == 'DATE'
-            || typeU == 'DATETIME'
-        ) {
+        if (typeU == 'INT' || typeU == 'CHAR' || typeU == 'STRING' || typeU == 'LONGINT' || typeU == 'DATE' || typeU == 'DATETIME') {
             _index2b[ii] = ff;
         }
     }
@@ -1804,7 +1777,7 @@ App.dt.project.modelIndexEdit = function (model_id, index_id) {
     sel_index.bootstrapDualListbox('refresh');
 
     $("#modal_edit_index").modal('show');
-
+    $('.select2').change();
 }
 
 /**
@@ -1842,21 +1815,15 @@ App.dt.project.modelIndexSave = function () {
     _idx.type = $("#sel_index_type").val();
 
     console.log("过滤可用于索引的字段")
-    var _index2b = new Object();
+    var _index2b = {};
     for (var ii in _curr_model.field_list) {
         var ff = _curr_model.field_list[ii];
         var typeU = ff.type.toUpperCase();
-        if (typeU == 'INT'
-            || typeU == 'CHAR'
-            || typeU == 'STRING'
-            || typeU == 'LONGINT'
-            || typeU == 'DATE'
-            || typeU == 'DATETIME'
-        ) {
+        if (typeU == 'INT' || typeU == 'CHAR' || typeU == 'STRING' || typeU == 'LONGINT' || typeU == 'DATE' || typeU == 'DATETIME') {
             _index2b[ii] = ff;
         }
     }
-    _idx.field_list = new Object();
+    _idx.field_list = {};
     //遍历选中的值
     $("#sel_index_field option:selected").each(function () {
         var _fid = $(this).val();
@@ -1885,7 +1852,7 @@ App.dt.project.modelIndexDrop = function (model_id, index_id) {
     }
     if (App.su.isEmpty(index_id)) {
         self.fail("未选择索引");
-        return;
+
     } else {
         bootbox.confirm("确认删除这个索引？", function (ret) {
             if (ret) {
@@ -1932,19 +1899,13 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
     }
     $("#txt_model_fun_mid").val(model_id);
     console.log("过滤可用于索引的字段2")
-    self.project.curr_fieldCanIndex = new Object();
+    self.project.curr_fieldCanIndex = {};
     self.project.curr_where = null;
     for (var ii in _curr_model.field_list) {
         var ff = _curr_model.field_list[ii];
         console.log(ff)
         var typeU = ff.type.toUpperCase();
-        if (typeU == 'INT'
-            || typeU == 'CHAR'
-            || typeU == 'STRING'
-            || typeU == 'LONGINT'
-            || typeU == 'DATE'
-            || typeU == 'DATETIME'
-        ) {
+        if (typeU == 'INT' || typeU == 'CHAR' || typeU == 'STRING' || typeU == 'LONGINT' || typeU == 'DATE' || typeU == 'DATETIME') {
             self.project.curr_fieldCanIndex[ii] = ff;
         }
     }
@@ -1989,7 +1950,7 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
     sel_fun_order_by[0].options.add(o1);
     sel_fun_cond_field[0].options.add(o2);
 
-    var _funFieldSelected = new Object();
+    var _funFieldSelected = {};
     if (App.su.isEmpty(fun_id)) {
         console.log("新的函数");
         $("#txt_model_fun_fid").val("");
@@ -2009,10 +1970,12 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
         $("#txt_fun_pager_size").val(0);
         $("#block_where").html("");
     } else {
-        console.log("编辑旧函数");
+        console.log("编辑旧函数22");
         $("#txt_model_fun_fid").val(fun_id);
         var o_fun = _curr_model.fun_list[fun_id];
         $("#txt_fun_name").val(o_fun.name);
+        $("#sel_fun_type").val(o_fun.type);
+        $("#sel_fun_type").change();
         $("#txt_fun_title").val(o_fun.title);
         $("#txt_fun_memo").val(o_fun.memo);
         //TODO 其他辅助字段
@@ -2043,9 +2006,9 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
     }
     sel_fun_field.bootstrapDualListbox('refresh');
 
-
-    //
+    $("#block_edit_mode_conf").hide();
     $("#modal_edit_fun").modal('show');
+    $('.select2').change();
 }
 
 /**
@@ -2106,7 +2069,7 @@ App.dt.project.modelFunSave = function () {
 
     console.log("过滤可用于操作的的字段")
 
-    o_fun.field_list = new Object();
+    o_fun.field_list = {};
     //遍历选中的值
     $("#sel_fun_field option:selected").each(function () {
         var _fid = $(this).val();
@@ -2115,10 +2078,16 @@ App.dt.project.modelFunSave = function () {
         }
     });
     _curr_model.fun_list[o_fun.uuid] = o_fun;
-    console.log(o_fun);
+    _curr_app.model_list[_model_id] = _curr_model;
+    if (self.project.setCurrApp(_curr_app)) {
+        self.succ("保存成功--modelFunSave");
+        self.project.modelLoad();
+    } else {
+        self.fail("保存失败1-modelFunSave");
+    }
     $("#modal_edit_fun").modal("hide");
     //重新加载
-    self.project.modelLoad();
+    //self.project.modelLoad();
 };
 
 /**
@@ -2135,7 +2104,7 @@ App.dt.project.modelFunDrop = function (model_id, fun_id) {
     }
     if (App.su.isEmpty(fun_id)) {
         self.fail("未选择函数");
-        return;
+
     } else {
         bootbox.confirm("确认删除这个函数？", function (ret) {
             if (ret) {
@@ -2162,7 +2131,7 @@ App.dt.project.modelFunDrop = function (model_id, fun_id) {
  * @type {MyWhere}
  */
 App.dt.project.curr_where = new MyWhere();
-App.dt.project.curr_fieldCanIndex = new Object();
+App.dt.project.curr_fieldCanIndex = {};
 
 /**
  * 初始化渲染一个查询条件
@@ -2171,8 +2140,10 @@ App.dt.project.curr_fieldCanIndex = new Object();
  */
 App.dt.project.modelFunWhereInit = function () {
     var self = App.dt;
-    var a_data = new Object();
+    var a_data = {};
+    //处理一下这个
     a_data['where0'] = self.project.curr_where;
+    console.log(self.project.curr_where);
     a_data['model_field_list'] = self.project.curr_fieldCanIndex;
 
     var tpl = new jSmart(self.getTpl('tpl_model_where'));
@@ -2188,7 +2159,7 @@ App.dt.project.modelFunWhereInit = function () {
  */
 App.dt.project.modelFunWhereAdd = function (par, type) {
     var self = App.dt;
-    if (App.su.isEmpty(par) && self.project.curr_where != null) {
+    if (App.su.isEmpty(par) && self.project.curr_where != null && self.project.curr_where.uuid != null) {
         self.fail("当前已经添加了一个根条件,无需重复添加");
         return;
     }
@@ -2197,11 +2168,11 @@ App.dt.project.modelFunWhereAdd = function (par, type) {
     o_where.type = type;
 
     if (App.su.isEmpty(par)) {
-        console.log("添加[根]查询条件--"+type);
+        console.log("添加[根]查询条件--" + type);
         o_where.parent_where = "";
         self.project.curr_where = o_where;
     } else {
-        console.log("添加[嵌套]查询条件--"+type);
+        console.log("添加[嵌套]查询条件--" + type);
         o_where.parent_where = par;
         self.project.curr_where.where_list[o_where.uuid] = o_where;
     }
@@ -2217,11 +2188,10 @@ App.dt.project.modelFunWhereDrop = function (where_id) {
         self.fail("非法业务流程");
         return;
     }
-    if(where_id ==  self.project.curr_where.uuid){
+    if (where_id == self.project.curr_where.uuid) {
         self.project.curr_where = null;
         $("#block_where").html("");
-    }
-    else{
+    } else {
         if (undefined != self.project.curr_where.where_list[where_id]) {
             var _where_list = self.project.curr_where.where_list;
             delete _where_list[where_id];
@@ -2397,6 +2367,7 @@ App.dt.init = function () {
     $("#btn_edit_app").click(function () {
         if (null != self.project.getCurrApp()) {
             $("#modal_edit_app_info").modal('show');
+            $('.select2').change();
         } else {
             self.fail("当前未打开应用")
         }

@@ -2,14 +2,14 @@
 
 一种跨语言应用的代码和项目自动生成小工具，对数据库对所有操作均基于存储过程，默认单表操作
 
-目前仅支持基于phalcon的php项目和基本servlet的java项目
+目前仅支持基于phalcon的php项目和基本servlet的java项目，着手支持基于qtwebapp的cpp项目。
 
 ## 应用支支持
 
 | 语言 | 技术     | 网址                                           |
 | ---- | -------- | ---------------------------------------------- |
 | php  | phalcon  | https://phalcon.io/                            |
-| java | servlet  | https://docs.oracle.com/javaee/5/tutorial/doc/ |
+| java | servlet  | https://www.oracle.com/java/technologies/java-servlet-tec.html|
 | cpp  | qtwebapp | http://stefanfrings.de/qtwebapp/               |
 
 ## 数据库建模
