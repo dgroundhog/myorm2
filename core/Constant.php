@@ -188,6 +188,8 @@ class Constant
     const DB_FIELD_INPUT_SELECT = "SELECT";
     const DB_FIELD_INPUT_RADIO = "RADIO";
     const DB_FIELD_INPUT_CHECKBOX = "CHECKBOX";
+    const DB_FIELD_INPUT_DATE = "DATE";
+    const DB_FIELD_INPUT_DATETIME = "DATETIME";
 
     /**
      * 输入办法
@@ -200,7 +202,9 @@ class Constant
         self::DB_FIELD_INPUT_UPLOAD_IMAGE => "图片上传",
         self::DB_FIELD_INPUT_SELECT => "下拉框",
         self::DB_FIELD_INPUT_RADIO => "单选框",
-        self::DB_FIELD_INPUT_CHECKBOX => "复选框"
+        self::DB_FIELD_INPUT_CHECKBOX => "复选框",
+        self::DB_FIELD_INPUT_DATE => "日期选择框",
+        self::DB_FIELD_INPUT_DATETIME => "时间选择框"
     );
 
     /**
@@ -272,6 +276,7 @@ class Constant
     );
 
 
+    const COND_VAl_TYPE_NO = "NO";//忽略
     const COND_VAl_TYPE_FUN = "FUN";//db内部函数
     const COND_VAl_TYPE_INPUT = "INPUT";//外部输入
     const COND_VAl_TYPE_FIXED = "FIXED";//固定值
@@ -281,6 +286,7 @@ class Constant
      * @var string[]
      */
     public static $a_cond_val_type = array(
+        self::COND_VAl_TYPE_NO => "忽略",
         self::COND_VAl_TYPE_INPUT => "外部输入",
         self::COND_VAl_TYPE_FUN => "内部函数",
         self::COND_VAl_TYPE_FIXED => "固定值"

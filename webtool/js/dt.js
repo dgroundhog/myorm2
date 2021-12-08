@@ -191,6 +191,306 @@ App.dt.data.curr_project = "";
 App.dt.data.curr_project_version = "";
 
 /**
+ * 基本字段id
+ */
+App.dt.data.ccField_ID = function () {
+    var _field = new MyField();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _field.uuid = App.su.maths.uuid.create();
+    _field.ctime = _now;
+    _field.utime = _now;
+    _field.is_global = 1;//
+    _field.name = "id";
+    _field.title = "自增ID";
+    _field.memo = "sys";
+    _field.type = "LONGINT";
+    _field.size = 10;
+    _field.auto_increment = 1;
+    _field.default_value = 0;
+    _field.required = 1;
+    _field.filter = "INT";
+    _field.regexp = "";
+    _field.input_by = "DEFAULT";
+    _field.input_hash = "";
+    _field.position = 1;
+
+    return _field;
+}
+
+/**
+ * 基本日期时间
+ */
+App.dt.data.ccField_Date = function (date_key,title) {
+    var _field = new MyField();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _field.uuid = App.su.maths.uuid.create();
+    _field.ctime = _now;
+    _field.utime = _now;
+    _field.is_global = 1;//
+    _field.name = date_key;
+    _field.title = title;
+    _field.memo = "sys";
+    _field.type = "DATE";
+    _field.size = 10;
+    _field.auto_increment = 0;
+    _field.default_value = "0000-00-00";
+    _field.required = 1;
+    _field.filter = "DATE";
+    _field.regexp = "";
+    _field.input_by = "DATE";
+    _field.input_hash = "";
+    _field.position = 1;
+}
+
+
+/**
+ * 基本日期时间
+ */
+App.dt.data.ccField_Time = function (time_key,title) {
+    var _field = new MyField();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _field.uuid = App.su.maths.uuid.create();
+    _field.ctime = _now;
+    _field.utime = _now;
+    _field.is_global = 1;
+    _field.name = time_key;
+    _field.title = title;
+    _field.memo = "sys";
+    _field.type = "DATETIME";
+    _field.size = 18;
+    _field.auto_increment = 0;
+    _field.default_value = "0000-00-00 00:00:00";
+    _field.required = 1;
+    _field.filter = "DATETIME";
+    _field.regexp = "";
+    _field.input_by = "DATETIME";
+    _field.input_hash = "";
+    _field.position = 1;
+}
+
+/**
+ * 模型自定义主键
+ * cadmin
+ * uadmin
+ */
+App.dt.data.ccField_Uuid = function (key,title) {
+    var _field = new MyField();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _field.uuid = App.su.maths.uuid.create();
+    _field.ctime = _now;
+    _field.utime = _now;
+    _field.is_global = 1;
+    _field.name = key;
+    _field.title = title;
+    _field.memo = "sys";
+    _field.type = "STRING";
+    _field.size = 36;
+    _field.auto_increment = 0;
+    _field.default_value = "";
+    _field.required = 1;
+    _field.filter = "NO_FILTER";
+    _field.regexp = "";
+    _field.input_by = "DEFAULT";
+    _field.input_hash = "";
+    _field.position = 1;
+}
+
+
+/**
+ * 模型名称
+ * cadmin
+ * uadmin
+ */
+App.dt.data.ccField_Name = function (key,title) {
+    var _field = new MyField();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _field.uuid = App.su.maths.uuid.create();
+    _field.ctime = _now;
+    _field.utime = _now;
+    _field.is_global = 1;
+    _field.name = key;
+    _field.title = title;
+    _field.memo = "sys";
+    _field.type = "STRING";
+    _field.size = 255;
+    _field.auto_increment = 0;
+    _field.default_value = "";
+    _field.required = 1;
+    _field.filter = "NO_FILTER";
+    _field.regexp = "";
+    _field.input_by = "DEFAULT";
+    _field.input_hash = "";
+    _field.position = 1;
+}
+
+
+/**
+ * 模型名称
+ * cadmin
+ * uadmin
+ */
+App.dt.data.ccField_Text = function (key,title) {
+    var _field = new MyField();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _field.uuid = App.su.maths.uuid.create();
+    _field.ctime = _now;
+    _field.utime = _now;
+    _field.is_global = 1;
+    _field.name = key;
+    _field.title = title;
+    _field.memo = "sys";
+    _field.type = "TEXT";
+    _field.size = 1024;
+    _field.auto_increment = 0;
+    _field.default_value = "";
+    _field.required = 1;
+    _field.filter = "NO_FILTER";
+    _field.regexp = "";
+    _field.input_by = "DEFAULT";
+    _field.input_hash = "";
+    _field.position = 1;
+}
+
+
+/**
+ * 一般图片字段
+ * cadmin
+ * uadmin
+ */
+App.dt.data.ccField_Img = function (key,title) {
+    var _field = new MyField();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _field.uuid = App.su.maths.uuid.create();
+    _field.ctime = _now;
+    _field.utime = _now;
+    _field.is_global = 0;
+    _field.name = key;
+    _field.title = title;
+    _field.memo = "sys";
+    _field.type = "LONGBLOB";
+    _field.size = 4096;
+    _field.auto_increment = 0;
+    _field.default_value = "";
+    _field.required = 0;
+    _field.filter = "NO_FILTER";
+    _field.regexp = "";
+    _field.input_by = "UPLOAD_IMAGE";
+    _field.input_hash = "";
+    _field.position = 1;
+}
+
+
+/**
+ *  单一字段的配置
+ */
+App.dt.data.ccField_State = function (key,title) {
+    var _field = new MyField();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _field.uuid = App.su.maths.uuid.create();
+    _field.ctime = _now;
+    _field.utime = _now;
+    _field.is_global = 1;
+    _field.name = key;
+    _field.title = title;
+    _field.memo = "sys";
+    _field.type = "CHAR";
+    _field.size = 1;
+    _field.auto_increment = 0;
+    _field.default_value = "N";
+    _field.required = 1;
+    _field.filter = "NO_FILTER";
+    _field.regexp = "";
+    _field.input_by = "SELECT";
+    _field.input_hash = "N,可用;D,禁用";
+    _field.position = 1;
+}
+
+
+/**
+ *  单一字段的配置
+ */
+App.dt.data.ccField_Int = function (key,title) {
+    var _field = new MyField();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _field.uuid = App.su.maths.uuid.create();
+    _field.ctime = _now;
+    _field.utime = _now;
+    _field.is_global = 1;
+    _field.name = key;
+    _field.title = title;
+    _field.memo = "sys";
+    _field.type = "INT";
+    _field.size = 11;
+    _field.auto_increment = 0;
+    _field.default_value = "0";
+    _field.required = 1;
+    _field.filter = "INT";
+    _field.regexp = "";
+    _field.input_by = "DEFAULT";
+    _field.input_hash = "";
+    _field.position = 1;
+}
+
+
+/**
+ * 导入基本的账号和权限模型
+ */
+App.dt.data.insertAdminRole = function () {
+
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选中应用")
+        return;
+    }
+
+    var _modelAdmin = new MyModel();
+    var _modelRole = new MyModel();
+    var _uuidAdmin = App.su.maths.uuid.create();
+    var _uuidRole = App.su.maths.uuid.create();
+    var _now = App.su.datetime.getCurrentDateTime();
+    _modelAdmin.uuid = _uuidAdmin;
+    _modelAdmin.ctime = _now;
+    _modelAdmin.utime = _now;
+    _modelAdmin.name = "admin"
+    _modelAdmin.title = "管理员";
+    _modelAdmin.memo = "auto";
+    _modelAdmin.primary_key = "op_id";
+    _modelAdmin.table_name = "admin";
+    _modelAdmin.fa_icon = "address-card";
+    _modelAdmin.field_list = {};
+    _modelAdmin.idx_list = {};
+    _modelAdmin.fun_list = {};
+    var _f_id = self.data.ccField_ID();
+    var _f_account = self.data.ccField_Uuid("admin_id","登录名");
+    var _f_account = self.data.ccField_Name("account","登录名");
+    var _f_passwd = self.data.ccField_Name("passwd","加密密码");
+    var _f_role = self.data.ccField_Name("role","规则");
+    var _f_name = self.data.ccField_Name("name","姓名");
+    var _f_memo = self.data.ccField_Text("memo","备注");
+    var _f_state = self.data.ccField_State("state","业务状态");
+    var _f_flag = self.data.ccField_State("flag","数据状态");
+    var _f_ctime = self.data.ccField_State("ctime","数据状态");
+    var _f_utime = self.data.ccField_State("utime","数据状态");
+
+    _modelRole.uuid = _uuidRole;
+    _modelRole.ctime = _now;
+    _modelRole.utime = _now;
+
+
+    _curr_app.model_list[_uuidAdmin] = _modelAdmin;
+    _curr_app.model_list[_uuidRole] = _modelRole;
+
+    if (self.project.setCurrApp(_curr_app)) {
+        self.succ("暂存成功");
+    } else {
+        self.fail("暂存失败");
+    }
+    self.project.modelLoad();
+
+}
+
+/**
  * 用于保存全局数据结构
  * @type {*[]}
  */

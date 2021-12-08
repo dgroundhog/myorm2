@@ -74,6 +74,9 @@
                                 <i class="fa fa-save"></i> 同步到服务器
                             </button>
 
+                            <button type="button" class="btn btn-info">
+                                <i class="fa fa-file"></i> 关联文档TODO
+                            </button>
 
                             <button type="button" class="btn btn-success float-right" id="btn_add_app">
                                 <i class="fa fa-plus"></i> 创建新版本
@@ -82,6 +85,22 @@
 
                     </div>
 
+                    <div class="card card-info card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fa fa fa-cogs"></i>
+                                模型样板
+                            </h3>
+
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- form start -->
+                        <div class="card-body">
+                            <button type="button" class="btn btn-info" id="btn_import_user_role">
+                                <i class="fa fa-users"></i> 创建基本用户和权限<i class="fa fa-key"></i>
+                            </button>
+                        </div>
+                    </div>
                 </form>
             </div>
 
@@ -150,7 +169,7 @@
                             <div class="form-group row">
                                 <label for="txt_app_memo" class="col-sm-2 col-form-label">备注</label>
                                 <div class="col-sm-10">
-                                            <textarea class="form-control form-control-sm txt_app_memo" rows="3"
+                                            <textarea class="form-control form-control-sm txt_app_memo" rows="2"
                                                       readonly="readonly "></textarea>
                                 </div>
                             </div>
