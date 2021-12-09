@@ -11,7 +11,7 @@ class MyFun extends MyStruct
      * 仅在普通查询有效，聚合查询不能返回全部
      * @var string
      */
-    public $return_all = 1;
+    public $all_field = 1;
 
     /**
      * 需要返回字段的列表
@@ -49,7 +49,7 @@ class MyFun extends MyStruct
     public $pager_size = 20;//排序字段，为空时外部输入
 
     public $basic_keys = array(
-        "return_all",
+        "all_field",
         "group_field",
         "group_by",
         "order_enable",

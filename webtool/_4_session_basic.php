@@ -96,8 +96,22 @@
                         <!-- /.card-header -->
                         <!-- form start -->
                         <div class="card-body">
-                            <button type="button" class="btn btn-info" id="btn_import_user_role">
-                                <i class="fa fa-users"></i> 创建基本用户和权限<i class="fa fa-key"></i>
+                            <button type="button" class="btn btn-info"
+                            onclick="javascript:App.dt.data.ccModel_Admin();"
+                            >
+                                <i class="fa fa-key"></i> 创建基本管理员
+                            </button>
+
+                            <button type="button" class="btn btn-info"
+                                    onclick="javascript:App.dt.data.ccModel_Group();"
+                            >
+                                <i class="fa fa-key"></i> 创建人员分组
+                            </button>
+
+                            <button type="button" class="btn btn-info"
+                                    onclick="javascript:App.dt.data.ccModel_User();"
+                            >
+                                <i class="fa fa-key"></i> 创建人员
                             </button>
                         </div>
                     </div>

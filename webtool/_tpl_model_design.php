@@ -204,10 +204,13 @@
                                 <td>{$fun.name}</td>
 
                                 <td>
+                                    {if $fun.all_field==1}
+                                    *
+                                    {/if}
                                     {if $fun.type=='DELETE'}
-                                    全局
-                                    {elseif $fun.type=='ADD' && $fun.return_all==1}
-                                    * (全部)
+                                    忽略
+                                    {elseif $fun.type=='ADD'}
+                                    (全部)
                                     {else}
                                     {foreach $fun.field_list as $ii => $iff}
                                     <strong>{$iff.name}, </strong><br/>

@@ -76,15 +76,19 @@ MyProject.prototype.parse = function (json_one) {
 };
 
 
+
 /**
  * 静态方法,是否有效的UID
  */
 MyProject.isGoodName = function (_name) {
-    if (!App.su.validate.isLetterAndNumber(_name)) {
+    console.log(_name);
+    var reg_text = /^[a-zA-Z][_0-9a-zA-Z]*$/.test(_name);
+    if (!reg_text) {
+        console.log("~isGoodName--111");
         return false;
     }
-
     if (_name.length < 2 || _name.length > 32) {
+        console.log("~isGoodName--111");
         return false;
     }
 
@@ -389,7 +393,7 @@ function MyFun() {
     MyStruct.call(this);
     this.scope = "FUN";
     this.type = "";
-    this.return_all = "1";
+    this.all_field = "1";
     this.where = null;
     this.field_list = [];//操作字段
     this.group_field = "";
@@ -415,7 +419,7 @@ MyFun.prototype.parse = function (json_one) {
     this.parseBasic(json_one);
 
     this.type = json_one.type;
-    this.return_all = json_one.type;
+    this.all_field = json_one.all_field;
     //this.where = json_one.where;
     this.group_field = json_one.group_field;
     this.group_by = json_one.group_by;
@@ -451,7 +455,7 @@ function MyWhere() {
     MyStruct.call(this);
     this.scope = "WHERE";
     this.type = "AND";
-    this.parent_where = null;
+    this.parent_where = "";
     this.cond_list = [];//操作字段
     this.where_list = [];//操作字段
 }

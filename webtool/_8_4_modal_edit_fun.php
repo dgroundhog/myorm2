@@ -44,9 +44,9 @@
                             </div>
 
                             <div class="form-group row">
-                                <label for="txt_fun_return_all" class="col-sm-2 col-form-label">使用全部*</label>
+                                <label for="txt_fun_all_field" class="col-sm-2 col-form-label">使用全部*</label>
                                 <div class="col-sm-10">
-                                    <input id="txt_fun_return_all" type="checkbox" checked data-bootstrap-switch
+                                    <input id="txt_fun_all_field" type="checkbox" checked data-bootstrap-switch
                                            data-off-color="danger" data-on-color="success">
                                 </div>
                             </div>
