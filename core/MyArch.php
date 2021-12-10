@@ -8,7 +8,7 @@ include_once(CC_ROOT . "/_cc.inc.php");
 include_once(CC_ROOT . "/MyStruct.php");
 
 
-class MyAppConf extends MyStruct
+class MyArch extends MyStruct
 {
 
 
@@ -55,7 +55,7 @@ class MyAppConf extends MyStruct
 
     public function __construct()
     {
-        $this->scope = "APP_CONF";
+        $this->scope = "ARCH";
     }
 
     function getAsArray()

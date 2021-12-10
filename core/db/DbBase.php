@@ -8,7 +8,7 @@ abstract class DbBase implements CcBase
 {
     /**
      * 数据库配置
-     * @var MyDbConf
+     * @var MyDb
      */
     public $db_conf = null;
 
@@ -20,10 +20,10 @@ abstract class DbBase implements CcBase
 
     /**
      * 构造函数
-     * @param MyDbConf $db  数据配置
+     * @param MyDb $db  数据配置
      * @param string $path_output  输出的目录
      */
-    public function __construct(MyDbConf $db, $output_root=".")
+    public function __construct(MyDb $db, $output_root=".")
     {
         $this->db_conf = $db;
 
@@ -55,10 +55,10 @@ abstract class DbBase implements CcBase
 
     /**
      * 创建初始化结构
-     * @param MyDbConf $db
+     * @param MyDb $db
      * @return mixed
      */
-    abstract function ccInitDb(MyDbConf $db);
+    abstract function ccInitDb(MyDb $db);
 
 
     /**

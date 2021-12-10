@@ -2248,9 +2248,9 @@ App.dt.project.confLoad = function () {
         return;
     }
 
-    var tpl = new jSmart(self.getTpl('tpl_conf_list'));
+    var tpl = new jSmart(self.getTpl('tpl_arch_list'));
     var res = tpl.fetch(_curr_app);
-    $("#table_conf_list").html(res);
+    $("#table_arch_list").html(res);
 }
 
 
@@ -2260,7 +2260,7 @@ App.dt.project.confLoad = function () {
 App.dt.project.confSave = function () {
     var self = App.dt;
     var _uuid = $("#txt_conf_uuid").val();
-    var _conf = new MyAppConf();
+    var _conf = new MyArch();
     var now = App.su.datetime.getCurrentDateTime();
     var _curr_app = self.project.getCurrApp();
     if (null == _curr_app) {
@@ -2276,7 +2276,7 @@ App.dt.project.confSave = function () {
         _conf.utime = now;
         _uuid = new_uuid;
     } else {
-        _conf = _curr_app.conf_list[_uuid];
+        _conf = _curr_app.arch_list[_uuid];
         _conf.utime = now;
     }
 
@@ -2291,7 +2291,7 @@ App.dt.project.confSave = function () {
 
     console.log(_conf);
 
-    _curr_app.conf_list[_uuid] = _conf;
+    _curr_app.arch_list[_uuid] = _conf;
     if (self.project.setCurrApp(_curr_app)) {
         self.succ("暂存成功");
     } else {
@@ -2323,7 +2323,7 @@ App.dt.project.confEdit = function (_uuid) {
     } else {
         console.log("编辑旧配置");
         $("#txt_conf_uuid").val(_uuid);
-        var _conf = _curr_app.conf_list[_uuid];
+        var _conf = _curr_app.arch_list[_uuid];
 
 
         $("#sel_app_mvc").val(_conf.mvc);
@@ -2354,8 +2354,8 @@ App.dt.project.confDrop = function (_uuid) {
     } else {
         bootbox.confirm("确认删除这个配置", function (ret) {
             if (ret) {
-                if (undefined != _curr_app.conf_list[_uuid]) {
-                    delete _curr_app.conf_list[_uuid];
+                if (undefined != _curr_app.arch_list[_uuid]) {
+                    delete _curr_app.arch_list[_uuid];
                     self.succ("移除成功");
                 } else {
                     self.fail("移除失败1");

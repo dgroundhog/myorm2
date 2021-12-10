@@ -36,8 +36,7 @@ SeasLog::info("req--{$_data}");
 /**
  * 数据目录
  */
-$g_data_root_path = WT_ROOT . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "data";
-
+$g_data_root_path = WT_ROOT . DS . ".." . DS . "data";
 
 /**
  * 初始化一个项目目录
@@ -55,7 +54,7 @@ function project_init_default($name)
         $a_return['msg'] = "项目不符合要求";
     } else {
         //如果项目存在就返回那个项目的信息
-        $project_path = $g_data_root_path . DIRECTORY_SEPARATOR . $name . ".json";
+        $project_path = $g_data_root_path . DS . $name . ".json";
         if (file_exists($project_path)) {
             $str = file_get_contents($project_path);
             $a_return['data']['project_info'] = json_decode($str, true);
@@ -121,10 +120,13 @@ function project_load_index($data_root_path)
         if (is_dir($aa)) {//如果是文件夹则执行
             continue;
         } else {
-            //echo $aa , "<br/>";
+            //echo
             if (str_ends_with($aa, ".json")) {
                 $str_project = file_get_contents($aa);
-                $a_projects[] = json_decode($str_project, true);
+                $a_project = json_decode($str_project, true);
+                $o_project = new MyProject();
+                $o_project->parseToObj($a_project);
+                $a_projects[] = $o_project->getAsArray();
             }
         }
     }

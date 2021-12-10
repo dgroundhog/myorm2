@@ -36,7 +36,7 @@
                                 <th>操作</th>
                             </tr>
                             </thead>
-                            <tbody id="table_conf_list">
+                            <tbody id="table_arch_list">
 
 
 

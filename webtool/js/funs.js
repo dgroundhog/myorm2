@@ -107,7 +107,7 @@ function MyApp() {
     this.img_icon_id = "";
     this.img_logo_id = "";
 
-    this.conf_list = [];//应用配置列表
+    this.arch_list = [];//应用配置列表
     this.db_list = [];//数据库配置列表
     this.field_list = [];//全局字段
     this.model_list = [];//模型配置列表
@@ -128,12 +128,12 @@ MyApp.prototype.parse = function (json_one) {
     this.img_logo_id = json_one.img_logo_id;
 
     //配置
-    this.conf_list = new Object();
-    for (var ii in json_one.conf_list) {
-        var _conf = new MyAppConf();
-        _conf.parse(json_one.conf_list[ii]);
+    this.arch_list = new Object();
+    for (var ii in json_one.arch_list) {
+        var _conf = new MyArch();
+        _conf.parse(json_one.arch_list[ii]);
         var _uuid = _conf.uuid;
-        this.conf_list[_uuid] = _conf;
+        this.arch_list[_uuid] = _conf;
     }
 
     //数据库
@@ -234,9 +234,9 @@ MyModel.prototype.parse = function (json_one) {
  * 主APP的结构
  * @constructor
  */
-function MyAppConf() {
+function MyArch() {
     MyStruct.call(this);
-    this.scope = "APP_CONF";
+    this.scope = "ARCH";
     this.mvc = "";
     this.ui = "";
     this.has_restful = "0";
@@ -246,14 +246,14 @@ function MyAppConf() {
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
-MyAppConf.prototype = Object.create(MyStruct.prototype);
-MyAppConf.prototype.constructor = MyAppConf;
+MyArch.prototype = Object.create(MyStruct.prototype);
+MyArch.prototype.constructor = MyArch;
 
 /**
  *
  * @param json_one
  */
-MyAppConf.prototype.parse = function (json_one) {
+MyArch.prototype.parse = function (json_one) {
     //解析一个单体
     this.parseBasic(json_one);
 
@@ -272,7 +272,7 @@ MyAppConf.prototype.parse = function (json_one) {
  */
 function MyDb() {
     MyStruct.call(this);
-    this.scope = "DB_CONF";
+    this.scope = "DB";
     this.driver = "";
     this.source = "";
     this.host = "localhost";

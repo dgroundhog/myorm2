@@ -8,10 +8,10 @@ include_once(CC_ROOT . "/MyStruct.php");
 
 /**
  * 数据库配置结构
- * Class MyDbConf
+ * Class MyDb
  *
  */
-class MyDbConf extends MyStruct
+class MyDb extends MyStruct
 {
 
     /**
@@ -58,7 +58,7 @@ class MyDbConf extends MyStruct
      * 编码格式
      * @var string
      */
-    public $charset = "utf8";
+    public $charset = Constant::DB_CHARSET_UTF8;
 
 
     /**
@@ -66,7 +66,7 @@ class MyDbConf extends MyStruct
      * env / ini
      * @var string
      */
-    public $source = "env";
+    public $source = Constant::DB_SOURCE_EMBED;
 
     /**
      * 直接的链接字符串，可以带host-port-db

@@ -8,13 +8,13 @@ abstract class ModelBase implements CcBase
 {
     /**
      * 数据库配置
-     * @var MyDbConf
+     * @var MyDb
      */
     public $db_conf = null;
 
     /**
      * 应用配置
-     * @var MyAppConf
+     * @var MyArch
      */
     public $app_conf = null;
 
@@ -62,10 +62,10 @@ abstract class ModelBase implements CcBase
 
     /**
      * 构造函数
-     * @param MyDbConf $db  数据配置
+     * @param MyDb $db  数据配置
      * @param string $output_root  输出的目录
      */
-    public function __construct(MyAppConf $app,MyDbConf $db, $output_root=".")
+    public function __construct(MyArch $app, MyDb $db, $output_root=".")
     {
         $this->app_conf = $app;
         $this->db_conf = $db;

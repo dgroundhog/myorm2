@@ -7,7 +7,7 @@ if (!defined("DS")) {
 if (!defined("WT_ROOT")) {
     define('WT_ROOT', realpath(dirname(__FILE__)));
 }
-SeasLog::setBasePath(WT_ROOT . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "logs");
+SeasLog::setBasePath(WT_ROOT . DS . ".." . DS . "logs");
 include_once(WT_ROOT . "/../core/Constant.php");
 include_once(WT_ROOT . "/../core/MyProject.php");
 include_once(WT_ROOT . "/../core/MyApp.php");
@@ -112,7 +112,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 <!-- tmpl -->
 <?php include("./_tpl_project_menu_list.php"); ?>
-<?php include("./_tpl_conf_list.php"); ?>
+<?php include("./_tpl_arch_list.php"); ?>
 <?php include("./_tpl_db_list.php"); ?>
 <?php include("./_tpl_field_list.php"); ?>
 <?php include("./_tpl_model_list.php"); ?>

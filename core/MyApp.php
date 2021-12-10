@@ -5,8 +5,8 @@ if (!defined("CC_ROOT")) {
 include_once(CC_ROOT . "/_util.inc.php");
 include_once(CC_ROOT . "/_cc.inc.php");
 include_once(CC_ROOT . "/MyStruct.php");
-include_once(CC_ROOT . "/MyAppConf.php");
-include_once(CC_ROOT . "/MyDbConf.php");
+include_once(CC_ROOT . "/MyArch.php");
+include_once(CC_ROOT . "/MyDb.php");
 include_once(CC_ROOT . "/MyField.php");
 include_once(CC_ROOT . "/MyModel.php");
 include_once(CC_ROOT . "/MyIndex.php");
@@ -37,12 +37,12 @@ class MyApp extends MyStruct
 
     /**
      * app配置
-     * @var MyAppConf
+     * @var MyArch
      */
-    public $conf_list = null;
+    public $arch_list = null;
     /**
      * 数据库配置
-     * @var MyDbConf
+     * @var MyDb
      */
     public $db_list = null;
 
@@ -57,21 +57,21 @@ class MyApp extends MyStruct
      * @var array
      */
     public $model_list = array();
-    /**
-     * 输出目录
-     * @var string
-     */
-    public $path_output = "";
+
     /**
      * app数据ok
      * @var boolean
      */
     public $checked_app_data_is_good = false;
-    public $basic_keys = array(
-        "project_id",
-        "img_icon_id",
-        "img_logo_id"
-    );
+    public $basic_keys = array("project_id", "img_icon_id", "img_logo_id");
+    public $data_root = "";
+    public $build_root = "";
+    /**
+     * 输出目录
+     * 每次构建都有一个独立的输出目录
+     * @var string
+     */
+    public $path_output = "";
 
     public function __construct()
     {
@@ -85,47 +85,90 @@ class MyApp extends MyStruct
      */
     public function init($project_id)
     {
-
-
         $now = time();
         $now_str = date("Y-m-d H:i:s", $now);
-        $now_str2 = date("YmdHi", $now);
+        $now_str2 = date("mdH", $now);
         $this->uuid = uuid();
         $this->project_id = $project_id;
-        $this->name = self::DEFAULT_NAME;
-        $this->title = "新版本{$now_str2}-";
+        $this->name = "app_{$now_str2}";
+        $this->title = "{$project_id}的新应用{$now_str2}";
         $this->ctime = $now_str;
         $this->utime = $now_str;
 
         $this->model_list = array();
         $this->db_list = array();
-        $this->conf_list = array();
+        $this->arch_list = array();
         $this->field_list = array();
 
+        //cc一个默认的db和默认的arch
+        $o_arch = new MyArch();
+        $o_arch->uuid = uuid();
+        $o_arch->mvc = Constant::MVC_JAVA_SERVLET;
+        $o_arch->ui = Constant::UI_NULL;
+        $o_arch->has_restful = 0;
+        $o_arch->has_test = 0;
+        $o_arch->has_doc = 0;
+        $o_arch->ctime = $now_str;
+        $o_arch->utime = $now_str;
+
+        $this->arch_list[$o_arch->uuid] = $o_arch;
+        //cc一个默认的db和默认的db
+        $o_db = new MyDb();
+        $o_db->uuid = uuid();
+        $o_db->driver = Constant::DB_MYSQL_56;
+        $o_db->source = Constant::DB_SOURCE_EMBED;
+        $o_db->host = "127.0.0.1";
+        $o_db->port = 3306;
+        $o_db->database = "mydb";
+        $o_db->user = "root";
+        $o_db->password = "passwd2change";
+        $o_db->charset =Constant::DB_CHARSET_UTF8;
+        $o_db->ctime = $now_str;
+        $o_db->utime = $now_str;
+        $this->db_list[$o_db->uuid] = $o_db;
+
         /**
-         * 创建目录
+         * 创建数据目录
          */
-        $project_root = MyProject::getDataRoot($project_id);
-        $app_root = $project_root . DS . $this->uuid;
-        if (!is_dir($app_root)) {
-            mkdir($app_root);
-        }
-        //是否需要生成其他文件
+        $this->touchSomeDirs();
 
         return $this;
+    }
+
+    /**
+     * 尝试建立基本目录
+     * @return void
+     */
+    public function touchSomeDirs()
+    {
+
+        //project 目标已经生成了
+        $project_id = $this->project_id;
+        $app_id = $this->uuid;
+
+        $data_root0 = CC_ROOT . DS . ".." . DS . "data" . DS . $project_id;
+        $data_root = $data_root0 . DS . $app_id;
+        if (!file_exists($data_root) || !is_dir($data_root)) {
+            SeasLog::debug("new app--({$app_id})---data--mkdir--{$data_root0}");
+            @mkdir($data_root);
+        }
+        $this->data_root = $data_root;
+
+        $build_root0 = CC_ROOT . DS . ".." . DS . "build" . DS . $project_id;
+        $build_root = $build_root0 . DS . $app_id;
+        if (!file_exists($build_root) || !is_dir($build_root)) {
+            SeasLog::debug("new app--({$app_id})---build--mkdir--{$build_root}");
+            @mkdir($build_root);
+        }
+        $this->build_root = $build_root;
+        //
     }
 
     public function copy($new_version)
     {
         $a_app_info = $this->getAsArray();
-
         $utime = date("Y-m-d H:i:s", time());
-        $project_root = MyProject::getDataRoot($this->project_id);
-        $app_root = $project_root . DS . $this->uuid;
-        if (!is_dir($app_root)) {
-            SeasLog::debug("App文件夹不存在{$app_root}");
-            return null;
-        }
+        $app_root = $this->data_root;
 
         $_uuid = uuid();
         $o_app2 = new MyApp();
@@ -134,7 +177,9 @@ class MyApp extends MyStruct
         $o_app2->name = $new_version;
         $o_app2->ctime = $utime;
         $o_app2->utime = $utime;
-        $app_root2 = $project_root . DS . $_uuid;
+
+        $o_app2->touchSomeDirs();
+        $app_root2 = $o_app2->data_root;
         if (dir_copy($app_root, $app_root2)) {
             SeasLog::info("App文件夹复制成功--{$app_root}---{$app_root2}");
             return $o_app2;
@@ -142,21 +187,20 @@ class MyApp extends MyStruct
             SeasLog::error("App文件夹复制失败--{$app_root}---{$app_root2}");
             return null;
         }
-
     }
 
     function getAsArray()
     {
         $a_data = $this->getBasicAsArray();
-        $a_data['conf_list'] = array();
-        foreach ($this->conf_list as $key => $conf) {
-            /* @var MyAppConf $conf */
-            $a_data['conf_list'][$key] = $conf->getAsArray();
+        $a_data['arch_list'] = array();
+        foreach ($this->arch_list as $key => $arch) {
+            /* @var MyArch $arch */
+            $a_data['arch_list'][$key] = $arch->getAsArray();
         }
 
         $a_data['db_list'] = array();
         foreach ($this->db_list as $key => $db) {
-            /* @var MyDbConf $db */
+            /* @var MyDb $db */
             $a_data['db_list'][$key] = $db->getAsArray();
         }
 
@@ -165,6 +209,7 @@ class MyApp extends MyStruct
             /* @var MyField $o_field */
             $a_data['field_list'][$key] = $o_field->getAsArray();
         }
+
         $a_data['model_list'] = array();
         foreach ($this->model_list as $key => $o_model) {
             /* @var MyModel $o_model */
@@ -172,27 +217,27 @@ class MyApp extends MyStruct
         }
         return $a_data;
 
-
     }
 
     function parseToObj($a_data)
     {
         $this->parseToBasicObj($a_data);
-        $this->conf_list = array();
+        $this->touchSomeDirs();
+        $this->arch_list = array();
         $this->db_list = array();
         $this->model_list = array();
-        if (isset($a_data['conf_list']) && is_array($a_data['conf_list'])) {
-            foreach ($a_data['conf_list'] as $key => $conf) {
-                $o_obj = new MyAppConf();
+        if (isset($a_data['arch_list']) && is_array($a_data['arch_list'])) {
+            foreach ($a_data['arch_list'] as $key => $conf) {
+                $o_obj = new MyArch();
                 $o_obj->parseToObj($conf);
-                $this->conf_list[$key] = $o_obj;
+                $this->arch_list[$key] = $o_obj;
             }
 
         }
 
         if (isset($a_data['db_list']) && is_array($a_data['db_list'])) {
             foreach ($a_data['db_list'] as $key => $db) {
-                $o_obj = new MyDbConf();
+                $o_obj = new MyDb();
                 $o_obj->parseToObj($db);
                 $this->db_list[$key] = $o_obj;
             }
@@ -216,92 +261,53 @@ class MyApp extends MyStruct
         return $this;
     }
 
-    /**
-     * @return MyDbConf
-     */
-    public function getDbConf()
-    {
-        return $this->db_list;
-    }
-
-    /**
-     * @param MyDbConf $db_list
-     */
-    public function setDbConf($db_list)
-    {
-        $this->db_list = $db_list;
-    }
-
-    /**
-     * @return array
-     */
-    public function getModelList()
-    {
-        return $this->model_list;
-    }
-
-    /**
-     * @param array $model_list
-     */
-    public function setModelList($model_list)
-    {
-        $this->model_list = $model_list;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPathOutput()
-    {
-        return $this->path_output;
-    }
-
-    /**
-     * 设置输出目录
-     * @param string $path_output
-     */
-    public function setPathOutput($path_output)
-    {
-        $this->path_output = $path_output;
-    }
-
-    /**
-     * 从json解析系统模型
-     * @param string $json_path
-     * @return bool|void
-     */
-    public function parseByJson($json_path)
-    {
-        $s_json_data = file_get_contents($json_path);
-        $a_json_data = json_decode($s_json_data, true);
-
-        if (null != $a_json_data) {
-            return $this->parse($a_json_data);
-        }
-        return false;
-    }
-
-
-
-    /**
-     * 导出到json
-     * @param string $json_path
-     */
-    public function saveToJson($json_path = "")
-    {
-
-    }
 
     /**
      * 构建生成代码
+     * @param $a_tags
+     * @return void
      */
-    public function buildAll()
+    public function build($a_tags)
     {
-        //数据库
-        $this->buildDbConf();
-        $this->buildDb(null);
-        //模型
-        $this->buildModel(null);
+        //TODO 先生成基本目录
+        SeasLog::info("生成基本目录");
+        $new_build_id = date("YmdHis", time());
+        $this->path_output = $this->build_root . DS . $new_build_id;
+
+        SeasLog::debug("build app--({$this->name})--mkdir--{$this->path_output}");
+        @mkdir($this->path_output);
+
+        if (!is_dir($this->path_output)) {
+            SeasLog::error("构建目录生成失败，请检查权限！！！");
+            return;
+        }
+
+        if (in_array("db", $a_tags)) {
+            //数据库
+            $this->buildDbConf();
+            $this->buildDb(null);
+        }
+
+        if (in_array("model", $a_tags)) {
+            //模型
+            $this->buildModel(null);
+        }
+
+        if (in_array("ui", $a_tags)) {
+            //UI
+            //$this->buildModel(null);
+        }
+
+        if (in_array("doc", $a_tags)) {
+            //文档
+            //->buildModel(null);
+        }
+
+        if (in_array("api", $a_tags)) {
+            //接口
+            //$this->buildModel(null);
+        }
+
     }
 
     /**
@@ -363,12 +369,12 @@ class MyApp extends MyStruct
     public function buildModel(MyModel $model_to_be = null)
     {
         $mm = null;
-        switch ($this->conf_list->lang) {
+        switch ($this->arch_list->lang) {
             case Constant::LANG_JAVA:
-                switch ($this->conf_list->mvc) {
+                switch ($this->arch_list->mvc) {
                     case Constant::MVC_JAVA_SERVLET:
 
-                        $mm = new JavaServletModel($this->conf_list, $this->db_list, $this->path_output);
+                        $mm = new JavaServletModel($this->arch_list, $this->db_list, $this->path_output);
                         break;
                     default:
 
