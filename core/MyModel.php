@@ -49,10 +49,17 @@ class MyModel extends MyStruct
 
     /**
      * 私有字段字段列表
-     * 包含的字段，key => MyField
+     * 包含的字段，uuid => MyField
      * @var array
      */
     public $field_list = array();
+
+    /**
+     * 私有字段字段列表
+     * 包含的字段，key => MyField
+     * @var array
+     */
+    public $field_list_kv = array();
 
 
     /**

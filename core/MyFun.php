@@ -21,9 +21,11 @@ class MyFun extends MyStruct
 
     /**
      * 查询条件的列表
-     * @var string
+     * @var MyWhere
      */
     public $where = [];
+
+public $limit =0;
 
     /**
      * 被聚合的字段

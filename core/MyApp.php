@@ -20,12 +20,6 @@ include_once(CC_ROOT . "/MyCond.php");
  */
 class MyApp extends MyStruct
 {
-    /**
-     * 名字就是版本号
-     * 创建时就用uuid作为主建
-     */
-
-    const DEFAULT_NAME = "default";
 
 
     /**
@@ -35,6 +29,11 @@ class MyApp extends MyStruct
     public $img_logo_id = "";
     public $img_icon_id = "";
 
+    //当前的架构
+    public $curr_arch = "";
+
+    //当前的数据配置
+    public $curr_db = "";
     /**
      * app配置
      * @var MyArch
@@ -45,19 +44,16 @@ class MyApp extends MyStruct
      * @var MyDb
      */
     public $db_list = null;
-
     /**
      * 全局字段
      * @var array
      */
     public $field_list = array();
-
     /**
      * 包含的模型，key => MyModel
      * @var array
      */
     public $model_list = array();
-
     /**
      * app数据ok
      * @var boolean
@@ -76,6 +72,47 @@ class MyApp extends MyStruct
     public function __construct()
     {
         $this->scope = "APP";
+    }
+
+    /**
+     * @return MyArch
+     */
+    public function getCurrArch()
+    {
+        if (isset($this->arch_list[$this->curr_arch])) {
+            return $this->arch_list[$this->curr_arch];
+        }
+
+        /* @var MyArch $first_arch */
+        $first_arch = null;
+        foreach ($this->arch_list as $kk => $arch) {
+            $this->curr_arch = $kk;
+            $first_arch = $arch;
+            break;
+        }
+
+        return $first_arch;
+
+    }
+
+    /**
+     * @return MyDb
+     */
+    public function getCurrDb()
+    {
+        if (isset($this->db_list[$this->curr_db])) {
+            return $this->db_list[$this->curr_db];
+        }
+
+        /* @var MyArch $first_db */
+        $first_db = null;
+        foreach ($this->db_list as $kk => $db) {
+            $this->curr_db = $kk;
+            $first_db = $db;
+            break;
+        }
+
+        return $first_db;
     }
 
     /**
@@ -122,7 +159,7 @@ class MyApp extends MyStruct
         $o_db->database = "mydb";
         $o_db->user = "root";
         $o_db->password = "passwd2change";
-        $o_db->charset =Constant::DB_CHARSET_UTF8;
+        $o_db->charset = Constant::DB_CHARSET_UTF8;
         $o_db->ctime = $now_str;
         $o_db->utime = $now_str;
         $this->db_list[$o_db->uuid] = $o_db;
@@ -269,11 +306,15 @@ class MyApp extends MyStruct
      */
     public function build($a_tags)
     {
-        //TODO 先生成基本目录
+        if (count($this->arch_list) == 0 || count($this->db_list) == 0) {
+            SeasLog::error("没有有效的架构和数据库配置！！！");
+            return null;
+        }
+        //
         SeasLog::info("生成基本目录");
         $new_build_id = date("YmdHis", time());
         $this->path_output = $this->build_root . DS . $new_build_id;
-
+        //
         SeasLog::debug("build app--({$this->name})--mkdir--{$this->path_output}");
         @mkdir($this->path_output);
 
@@ -284,8 +325,7 @@ class MyApp extends MyStruct
 
         if (in_array("db", $a_tags)) {
             //数据库
-            $this->buildDbConf();
-            $this->buildDb(null);
+            $this->buildDb();
         }
 
         if (in_array("model", $a_tags)) {
@@ -312,55 +352,53 @@ class MyApp extends MyStruct
 
     /**
      * 构建数据库的初始化配置
-     */
-    public function buildDbConf()
-    {
-        $dbc = null;
-        switch ($this->db_list->driver) {
-            case Constant::DB_MYSQL_56:
-            case Constant::DB_MYSQL_57:
-            case Constant::DB_MYSQL_80:
-                $dbc = new DbMysql($this->db_list, $this->path_output);
-                break;
-            default:
-
-        }
-        if ($dbc == null) {
-            return;
-        }
-        $dbc->ccInitDb();
-    }
-
-    /**
      * 构建数据库
      */
-    public function buildDb(MyModel $model_to_be = null)
+    public function buildDb()
     {
-        $dbc = null;
-        switch ($this->db_list->driver) {
-            case Constant::DB_MYSQL_56:
-            case Constant::DB_MYSQL_57:
-            case Constant::DB_MYSQL_80:
-                $dbc = new DbMysql($this->db_list, $this->path_output);
-                break;
-            default:
-
-        }
+        $dbc = DbBase::findCc($this);
         if ($dbc == null) {
+            SeasLog::error("找不到对应的数据库构建器");
             return;
         }
+        $path_dbcc = $dbc->db_output;
+        $_target = $path_dbcc .DS. "init_db.sql";
+        ob_start();
+        $dbc->ccInitDb();
+        $cc_data = ob_get_contents();
+        ob_end_clean();
+        file_put_contents($_target, $cc_data);
 
-        if ($model_to_be != null) {
-            $dbc->ccTable($model_to_be);
-            $dbc->ccTable_reset($model_to_be);
-            $dbc->ccProc($model_to_be);
-        } else {
-            foreach ($this->model_list as $o_model) {
-                $dbc->ccTable($o_model);
-                $dbc->ccTable_reset($o_model);
-                $dbc->ccProc($o_model);
-            }
+        foreach ($this->model_list as $o_model) {
+            /* @var MyModel $o_model*/
+            $model_name = $o_model->name;
+            SeasLog::info("建表语句--{$model_name}");
+            $_target = $path_dbcc .DS. "{$model_name}_cc_table.sql";
+            ob_start();
+            $dbc->ccTable($o_model);
+            $cc_data = ob_get_contents();
+            ob_end_clean();
+            file_put_contents($_target, $cc_data);
+
+            SeasLog::info("删表语句--{$model_name}");
+            $_target = $path_dbcc .DS. "{$model_name}_reset_table.sql";
+            ob_start();
+            $dbc->ccTable_reset($o_model);
+            $cc_data = ob_get_contents();
+            ob_end_clean();
+            file_put_contents($_target, $cc_data);
+
+            SeasLog::info("存储过程--{$model_name}");
+            $_target = $path_dbcc .DS. "{$model_name}_proc.sql";
+            ob_start();
+            $dbc->ccProc($o_model);
+            $cc_data = ob_get_contents();
+            ob_end_clean();
+            file_put_contents($_target, $cc_data);
         }
+
+
+        //TODO 合并代码？
     }
 
     /**

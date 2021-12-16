@@ -129,6 +129,7 @@ class Constant
     const DB_FIELD_TYPE_BLOB = "BLOB";
     const DB_FIELD_TYPE_LONGBLOB = "LONGBLOB";
     const DB_FIELD_TYPE_DATE = "DATE";
+    const DB_FIELD_TYPE_TIME = "TIME";
     const DB_FIELD_TYPE_DATETIME = "DATETIME";
 
     /**
@@ -147,7 +148,8 @@ class Constant
         self::DB_FIELD_TYPE_BLOB => "BLOB",
         self::DB_FIELD_TYPE_BOOL => "布尔",
         self::DB_FIELD_TYPE_DATE => "日期",
-        self::DB_FIELD_TYPE_DATETIME => "时间"
+        self::DB_FIELD_TYPE_TIME => "时间",
+        self::DB_FIELD_TYPE_DATETIME => "日期时间"
     );
 
     const DB_FIELD_FILTER_NULL = "NO_FILTER";

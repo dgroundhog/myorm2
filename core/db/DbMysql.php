@@ -6,6 +6,386 @@ class DbMysql extends DbBase
 
 
     /**
+     * 创建初始化结构
+     * @param MyDb $db
+     * @return mixed|void
+     */
+    function ccInitDb()
+    {
+        $db = $this->db_conf;
+        _db_comment_begin();
+        _db_comment("Init mysql user {$db->user} and database {$db->database}");
+        _db_comment("You should run this As super user");
+        _db_comment_end();
+
+
+        switch ($db->driver) {
+            case Constant::DB_MYSQL_56:
+            case Constant::DB_MYSQL_57:
+                _db_comment("for mysql {$db->driver}", true);
+                echo "CREATE USER IF NOT EXISTS '{$db->user}'@'{$db->host}' IDENTIFIED BY '{$db->password}';\n";
+                echo "CREATE DATABASE IF NOT EXISTS `{$db->database}` CHARACTER SET {$db->charset} COLLATE {$db->charset}_general_ci;\n";
+                echo "GRANT ALL PRIVILEGES ON `{$db->user}\\_%`.* TO '{$db->user}'@'{$db->host}';\n";
+                echo "GRANT SELECT ON mysql.proc TO '{$db->user}'@'{$db->host}';\n";
+                break;
+            case Constant::DB_MYSQL_80:
+                _db_comment("for mysql 8.0 not finished yet;", true);
+                break;
+            default:
+
+        }
+
+        echo "FLUSH PRIVILEGES;\n";
+
+        _db_comment("for events", true);
+        echo "SET GLOBAL event_scheduler = ON;\n";
+
+        _db_comment("for functions", true);
+        _db_comment("TODO");
+
+    }
+
+    /**
+     *
+     * @inheritDoc
+     * @param MyModel $model
+     * @return mixed|void
+     */
+    function ccTable(MyModel $model)
+    {
+        $i_field_size = count($model->field_list);
+
+        _db_comment_begin();
+        _db_comment("Table structure for t_{$model->table_name} [{$model->title}]");
+        _db_comment("Table fields count ({$i_field_size})");
+        _db_comment_end();
+
+        if ($i_field_size == 0) {
+            _db_comment("Is is a empty Table");
+            return;
+        }
+
+        echo "CREATE TABLE `t_{$model->table_name}`\n(\n";
+
+        $ii = 0;
+        $has_primary_key = false;
+        $a_temp = array();
+        $a_field_keys = array();//用来过滤索引的有效性
+        foreach ($model->field_list as $field) {
+            $ii++;
+            /* @var MyField $field */
+            $key = $field->name;
+            $a_field_keys[] = $key;
+
+            $size = $field->size;
+            $comment = $field->title;
+            //对于自增和主键，强制修改required的值
+            if ($key == $model->primary_key) {
+                $has_primary_key = true;
+            }
+
+            $type = $field->type;
+            $after_null = "";
+            $type_size = "VARCHAR(255)";
+            switch ($type) {
+                case Constant::DB_FIELD_TYPE_BOOL :
+                    $type_size = "CHAR(1)";
+                    break;
+                //整型
+                case Constant::DB_FIELD_TYPE_INT:
+                    if ($size < 1 || $size > 255) {
+                        $size = 11;
+                    }
+                    $type_size = "INT({$size})";
+                    if ($field->auto_increment) {
+                        $after_null = "AUTO_INCREMENT";
+                    }
+                    break;
+                case Constant::DB_FIELD_TYPE_LONGINT:
+                    $type_size = "BIGINT";
+                    if ($field->auto_increment) {
+                        $after_null = "AUTO_INCREMENT";
+                    }
+                    break;
+
+                //单个字符
+                case Constant::DB_FIELD_TYPE_CHAR:
+
+                    if ($size < 1 || $size > 255) {
+                        $size = 1;
+                    }
+                    $type_size = "CHAR({$size})";
+                    break;
+
+                //字符串
+                case Constant::DB_FIELD_TYPE_VARCHAR:
+                    if ($size < 1 || $size > 9999) {
+                        $size = 255;
+                    }
+                    $type_size = "VARCHAR({$size})";
+                    break;
+
+                case Constant::DB_FIELD_TYPE_TEXT :
+                    $type_size = "TEXT";
+                    break;
+                case Constant::DB_FIELD_TYPE_LONGTEXT :
+                    $type_size = "LONGTEXT";
+                    break;
+
+                case Constant::DB_FIELD_TYPE_BLOB :
+                    $type_size = "BLOB";
+                    break;
+                case Constant::DB_FIELD_TYPE_LONGBLOB :
+                    $type_size = "LONGBLOB";
+                    break;
+
+                case Constant::DB_FIELD_TYPE_DATE :
+                    $type_size = "DATE";
+                    break;
+                case Constant::DB_FIELD_TYPE_DATETIME :
+                    $type_size = "DATETIME";
+                    break;
+                //默认为255的字符串
+                default :
+                    break;
+            }
+            $a_temp[] = "`{$key}` {$type_size} NOT NULL {$after_null} COMMENT '{$comment}'";
+        }
+
+        if ($has_primary_key) {
+            $a_temp[] = "PRIMARY KEY (`{$model->primary_key}`)";
+        }
+
+
+        $ii = 0;
+        foreach ($model->idx_list as $o_index) {
+
+            /* @var MyIndex $o_index */
+            $a_temp0 = array();
+            $idx_type = $o_index->type;
+            $jj = 0;
+            foreach ($o_index->field_list as $field) {
+                $ii++;
+                /* @var MyField $field */
+                $key = $field->name;
+                if (in_array($key, $a_field_keys)) {
+                    $jj++;
+                    $a_temp0[] = "`{$key}`";
+                }
+            }
+            if ($jj > 0) {
+                $ii++;
+                $s_idx_type = ($idx_type == Constant::DB_INDEX_TYPE_INDEX) ? "UNIQUE uk" : "KEY ik";
+                $s_temp0 = implode(", ", $a_temp0);
+                $a_temp[] = "{$s_idx_type}_{$model->name}_{$ii} ({$s_temp0})";
+            }
+        }
+
+        echo _tab(1);
+        echo implode(",\n" . _tab(1), $a_temp);
+        echo "\n)";
+
+        $charset = $this->db_conf->charset;
+        if ("" == $charset || !in_array($charset, Constant::$a_db_charset)) {
+            $charset = Constant::DB_CHARSET_UTF8MB4;
+        }
+
+        echo "ENGINE=InnoDB\n";
+        echo "DEFAULT CHARSET={$charset}\n";
+        echo "COLLATE {$charset}_GENERAL_CI\n";
+        echo "COMMENT='{$model->title} 表';";
+    }
+
+    /**
+     * @inheritDoc
+     */
+    function ccTable_reset(MyModel $model)
+    {
+
+        _db_comment("Delete Table   t_{$model->table_name}", true);
+        echo "DROP TABLE IF EXISTS `t_{$model->table_name}`;\n";
+    }
+
+    /**
+     * @inheritDoc
+     */
+    function ccProc(MyModel $model)
+    {
+
+        $a_all_fields = array();//转换用name作为主键
+        foreach ($model->field_list as $field) {
+            /* @var MyField $field */
+            $key = $field->name;
+            $a_all_fields[$key] = $field;
+        }
+        if (count($a_all_fields) == 0) {
+            return;
+        }
+        $model->field_list_kv = $a_all_fields;
+
+        foreach ($model->fun_list as $o_fun) {
+
+            /* @var MyFun $o_fun */
+            $fun_type = $o_fun->type;
+
+            switch ($fun_type) {
+                case Constant::FUN_TYPE_ADD:
+                    $this->cAdd($model, $o_fun);
+                    break;
+
+                case Constant::FUN_TYPE_DELETE:
+                    $this->cDelete($model, $o_fun);
+                    break;
+
+                case Constant::FUN_TYPE_UPDATE:
+                    $this->cUpdate($model, $o_fun);
+                    break;
+
+                case Constant::FUN_TYPE_FETCH:
+                    $this->cFetch($model, $o_fun);
+                    break;
+
+                case Constant::FUN_TYPE_LIST:
+                default:
+                    $this->cList($model, $o_fun);
+                    break;
+            }
+        }
+
+
+    }
+
+    /**
+     * @inheritDoc
+     * 创建存储过程-添加
+     * @param MyModel $model
+     * @param MyFun $fun
+     */
+    function cAdd(MyModel $model, MyFun $fun)
+    {
+        $proc_name = $this->_procHeader($model, $fun->name, $fun->title, "add");
+        $a_all_fields = $model->field_list_kv;
+        $ii = 0;
+        $a_temp = array();
+        $add_key_by_input = array();
+        $a_field_add = $fun->field_list;
+        if ($fun->all_field == 1) {
+            $a_field_add = $model->field_list;
+        }
+        //制作参数
+        $return_new_id = false;
+        foreach ($a_field_add as $field) {
+            /* @var MyField $field */
+            $key = $field->name;
+            if (!isset($a_all_fields[$key])) {
+                continue;
+            }
+            //如果id也是自inc的，也不用输入了
+            if ($key == 'id' && $field->auto_increment = 1) {
+                $return_new_id = true;
+                continue;
+            }
+            $ii++;
+            $add_key_by_input[] = $key;
+            $a_temp[] = $this->_procParam($field);
+        }
+        if ($return_new_id) {
+            $ii++;
+            $a_temp[] = "INOUT `v_new_id` INT";
+        }
+        $this->_procBegin($a_temp);
+
+        echo "DECLARE m_new_id INT;\n";
+
+        echo "INSERT INTO `t_{$model->table_name}` \n(\n";
+
+        $ii = 0;
+        $a_temp = array();
+        foreach ($a_all_fields as $key => $field) {
+            if ($key == "id" && $field->auto_increment = 1) {
+                continue;
+            }
+            $ii++;
+            $a_temp[] = "`{$key}`";
+        }
+        echo _tab(1);
+        echo implode(",\n" . _tab(1), $a_temp);
+        echo "\n) \nVALUES\n(\n";
+
+        $ii = 0;
+        $a_temp = array();
+        foreach ($a_all_fields as $key => $field) {
+            if ($key == "id" && $field->auto_increment = 1) {
+                continue;
+            }
+            $ii++;
+            /* @var MyField $field */
+
+            if (!in_array($key, $add_key_by_input)) {
+                //部分预置值
+                switch ($key) {
+                    case "flag":
+                        $a_temp[] = "'N'";
+                        break;
+
+                    case "state":
+                        if ($field->default_value != "") {
+                            if ($field->type == Constant::DB_FIELD_TYPE_INT || $field->type == Constant::DB_FIELD_TYPE_LONGINT) {
+                                $a_temp[] = "{$field->default_value}";
+                            } else {
+                                $a_temp[] = "'{$field->default_value}'";
+                            }
+                        } else {
+                            if ($field->type == Constant::DB_FIELD_TYPE_INT || $field->type == Constant::DB_FIELD_TYPE_LONGINT) {
+                                $a_temp[] = "0";
+                            } else {
+                                $a_temp[] = "'N'";
+                            }
+                        }
+                        break;
+
+                    case "ctime":
+                    case "utime":
+                        $a_temp[] = "NOW()";
+                        break;
+
+                    default:
+                        if ($field->default_value != "") {
+                            if ($field->type == Constant::DB_FIELD_TYPE_INT || $field->type == Constant::DB_FIELD_TYPE_LONGINT) {
+                                $a_temp[] = "{$field->default_value}";
+                            } else {
+                                $a_temp[] = "'{$field->default_value}'";
+                            }
+                        } else {
+                            $a_temp[] = "''";
+                        }
+                        break;
+                }
+            } else {
+                $prefix = self::_procKeyPrefix($field['type']);
+                $param_key = "{$prefix}_{$key}";
+                $a_temp[] = "`{$param_key}`";
+            }
+        }
+        echo _tab(1);
+        echo implode(",\n" . _tab(1), $a_temp);
+
+        echo "\n);\n";
+
+        echo "SET m_new_id = LAST_INSERT_ID();\n";
+        //echo "COMMIT;\n";
+        echo "SET @s_new_id = CONCAT('', m_new_id);\n";
+
+        echo "CALL p_debug('{$proc_name}', @s_new_id);\n";
+        if ($return_new_id) {
+            echo "SELECT m_new_id INTO v_new_id;\n";
+            echo "SELECT m_new_id AS i_new_id;\n";
+        }
+
+        self::_procEnd($model, $proc_name);
+    }
+
+    /**
      * 公用存储过程头头
      * @param MyModel $model
      * @param string $fun_name
@@ -13,7 +393,7 @@ class DbMysql extends DbBase
      * @param string $base_fun
      * @return string
      */
-    static function _procHeader($model, $fun_name, $fun_title, $base_fun)
+    function _procHeader($model, $fun_name, $fun_title, $base_fun)
     {
 
         if ($fun_name != "" && $fun_name != "default" && $fun_name != $base_fun) {
@@ -22,26 +402,167 @@ class DbMysql extends DbBase
             $fun = $base_fun;
         }
 
+        $real_fun = "p_{$model->table_name}_{$fun}";
+
         _db_comment_begin();
-        _db_comment("Procedure structure for p_{$model->table_name}_{$fun}");
+        _db_comment("Procedure structure for {$real_fun}");
         _db_comment("Desc : {$fun_title}");
         _db_comment_end();
 
-        $user = MyApp::getInstance()->db_conf->user;
-        $host = MyApp::getInstance()->db_conf->host;
+        $user = $this->db_conf->user;
+        $host = $this->db_conf->host;
 
-        echo "DROP PROCEDURE IF EXISTS `p_{$model->table_name}_{$fun}`;\n";
+        echo "DROP PROCEDURE IF EXISTS `{$real_fun}`;\n";
         echo "delimiter ;;\n";
-        echo "CREATE DEFINER=`{$user}`@`{$host}` PROCEDURE `p_{$model->table_name}_{$fun}`";
+        echo "CREATE DEFINER=`{$user}`@`{$host}` PROCEDURE `{$real_fun}`";
         echo "(";
-        return "p_{$model->table_name}_{$fun}";
+        return $real_fun;
+    }
+
+    /**
+     * 处理参数
+     * XXX 不考虑小数,如果是金钱，用分做单位
+     *
+     * @param MyField $o_field
+     * @param string $idx_append 避免重复的计数器
+     * @param string $append u/w  update or where
+     *
+     * @return string
+     */
+    function _procParam($o_field, $idx_append = 0, $append = "")
+    {
+
+        $charset = $this->db_conf->charset;
+        if ("" == $charset) {
+            $charset = "utf8mb4";
+        }
+        $key = $o_field->field_name;
+        $type = $o_field->type;
+        //i_w_1_key
+        //c_w_2_from_key
+        //s_w_3_to_key
+        $prefix = self::_procKeyPrefix($type);
+        if ($append != "") {
+            $prefix = "{$prefix}_{$append}";
+        }
+        $param_key = "{$prefix}_{$idx_append}_{$key}";
+
+        $has_charset = true;
+        $size = $o_field->size;
+        $type_size = "VARCHAR(255)";
+        switch ($type) {
+            case Constant::DB_FIELD_TYPE_BOOL :
+                $type_size = "CHAR(1)";
+                break;
+            //整型
+            case Constant::DB_FIELD_TYPE_INT:
+                if ($size < 1 || $size > 255) {
+                    $size = 11;
+                }
+                $type_size = "INT({$size})";
+                $has_charset = false;
+                break;
+            case Constant::DB_FIELD_TYPE_LONGINT:
+                $type_size = "BIGINT";
+                $has_charset = false;
+                break;
+
+            //单个字符
+            case Constant::DB_FIELD_TYPE_CHAR:
+
+                if ($size < 1 || $size > 255) {
+                    $size = 1;
+                }
+                $type_size = "CHAR({$size})";
+                break;
+
+            //字符串
+            case Constant::DB_FIELD_TYPE_VARCHAR:
+                if ($size < 1 || $size > 9999) {
+                    $size = 255;
+                }
+                $type_size = "VARCHAR({$size})";
+                break;
+
+            case Constant::DB_FIELD_TYPE_TEXT :
+                $type_size = "TEXT";
+                break;
+            case Constant::DB_FIELD_TYPE_LONGTEXT :
+                $type_size = "LONGTEXT";
+                break;
+
+            case Constant::DB_FIELD_TYPE_BLOB :
+                $type_size = "BLOB";
+                $has_charset = false;
+                break;
+            case Constant::DB_FIELD_TYPE_LONGBLOB :
+                $type_size = "LONGBLOB";
+                $has_charset = false;
+                break;
+
+            case Constant::DB_FIELD_TYPE_DATE :
+                $type_size = "DATE";
+                break;
+            case Constant::DB_FIELD_TYPE_DATETIME :
+                $type_size = "DATETIME";
+                break;
+            //默认为255的字符串
+            default :
+                break;
+        }
+        if ($has_charset) {
+            return "IN `{$param_key}` {$type_size} CHARSET {$charset}";
+        }
+        return "IN `{$param_key}` {$type_size}";
+    }
+
+
+    /**
+     * 获取参数的前缀
+     *
+     * @param string $field_type
+     * @return string
+     */
+    function _procKeyPrefix($field_type)
+    {
+
+        switch ($field_type) {
+            //bool
+            case Constant::DB_FIELD_TYPE_BOOL :
+                return "b";
+
+            //整型
+            case Constant::DB_FIELD_TYPE_INT:
+            case Constant::DB_FIELD_TYPE_LONGINT:
+                return "i";
+
+            case Constant::DB_FIELD_TYPE_BLOB :
+            case Constant::DB_FIELD_TYPE_LONGBLOB :
+                return "lb";
+
+            //日期时间
+            case Constant::DB_FIELD_TYPE_DATE :
+            case Constant::DB_FIELD_TYPE_TIME :
+            case Constant::DB_FIELD_TYPE_DATETIME :
+                return "dt";
+
+            //字符串
+            case Constant::DB_FIELD_TYPE_CHAR:
+            case Constant::DB_FIELD_TYPE_VARCHAR:
+            case Constant::DB_FIELD_TYPE_TEXT :
+            case Constant::DB_FIELD_TYPE_LONGTEXT :
+            default :
+                return "s";
+        }
+
+
     }
 
     /**
      * 存储过程的参数
      * @param array $a_param
      */
-    static function _procBegin($a_param)
+    function _procBegin($a_param)
     {
         if (count($a_param) > 1) {
             echo "\n";
@@ -55,7 +576,6 @@ class DbMysql extends DbBase
         echo ")\n";
         echo "BEGIN\n";
     }
-
 
     /**
      * 公共存储过程尾巴
@@ -72,517 +592,266 @@ class DbMysql extends DbBase
         echo "\n";
     }
 
-
-    /**
-     * 获取参数的前缀
-     *
-     * @param string $field_type
-     * @return string
-     */
-    static function _procGetKeyPrefix($field_type)
-    {
-        switch ($field_type) {
-            //整型
-            case "int":
-                return "i";
-
-            //字符字符串
-            case "char":
-            case "varchar":
-            case "text":
-            case "longtext":
-                return "s";
-
-            //大二进制
-            case "blob":
-            case "longblob":
-                return "lb";
-
-            //时间类型
-            case "date":
-            case "time":
-            case "datetime":
-                return "dt";
-
-            //默认字符串
-            default :
-                return "s";
-                break;
-        }
-
-    }
-
-    /**
-     * 处理参数
-     * XXX 不考虑小数,如果是金钱，用分做单位
-     *
-     * @param MyField $o_field
-     * @param string $append_for_update u/w
-     *
-     * @return string
-     */
-    static function _procParam($o_field, $append_for_update = "")
-    {
-
-        $charset = MyApp::getInstance()->db_conf->charset;
-        if ("" == $charset) {
-            $charset = "utf8mb4";
-        }
-
-        $key = $o_field->field_name;
-        $p_type = $o_field->type;
-        $p_size = $o_field->size;
-
-        $prefix = self::_procGetKeyPrefix($p_type);
-
-        if ($append_for_update != "") {
-            $prefix = "{$prefix}_{$append_for_update}";
-        }
-
-        $param_key = "{$prefix}_{$key}";
-
-        switch ($p_type) {
-            case "text":
-                return "IN `{$param_key}` TEXT  CHARSET {$charset}";
-
-            case "longtext":
-                return "IN `{$param_key}` LONGTEXT  CHARSET {$charset}";
-
-            case "blob":
-                return "IN `{$param_key}` BLOB ";
-
-            case "longblob":
-                return "IN `{$param_key}` LONGBLOB ";
-
-
-            case "varchar":
-                $size = $p_size;
-                if ($size < 1 || $size > 9999) {
-                    $size = 255;
-                }
-                return "IN `{$param_key}` VARCHAR ( {$size} ) CHARSET {$charset}";
-
-
-            case "char":
-                $size = $p_size;
-                if ($size < 1 || $size > 255) {
-                    $size = 1;
-                }
-                return "IN `{$param_key}` CHAR ( {$size} ) CHARSET {$charset}";
-
-
-            case "date":
-                return "IN `{$param_key}` VARCHAR ( 10 ) CHARSET {$charset}";
-
-
-            case "time":
-            case "datetime":
-                return "IN `{$param_key}` VARCHAR ( 19 ) CHARSET {$charset}";
-
-
-            case "int":
-                return "IN `{$param_key}` INT ";
-
-
-            default:
-                return "IN `{$param_key}` VARCHAR ( 255 ) CHARSET {$charset}";
-
-        }
-    }
-
-    /**
-     * 获取大于小于的操作符号
-     * @param string $gt_eq_lt
-     * @return string
-     */
-    static function _procGtEqLt($gt_eq_lt)
-    {
-        switch ($gt_eq_lt) {
-            case "gt":
-                return ">";
-            case "gte":
-                return ">=";
-            case "lt":
-                return "<";
-            case "lte":
-                return "<=";
-            default:
-                return "=";
-        }
-    }
-
-
-    /**
-     * 创建初始化结构
-     * @param MyDb $db
-     * @return mixed|void
-     */
-    function ccInitDb()
-    {
-
-        _db_comment_begin();
-        _db_comment("Init mysql user {$db->user} and database {$db->database}");
-        _db_comment("You should run this As super user");
-        _db_comment_end();
-
-        $version = $db->version;
-
-        if ($version == "5.6") {
-            _db_comment("for mysql 5.6", true);
-
-            echo "CREATE USER IF NOT EXISTS '{$db->user}'@'{$db->host}' IDENTIFIED BY '{$db->password}';\n";
-            echo "CREATE DATABASE IF NOT EXISTS `{$db->database}` CHARACTER SET {$db->charset} COLLATE {$db->charset}_general_ci;\n";
-            echo "GRANT ALL PRIVILEGES ON `{$db->user}\\_%`.* TO '{$db->user}'@'{$db->host}';\n";
-            echo "GRANT SELECT ON mysql.proc TO '{$db->user}'@'{$db->host}';\n";
-
-        }
-        if ($version == "5.7") {
-            _db_comment("for mysql 5.7", true);
-
-            echo "CREATE DATABASE IF NOT EXISTS `{$db->database}` CHARACTER SET {$db->charset} COLLATE {$db->charset}_general_ci;\n";
-            echo "GRANT ALL PRIVILEGES ON `{$db->user}\\_%`.* TO '{$db->user}'@'{$db->host}' IDENTIFIED BY '{$db->password}';\n";
-            echo "GRANT SELECT ON mysql.proc TO '{$db->user}'@'{$db->host}' IDENTIFIED BY '{$db->passwd}';\n";
-
-        }
-
-        if ($version == "8.0") {
-            _db_comment("for mysql 8.0", true);
-            //TODO
-
-        }
-
-        echo "FLUSH PRIVILEGES;\n";
-
-        _db_comment("for events", true);
-        echo "SET GLOBAL event_scheduler = ON;\n";
-
-        _db_comment("for functions", true);
-        _db_comment("TODO");
-
-    }
-
-
-    /**
-     *
-     * @inheritDoc
-     * @param MyModel $model
-     * @return mixed|void
-     */
-    function ccTable($model)
-    {
-        $i_field_size = count($model->table_fields);
-
-        _db_comment_begin();
-        _db_comment("Table structure for t_{$model->table_name} [{$model->table_title}]");
-        _db_comment("Table fields count ({$i_field_size})");
-        _db_comment_end();
-
-        if ($i_field_size == 0) {
-            _db_comment("Is is a empty Table");
-            return;
-        }
-
-        echo "CREATE TABLE `t_{$model->table_name}`\n(\n";
-
-        $ii = 0;
-        $has_primary_key = false;
-        $a_temp = array();
-        $a_table_field_keys = array();
-        foreach ($model->table_fields as $key => $field) {
-            $ii++;
-            $a_table_field_keys[] = $key;
-            /* @var MyField $field */
-            $size = $field->size;
-            $comment = $field->field_title;
-            //对于自增和主键，强制修改not_null的值
-            if ($key == $model->primary_key) {
-                $has_primary_key = true;
-            }
-            if ($field->auto_increment || $key == $model->primary_key) {
-                $field->not_null = true;
-            }
-
-            $lc_type = strtolower($field->type);
-            $uc_type = strtoupper($field->type);
-
-            switch ($lc_type) {
-                //整型
-                case "int":
-
-                    if ($size < 1 || $size > 255) {
-                        $size = 11;
-                    }
-                    if ($field->auto_increment) {
-                        $a_temp[] = "`{$key}` INT({$size}) NOT NULL AUTO_INCREMENT COMMENT '{$comment}'";
-                    } else {
-                        if ($field->not_null) {
-                            $a_temp[] = "`{$key}` INT({$size}) NOT NULL COMMENT '{$comment}'";
-                        } else {
-                            $a_temp[] = "`{$key}` INT({$size}) DEFAULT NULL COMMENT '{$comment}'";
-                        }
-                    }
-                    break;
-
-                //单个字符
-                case "char":
-
-                    if ($size < 1 || $size > 255) {
-                        $size = 1;
-                    }
-                    if ($field->not_null) {
-                        $a_temp[] = "`{$key}` CHAR({$size}) NOT NULL COMMENT '{$comment}'";
-                    } else {
-                        $a_temp[] = "`{$key}` CHAR({$size}) DEFAULT NULL COMMENT '{$comment}'";
-                    }
-                    break;
-
-                //字符串
-                case "varchar":
-
-                    if ($size < 1 || $size > 9999) {
-                        $size = 255;
-                    }
-
-                    if ($field->not_null) {
-                        $a_temp[] = "`{$key}` VARCHAR({$size}) NOT NULL COMMENT '{$comment}'";
-                    } else {
-                        $a_temp[] = "`{$key}` VARCHAR({$size}) DEFAULT NULL COMMENT '{$comment}'";
-                    }
-
-
-                    break;
-
-                //其他字段
-                case "text":
-                case "longtext":
-                case "blob":
-                case "longblob":
-                case "date":
-                case "time":
-                case "datetime":
-
-                    if ($field->not_null) {
-                        $a_temp[] = "`{$key}` {$uc_type} NOT NULL  COMMENT '{$comment}'";
-                    } else {
-                        $a_temp[] = "`{$key}` {$uc_type} DEFAULT NULL  COMMENT '{$comment}'";
-                    }
-                    break;
-
-                //默认为255的字符串
-                default :
-                    $a_temp[] = "`{$key}` VARCHAR(255) DEFAULT NULL  COMMENT '{$comment}'";
-                    break;
-            }
-        }
-
-        if ($has_primary_key) {
-            $a_temp[] = "PRIMARY KEY (`{$model->primary_key}`)";
-        }
-
-        if (is_array($model->unique_key) && count($model->unique_key) > 0) {
-            foreach ($model->unique_key as $index_name => $a_index) {
-                if (!is_array($a_index) || count($a_index) == 0) {
-                    continue;
-                }
-                $a_temp0 = array();
-                $jj = 0;
-                foreach ($a_index as $key) {
-                    if (in_array($key, $a_table_field_keys)) {
-                        $jj++;
-                        $a_temp0[] = "`{$key}`";
-                    }
-                }
-                $s_temp0 = implode(", ", $a_temp0);
-                $a_temp[] = "UNIQUE uk_{$model->table_name}_{$index_name} ({$s_temp0})";
-            }
-        }
-
-        if (is_array($model->index_key) && count($model->index_key) > 0) {
-            foreach ($model->index_key as $index_name => $a_index) {
-                if (!is_array($a_index) || count($a_index) == 0) {
-                    //
-                    continue;
-                }
-                $a_temp0 = array();
-                $jj = 0;
-                foreach ($a_index as $key) {
-                    if (in_array($key, $a_table_field_keys)) {
-                        $jj++;
-                        $a_temp0[] = "`{$key}`";
-                    }
-                }
-                $s_temp0 = implode(", ", $a_temp0);
-                $a_temp[] = "UNIQUE ik_{$model->table_name}_{$index_name} ({$s_temp0})";
-            }
-        }
-
-        echo _tab(1);
-        echo implode(",\n" . _tab(1), $a_temp);
-        echo "\n)";
-
-        $charset = MyApp::getInstance()->db_conf->charset;
-        if ("" == $charset) {
-            $charset = "utf8mb4";
-        }
-
-        echo "ENGINE=InnoDB\n";
-        echo "DEFAULT CHARSET={$charset}\n";
-        echo "COLLATE {$charset}_general_ci\n";
-        echo "COMMENT='{$model->table_title} 表定义';";
-    }
-
     /**
      * @inheritDoc
-     */
-    function ccTable_reset($model)
-    {
-        // TODO: Implement ccTable_reset() method.
-        _db_comment("Delete Table   t_{$model->table_name}", true);
-        echo "DROP TABLE IF EXISTS `t_{$model->table_name}`;\n";
-    }
-
-    /**
-     * @inheritDoc
-     */
-    function ccProc($model)
-    {
-        if ($model->add_enable) {
-            self::cAdd($model);
-        }
-
-        if ($model->delete_enable) {
-            self::cDelete($model);
-        }
-
-        if ($model->update_enable) {
-            self::cUpdate($model);
-        }
-
-        if ($model->fetch_enable) {
-            self::cFetch($model);
-        }
-
-        if ($model->list_enable) {
-            self::cList($model);
-        }
-
-
-    }
-
-
-    /**
-     * @inheritDoc
-     * 只有一种插入
-     * 创建存储过程-添加
+     * 创建存储过程-删除
      * @param MyModel $model
      */
-    function cAdd($model)
+    function cDelete(MyModel $model, MyFun $o_fun)
     {
-        $proc_name = self::_procHeader($model, "add", "插入数据", "add");
+
+        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "delete");
+        // $a_all_fields = $model->field_list_kv;
+        $limit = $o_fun->limit;//更新限制
 
         $ii = 0;
         $a_temp = array();
-        foreach ($model->table_fields as $key => $field) {
-            if (!in_array($key, $model->add_keys)) {
-                continue;
-            }
+        $a_temp_where = $this->_procWhereInput($model, $o_fun);
+        foreach ($a_temp_where as $_temp_one) {
             $ii++;
-            $a_temp[] = self::_procParam($field);
+            $a_temp[] = $_temp_one;
         }
-        if ($model->add_will_return_new_id) {
-            $ii++;
-            $a_temp[] = "INOUT `v_new_id` INT";
-        }
+        $a_temp[] = "INOUT `v_affected_rows` INT";
+
         self::_procBegin($a_temp);
 
-        echo "DECLARE m_new_id INT;\n";
+        _mysql_comment("input delete , where count {$ii}");
 
-        echo "INSERT INTO `t_{$model->table_name}` \n(\n";
-
-        $ii = 0;
-        $a_temp = array();
-        foreach ($model->table_fields as $key => $field) {
-            if ($key == "id") {
-                continue;
-            }
-            $ii++;
-            $a_temp[] = "`{$key}`";
+        echo "DECLARE m_affected_rows INT;\n";
+        echo "DECLARE s_affected_rows VARCHAR(12);\n";
+        echo "DELETE FROM `t_{$model->table_name}` WHERE ";
+        echo $this->_procWhereCond($model, $o_fun);
+        if ($limit > 0) {
+            echo "\n";
+            echo "LIMIT {$limit};\n";
         }
-        echo _tab(1);
-        echo implode(",\n" . _tab(1), $a_temp);
-        echo "\n) \nVALUES\n(\n";
-
-
-        $ii = 0;
-        $a_temp = array();
-        foreach ($model->table_fields as $key => $field) {
-            if ($key == "id") {
-                continue;
-            }
-            $ii++;
-            /* @var MyField $field */
-
-            if (!in_array($key, $model->add_keys)) {
-                //部分预置值
-                switch ($key) {
-                    case "flag":
-                        $a_temp[] = "'n'";
-                        break;
-
-                    case "state":
-                        if ($field->default_value != "") {
-                            if ($field['type'] == "int") {
-                                $a_temp[] = "{$field->default_value}";
-                            } else {
-                                $a_temp[] = "'{$field->default_value}'";
-                            }
-                        } else {
-                            if ($field['type'] == "int") {
-                                $a_temp[] = "0";
-                            } else {
-                                $a_temp[] = "'n'";
-                            }
-                        }
-                        break;
-
-                    case "ctime":
-                    case "utime":
-                        $a_temp[] = "NOW()";
-                        break;
-
-                    default:
-                        if ($field->default_value != "") {
-                            if ($field['type'] == "int") {
-                                $a_temp[] = "{$field->default_value}";
-                            } else {
-                                $a_temp[] = "'{$field->default_value}'";
-                            }
-                        } else {
-                            $a_temp[] = "''";
-                        }
-                        break;
-                }
-            } else {
-                $prefix = self::_procGetKeyPrefix($field['type']);
-                $param_key = "{$prefix}_{$key}";
-                $a_temp[] = "`{$param_key}`";
-            }
-        }
-        echo _tab(1);
-        echo implode(",\n" . _tab(1), $a_temp);
-
-        echo "\n);\n";
-        echo "SET m_new_id = LAST_INSERT_ID();\n";
+        echo "SET m_affected_rows = ROW_COUNT();\n";
         //echo "COMMIT;\n";
-        echo "SET @s_new_id = CONCAT('', m_new_id);\n";
-        echo "CALL p_debug('{$proc_name}', @s_new_id);\n";
-
-        if ($model->add_will_return_new_id) {
-            echo "SELECT m_new_id INTO v_new_id;\n";
-            echo "SELECT m_new_id AS i_new_id;\n";
-        }
+        echo "SET s_affected_rows = CONCAT( '' , m_affected_rows);\n";
+        echo "CALL p_debug('{$proc_name}', s_affected_rows);\n";
+        echo "SELECT m_affected_rows INTO v_affected_rows;\n";
+        echo "SELECT m_affected_rows AS i_affected_rows;\n";
 
         self::_procEnd($model, $proc_name);
+    }
+
+    /**
+     * 条件的输入参数
+     * @param MyModel $model
+     * @param MyFun $o_fun
+     * @return array
+     */
+    function _procWhereInput($model, $o_fun)
+    {
+        $a_temp = array();
+        $jj = 0;
+        if ($o_fun->where != null) {
+            $cond_list = $o_fun->where->cond_list;
+            $where_list = $o_fun->where->where_list;
+            foreach ($cond_list as $cond) {
+                /* @var MyCond $cond */
+                $field = $model->field_list[$cond->field];
+                $cond_type = $cond->type;
+                $v1_type = $cond->v1_type;
+                $v2_type = $cond->v2_type;
+                if ($cond_type == Constant::COND_TYPE_BETWEEN || $cond_type == Constant::COND_TYPE_DATE || $cond_type == Constant::COND_TYPE_TIME || $cond_type == Constant::COND_TYPE_NOTBETWEEN) {
+                    if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                        $jj++;
+                        $a_temp[] = self::_procParam($field, $jj, "from");
+                    }
+                    //第二个参数
+                    if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                        $jj++;
+                        $a_temp[] = self::_procParam($field, $jj, "to");
+                    }
+                } else {
+                    if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                        $jj++;
+                        $a_temp[] = self::_procParam($field, $jj, "w");
+                    }
+                }
+            }
+            foreach ($where_list as $where2) {
+                if ($where2 != null) {
+                    $cond_list2 = $where2->cond_list;
+                    foreach ($cond_list2 as $cond) {
+                        /* @var MyCond $cond */
+                        $field = $model->field_list[$cond->field];
+                        $cond_type = $cond->type;
+                        $v1_type = $cond->v1_type;
+                        $v2_type = $cond->v2_type;
+                        if ($cond_type == Constant::COND_TYPE_BETWEEN || $cond_type == Constant::COND_TYPE_DATE || $cond_type == Constant::COND_TYPE_TIME || $cond_type == Constant::COND_TYPE_NOTBETWEEN) {
+                            if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                $jj++;
+                                $a_temp[] = self::_procParam($field, $jj, "from");
+                            }
+                            //第二个参数
+                            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                                $jj++;
+                                $a_temp[] = self::_procParam($field, $jj, "to");
+                            }
+                        } else {
+                            if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                $jj++;
+                                $a_temp[] = self::_procParam($field, $jj, "w");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $a_temp;
+    }
+
+    /**
+     * 条件的输入参数
+     * @param MyModel $model
+     * @param MyFun $o_fun
+     */
+    function _procWhereCond($model, $o_fun)
+    {
+        $s_temp = "1=1";
+        $a_temp = array();
+        $jj = 0;
+        if ($o_fun->where != null) {
+            $where_type_joiner = $o_fun->where->type;
+            $cond_list = $o_fun->where->cond_list;
+            $where_list = $o_fun->where->where_list;
+            foreach ($cond_list as $cond) {
+                /* @var MyCond $cond */
+                $field = $model->field_list[$cond->field];
+                $field_type = $field->type;
+                $key = $field->name;
+                $cond_type = $cond->type;
+                $v1_type = $cond->v1_type;
+                $v2_type = $cond->v2_type;
+
+                if ($cond_type == Constant::COND_TYPE_BETWEEN || $cond_type == Constant::COND_TYPE_DATE || $cond_type == Constant::COND_TYPE_TIME || $cond_type == Constant::COND_TYPE_NOTBETWEEN) {
+                    if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                        $jj++;
+                        $prefix = $this->_procKeyPrefix($field_type);
+                        $key2 = "{$prefix}_{$jj}_from_{$key}";
+                        $a_temp[] = "`{$key}` = {$key2}";
+                    }
+                    if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+                        if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                            $a_temp[] = "`{$key}` = {$cond->v1}";
+                        } else {
+                            $a_temp[] = "`{$key}` = '{$cond->v1}'";
+                        }
+                    }
+                    if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+                        $a_temp[] = "`{$key}` = {$cond->v1}()";
+                    }
+                    //第二个参数
+                    if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                        $jj++;
+                        $prefix = self::_procKeyPrefix($field_type);
+                        $key2 = "{$prefix}_{$jj}_to_{$key}";
+                        $a_temp[] = "`{$key}` = {$key2}";
+                    }
+                    if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
+                        if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                            $a_temp[] = "`{$key}` = {$cond->v2}";
+                        } else {
+                            $a_temp[] = "`{$key}` = '{$cond->v2}'";
+                        }
+                    }
+                    if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
+                        $a_temp[] = "`{$key}` = {$cond->v2}()";
+                    }
+                } else {
+                    if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                        $jj++;
+                        $prefix = self::_procKeyPrefix($field_type);
+                        $key2 = "{$prefix}_{$jj}_w_{$key}";
+                        $a_temp[] = "`{$key}` = {$key2}";
+                    }
+                    if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+                        if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                            $a_temp[] = "`{$key}` = {$cond->v1}";
+                        } else {
+                            $a_temp[] = "`{$key}` = '{$cond->v1}'";
+                        }
+                    }
+                    if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+                        $a_temp[] = "`{$key}` = {$cond->v1}()";
+                    }
+                }
+            }
+            foreach ($where_list as $where2) {
+                if ($where2 != null) {
+                    $cond_list2 = $where2->cond_list;
+                    $a_temp2 = array();
+                    foreach ($cond_list2 as $cond) {
+                        /* @var MyCond $cond */
+                        $field = $model->field_list[$cond->field];
+                        $field_type = $field->type;
+                        $key = $field->name;
+                        $cond_type = $cond->type;
+                        $v1_type = $cond->v1_type;
+                        $v2_type = $cond->v2_type;
+
+                        if ($cond_type == Constant::COND_TYPE_BETWEEN || $cond_type == Constant::COND_TYPE_DATE || $cond_type == Constant::COND_TYPE_TIME || $cond_type == Constant::COND_TYPE_NOTBETWEEN) {
+                            if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                $jj++;
+                                $prefix = self::_procKeyPrefix($field_type);
+                                $key2 = "{$prefix}_{$jj}_from_{$key}";
+                                $a_temp2[] = "`{$key}` = {$key2}";
+                            }
+                            if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+                                if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                                    $a_temp2[] = "`{$key}` = {$cond->v1}";
+                                } else {
+                                    $a_temp2[] = "`{$key}` = '{$cond->v1}'";
+                                }
+                            }
+                            if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+                                $a_temp2[] = "`{$key}` = {$cond->v1}()";
+                            }
+                            //第二个参数
+                            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                                $jj++;
+                                $prefix = self::_procKeyPrefix($field_type);
+                                $key2 = "{$prefix}_{$jj}_to_{$key}";
+                                $a_temp2[] = "`{$key}` = {$key2}";
+                            }
+                            if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
+                                if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                                    $a_temp2[] = "`{$key}` = {$cond->v2}";
+                                } else {
+                                    $a_temp2[] = "`{$key}` = '{$cond->v2}'";
+                                }
+                            }
+                            if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
+                                $a_temp2[] = "`{$key}` = {$cond->v2}()";
+                            }
+                        } else {
+                            if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                $jj++;
+                                $prefix = self::_procKeyPrefix($field_type);
+                                $key2 = "{$prefix}_{$jj}_w_{$key}";
+                                $a_temp2[] = "`{$key}` = {$key2}";
+                            }
+                            if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+                                if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                                    $a_temp2[] = "`{$key}` = {$cond->v1}";
+                                } else {
+                                    $a_temp2[] = "`{$key}` = '{$cond->v1}'";
+                                }
+                            }
+                            if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+                                $a_temp2[] = "`{$key}` = {$cond->v1}()";
+                            }
+                        }
+                    }
+                    $where_type_joiner2 = $where2->type;
+                    $a_temp = "(" . implode("\n" . _tab(2) . "{$where_type_joiner2} ", $a_temp2) . ")";
+                }
+            }
+            $s_temp = implode("\n" . _tab(1) . "{$where_type_joiner} ", $a_temp);
+        }
+        return $s_temp;
     }
 
     /**
@@ -590,168 +859,88 @@ class DbMysql extends DbBase
      * 有多种更新
      * 创建存储过程-更新
      * @param MyModel $model
+     * @param MyFun $o_fun
      */
-    function cUpdate($model)
+    function cUpdate(MyModel $model, MyFun $o_fun)
     {
 
-        foreach ($model->update_confs as $update_name => $a_update_conf) {
-            $s_update_title = $a_update_conf['update_title'];//更新的标题
-            $a_update_keys = $a_update_conf['update_keys'];//更新的内容
-            $a_update_by = $a_update_conf['update_by'];//更新依据
-            $limit = $a_update_conf['limit'];//更新依据
+        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "update");
+        $a_all_fields = $model->field_list_kv;
+        $limit = $o_fun->limit;//更新限制
 
-            $proc_name = self::_procHeader($model, $update_name, $update_title, "update");
+        $ii = 0;
+        $a_temp = array();
 
-
-            $ii = 0;
-            $a_temp = array();
-            foreach ($update_keys as $key) {
-                $ii++;
-                $a_temp[] = self::_procParam($field, "u");
+        //需要更新的字段
+        $update_key_by_input = array();
+        foreach ($o_fun->field_list as $field) {
+            /* @var MyField $field */
+            $key = $field->name;
+            if (!isset($a_all_fields[$key])) {
+                continue;
             }
-
-            $jj = 0;
-            foreach ($update_by as $key) {
-                $jj++;
-                $a_temp[] = self::_procParam($field, "w");
-            }
-            $a_temp[] = "INOUT `v_affected_rows` INT";
-
-            self::_procBegin($a_temp);
-
-            _mysql_comment("input u count {$ii} w count {$jj}");
-
-            echo "DECLARE m_affected_rows INT;\n";
-            echo "DECLARE s_affected_rows VARCHAR(12);\n";
-            echo "UPDATE `t_{$model['table_name']}` SET ";
-
-            $ii = 0;
-            $a_temp = array();
-            foreach ($update_keys as $key) {
-                $ii++;
-                $p_type = $model->table_fields[$key]['type'];
-                $prefix = self::_procGetKeyPrefix($p_type);
-                $key2 = "{$prefix}_u_$key";
-                $a_temp[] = "`{$key}` = {$key2}";
-            }
-
-            if (isset($model->table_fields["utime"]) && !in_array("utime", $update_keys)) {
-                $a_temp[] = "`utime` = NOW()";
-            }
-
-            if (count($a_temp) > 1) {
-                echo "\n";
-                echo _tab(1);
-                echo implode(",\n" . _tab(1), $a_temp);
-            }
-            if (count($a_temp) == 1) {
-                echo $a_temp[0];
-            }
-
-            echo "\nWHERE ";
-
-            $jj = 0;
-            $a_temp = array();
-            $a_temp[] = " 1 = 1";
-            foreach ($update_by as $key) {
-                $jj++;
-
-                $p_type = $model->table_fields[$key]['type'];
-                $prefix = self::_procGetKeyPrefix($p_type);
-                $key2 = "{$prefix}_w_$key";
-                $a_temp[] = "`{$key}` = {$key2}";
-            }
-
-            //只有正常数据才能更新
-            if (isset($model->table_fields['flag'])) {
-                $a_temp[] = "`flag` = 'n'";
-            }
-
-            echo implode("\n" . _tab(1) . "AND ", $a_temp);
-
-            if ($limit > 0) {
-                echo "\n";
-                echo "LIMIT {$limit};\n";
-            }
-            _mysql_comment("query u count {$ii} w count {$jj}");
-
-
-            echo "SET m_affected_rows = ROW_COUNT();\n";
-            //echo "COMMIT;\n";
-            echo "SET s_affected_rows = CONCAT( '' , m_affected_rows);\n";
-            echo "CALL p_debug('{$proc_name}', s_affected_rows);\n";
-
-            echo "SELECT m_affected_rows INTO v_affected_rows;\n";
-            echo "SELECT m_affected_rows AS i_affected_rows;\n";
-
-
-            self::_procEnd($model, $proc_name);
+            $ii++;
+            $update_key_by_input[] = $key;
+            $a_temp[] = self::_procParam($field, $ii, "u");
         }
-    }
-
-    /**
-     * @inheritDoc
-     * 创建存储过程-删除
-     * @param MyModel $model
-     */
-    function cDelete($model)
-    {
-        $a_delete_confs = _model_get_ok_delete($model);
-        foreach ($a_delete_confs as $delete_name => $a_delete_conf) {
-            $a_delete_by = $a_delete_conf['delete_by'];// 删除依据
-            $limit = $a_delete_conf['limit'];// 删除依据
-            $proc_name = self::_procHeader($model, $delete_name, $delete_title, "delete");
-
-
-            $jj = 0;
-            foreach ($a_delete_by as $key) {
-                $jj++;
-                $a_temp[] = self::_procParam($field, "w");
-            }
-            $a_temp[] = "INOUT `v_affected_rows` INT";
-
-            self::_procBegin($a_temp);
-
-            _mysql_comment("input  w count {$jj}");
-
-            echo "DECLARE m_affected_rows INT;\n";
-            echo "DECLARE s_affected_rows VARCHAR(12);\n";
-
-            echo "DELETE FROM `t_{$model['table_name']}` WHERE ";
-
-
-            $jj = 0;
-            $a_temp = array();
-            $a_temp[] = " 1 = 1";
-            foreach ($a_delete_by as $key) {
-                $jj++;
-
-                $p_type = $model->table_fields[$key]['type'];
-                $prefix = self::_procGetKeyPrefix($p_type);
-                $key2 = "{$prefix}_w_$key";
-                $a_temp[] = "`{$key}` = {$key2}";
-            }
-
-
-            echo implode("\n" . _tab(1) . "AND ", $a_temp);
-
-            if ($limit > 0) {
-                echo "\n";
-                echo "LIMIT {$limit};\n";
-            }
-            _mysql_comment("query w count {$jj}");
-
-
-            echo "SET m_affected_rows = ROW_COUNT();\n";
-            //echo "COMMIT;\n";
-            echo "SET s_affected_rows = CONCAT( '' , m_affected_rows);\n";
-            echo "CALL p_debug('{$proc_name}', s_affected_rows);\n";
-
-            echo "SELECT m_affected_rows INTO v_affected_rows;\n";
-            echo "SELECT m_affected_rows AS i_affected_rows;\n";
-
-            self::_procEnd($model, $proc_name);
+        //查询条件的字段
+        $jj = 0;
+        $a_temp_where = $this->_procWhereInput($model, $o_fun);
+        foreach ($a_temp_where as $_temp_one) {
+            $jj++;
+            $a_temp[] = $_temp_one;
         }
+        $a_temp[] = "INOUT `v_affected_rows` INT";
+
+        self::_procBegin($a_temp);
+
+        _mysql_comment("input update count {$ii} , where count {$jj}");
+
+        echo "DECLARE m_affected_rows INT;\n";
+        echo "DECLARE s_affected_rows VARCHAR(12);\n";
+        echo "UPDATE `t_{$model->table_name}` SET ";
+
+
+        $a_temp = array();
+        foreach ($update_key_by_input as $key) {
+            $p_type = $a_all_fields[$key]->type;
+            $prefix = self::_procKeyPrefix($p_type);
+            $key2 = "{$prefix}_u_$key";
+            $a_temp[] = "`{$key}` = {$key2}";
+        }
+
+        if (isset($a_all_fields["utime"]) && !in_array("utime", $update_key_by_input)) {
+            $a_temp[] = "`utime` = NOW()";
+        }
+
+        if (count($a_temp) > 1) {
+            echo "\n";
+            echo _tab(1);
+            echo implode(",\n" . _tab(1), $a_temp);
+        }
+        if (count($a_temp) == 1) {
+            echo $a_temp[0];
+        }
+
+        echo "\nWHERE ";
+
+        echo $this->_procWhereCond($model, $o_fun);
+
+        if ($limit > 0) {
+            echo "\n";
+            echo "LIMIT {$limit};\n";
+        }
+        _mysql_comment("query u count {$ii} w count {$jj}");
+
+        echo "SET m_affected_rows = ROW_COUNT();\n";
+        //echo "COMMIT;\n";
+        echo "SET s_affected_rows = CONCAT( '' , m_affected_rows);\n";
+        echo "CALL p_debug('{$proc_name}', s_affected_rows);\n";
+
+        echo "SELECT m_affected_rows INTO v_affected_rows;\n";
+        echo "SELECT m_affected_rows AS i_affected_rows;\n";
+
+        self::_procEnd($model, $proc_name);
     }
 
     /**
@@ -759,60 +948,25 @@ class DbMysql extends DbBase
      * 创建存储过程-查询一个
      * @param MyModel $model
      */
-    function cFetch($model)
+    function cFetch(MyModel $model, MyFun $o_fun)
     {
-        /**
-         * 默认主键查询
-         */
-        $fetch_by = _model_get_ok_fetch_by($model);
-        if (count($fetch_by) > 0) {
-            _mysql_create_proc_fetch($model, "default", "默认主键查询", $fetch_by);
-            /**
-             * 其他可能的主键查询单条语句
-             * fetch_by_other=>
-             *      ----fetch_name  => fetch_title
-             *                      => fetch_by
-             */
-            $a_fetch_by_other = _model_get_ok_other_fetch_by($model);
-
-            foreach ($a_fetch_by_other as $fetch_name => $a_vv) {
-                $fetch_title = $a_vv['fetch_title'];
-                $fetch_by = $a_vv['fetch_by'];
-                $proc_name = self::_procHeader($model, $fetch_name, $fetch_title, "fetch");
-
-
-                $ii = 0;
-                $a_temp = array();
-                foreach ($fetch_by as $key) {
-                    $ii++;
-                    $a_temp[] = self::_procParam($field);
-                }
-                self::_procBegin($a_temp);
-
-                echo "SELECT * FROM `t_{$model['table_name']}` WHERE ";
-
-                $ii = 0;
-                $a_temp = array();
-                $a_temp[] = " 1 = 1";
-                foreach ($fetch_by as $key) {
-                    $ii++;
-                    $prefix = self::_procGetKeyPrefix($model["table_fields"][$key]['type']);
-                    $a_temp[] = "`{$key}` = `{$param_key}`";
-                }
-
-                if (isset($model->table_fields['flag'])) {
-                    $ii++;
-                    $a_temp[] = "`flag`='n'";
-                }
-
-                echo implode("\n" . _tab(1) . "AND ", $a_temp);
-                echo "\n";
-                echo "LIMIT 1;\n";
-                //echo "CALL p_debug('{$proc_name}', '1');\n";
-
-                self::_procEnd($model, $proc_name);
-            }
+        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "fetch");
+        $ii = 0;
+        $a_temp = array();
+        $a_temp_where = $this->_procWhereInput($model, $o_fun);
+        foreach ($a_temp_where as $_temp_one) {
+            $ii++;
+            $a_temp[] = $_temp_one;
         }
+        self::_procBegin($a_temp);
+
+        _mysql_comment("input fetch , where count {$ii}");
+
+        echo "SELECT * FROM `t_{$model->table_name}` WHERE ";
+        echo $this->_procWhereCond($model, $o_fun);
+        echo "\n";
+        echo "LIMIT 1;\n";
+        self::_procEnd($model, $proc_name);
 
     }
 
@@ -821,11 +975,391 @@ class DbMysql extends DbBase
      * 创建存储过程-查询多个、聚合、统计
      * @param MyModel $model
      */
-    function cList($model)
+    function cList(MyModel $model, MyFun $o_fun)
     {
-        // TODO: Implement ccList() method.
+        $base_fun = strtolower($o_fun->type);
+        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, $base_fun);
+
+        echo "DECLARE m_offset INT;\n";
+        echo "DECLARE m_length INT;\n";
+        echo "SET m_length = i_page_size;\n";
+        echo "SET m_offset = ( i_page - 1 ) * i_page_size;\n\n";
+        echo "SET @sql = 'SELECT ";
+
+        $has_pre_key = "";
+        if ($o_fun->all_field == 1) {
+            echo "*";
+            $has_pre_key = ",";
+        } else {
+            $a_field_return = $model->field_list;
+            foreach ($model->field_list2 as $skey => $o_filed) {
+                $a_temp[] = "`{$skey}`\n";
+                $has_pre_key = ",";
+            }
+            echo implode(",", $a_temp);
+        }
+
+        $fun_type = $o_fun->type;
+        $group_field = $o_fun->group_field;
+        //基本要求为整形
+        $group_by = $o_fun->group_by;
+        //检查是否带有聚合
+        switch ($fun_type) {
+            case Constant::FUN_TYPE_LIST_WITH_AVG:
+                echo "{$has_pre_key} AVG(`{$group_field}`) AS agv_{$group_field}\n";
+                break;
+            case Constant::FUN_TYPE_LIST_WITH_SUM:
+                echo "{$has_pre_key} SUM(`{$group_field}`) AS sum_{$group_field}\n";
+                break;
+            case Constant::FUN_TYPE_LIST_WITH_MAX:
+                echo "{$has_pre_key} MAX(`{$group_field}`) AS max_{$group_field}\n";
+                break;
+            case Constant::FUN_TYPE_LIST_WITH_MIN:
+                echo "{$has_pre_key} MIN(`{$group_field}`) AS min_{$group_field}\n";
+                break;
+            case Constant::FUN_TYPE_LIST_WITH_COUNT:
+                echo "{$has_pre_key} COUNT(`{$group_field}`) AS count_{$group_field}\n";
+                break;
+            default:
+                break;
+        }
+        echo " FROM `t_{$model->table_name}` WHERE ";
+        echo $this->_procWhereCond($model, $o_fun);
+
+        echo "CALL p_debug('{$proc_name}', @sql);\n";
+        echo "PREPARE stmt FROM @sql;\n";
+        echo "EXECUTE stmt;\n";
     }
 
+    /**
+     * 返回3个数组
+     * - 参数结构
+     * - 直接的sql语句
+     * - 拼接的sql语句
+     * list()
+     * @return void
+     */
+    function _procWhere0($inc, MyModel $model, MyCond $cond)
+    {
+
+        $field = $model->field_list[$cond->field];
+        $field_type = $field->type;
+        $key = $field->name;
+        $cond_type = $cond->type;
+        $v1_type = $cond->v1_type;
+        $v2_type = $cond->v2_type;
+        $v1 = $cond->v1;
+        $v2 = $cond->v2;
+
+        switch ($cond_type) {
+            case Constant::COND_TYPE_EQ:
+                return $this->_procWhereV0($inc,$key,$field_type,$cond_type,$v1_type,$v1);
+                break;// = "EQ";//= 等于
+            case Constant::COND_TYPE_NEQ:
+                break;// = "NEQ";//!= 不等于
+            case Constant::COND_TYPE_GT:
+                break;// = "GT";//&GT; 大于
+            case Constant::COND_TYPE_GTE:
+                break;// = "GTE";//&GT;= 大于等于
+            case Constant::COND_TYPE_LT:
+                break;// = "LT";//&LT; 少于
+            case Constant::COND_TYPE_LTE:
+                break;// = "LTE";//&LT;= 少于等于
+            case Constant::COND_TYPE_KW:
+                break;// = "KW";//关键字模糊匹配
+            case Constant::COND_TYPE_DATE:
+                break;// = "DATE";//关键字模糊匹配
+            case Constant::COND_TYPE_TIME:
+                break;// = "TIME";//日期范围内
+            case Constant::COND_TYPE_IN:
+                break;// = "IN";//离散量范围内
+            case Constant::COND_TYPE_NOTIN:
+                break;// = "NOTIN";//离散量范围外
+            case Constant::COND_TYPE_BETWEEN:
+                break;// = "BETWEEN";//标量范围内
+            case Constant::COND_TYPE_NOTBETWEEN:
+                break;// = "NOTBETWEEN";//标量范围外
+        }
+
+
+        if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+            $jj++;
+            $prefix = $this->_procKeyPrefix($field_type);
+            $key2 = "{$prefix}_{$jj}_from_{$key}";
+            $a_temp[] = "`{$key}` = {$key2}";
+        }
+        if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+            if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                $a_temp[] = "`{$key}` = {$cond->v1}";
+            } else {
+                $a_temp[] = "`{$key}` = '{$cond->v1}'";
+            }
+        }
+    }
+
+    /**
+     * 用来拼接的
+     * 可以忽略
+     * @return void
+     */
+    function _procWhereV0($inc,$key,$f_type,$s_cond,$v_type,$val)
+    {
+        //输入值
+        if ($v_type == Constant::COND_VAl_TYPE_INPUT) {
+            $prefix = self::_procKeyPrefix($f_type);
+            $key2 = "{$prefix}_{$inc}_w_{$key}";//key2 是输入变量
+            return "`{$key}` {$s_cond} {$key2}";
+        }
+        //固定值
+        if ($v_type == Constant::COND_VAl_TYPE_FIXED) {
+            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                return "`{$key}` {$s_cond} {$val}";
+            } else {
+                return "`{$key}` {$s_cond} '{$val}'";
+            }
+        }
+        //函数
+        if ($v_type == Constant::COND_VAl_TYPE_FUN) {
+            return "`{$key}` {$s_cond} {$val}()";
+        }
+        return "";
+    }
+
+    /**
+     * 用来拼接的 int or notin
+     * 可以忽略
+     * @return void
+     */
+    function _procWhereV1($inc,$key,$f_type,$s_cond,$v_type,$val)
+    {
+        //输入值
+        if ($v_type == Constant::COND_VAl_TYPE_INPUT) {
+            $prefix = self::_procKeyPrefix($f_type);
+            $key2 = "{$prefix}_{$inc}_w_{$key}";//key2 是输入变量
+            return "`{$key}` {$s_cond} ({$key2})";
+        }
+        //固定值
+        if ($v_type == Constant::COND_VAl_TYPE_FIXED) {
+            if($val==""){
+                return;
+            }
+            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                return "`{$key}` {$s_cond} ({$val})";
+            } else {
+                //需要增加单引号
+                $a_temp = explode(",",$val);
+                $val2 = implode("','",$a_temp);
+                return "`{$key}` {$s_cond} ('{$val2}')";
+            }
+        }
+        //函数
+        if ($v_type == Constant::COND_VAl_TYPE_FUN) {
+            return "`{$key}` {$s_cond} ({$val}())";
+        }
+        return "";
+    }
+
+
+    /**
+     * 用来拼接的， 双函数结构
+     * 不能忽略
+     * @return void
+     */
+    function _procWhereV2($inc,$key,$f_type,$s_cond, $v1_type, $val1, $v2_type, $val2)
+    {
+        $str = "`{$key}` {$s_cond} (";
+        //v1输入值
+        if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+            $prefix = self::_procKeyPrefix($f_type);
+            $key2 = "{$prefix}_{$inc}_from_{$key}";//key2 是输入变量
+            $str = $str." {$key2}, ";
+        }
+        //v1固定值
+        if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                $str = $str." {$val1}, ";
+            } else {
+                $str = $str." '{$val1}', ";
+            }
+        }
+        //v1函数
+        if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+            $str = $str." {$val1}(), ";
+        }
+
+        //v2输入值
+        if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+            $prefix = self::_procKeyPrefix($f_type);
+            $key2 = "{$prefix}_{$inc}_to_{$key}";//key2 是输入变量
+            $str = $str." {$key2}";
+        }
+        //v2固定值
+        if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
+            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                $str = $str." {$val2}";
+            } else {
+                $str = $str." '{$val2}'";
+            }
+        }
+        //v2函数
+        if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
+            $str = $str." {$val2}()";
+        }
+        //
+        return $str.")";
+    }
+
+    /**
+     * 条件的输入参数,内部二次拼接
+     * @param MyModel $model
+     * @param MyFun $o_fun
+     */
+    function _procWhereCond2($model, $o_fun)
+    {
+        $s_temp = "1=1";
+        $a_temp = array();
+        $jj = 0;
+        if ($o_fun->where != null) {
+            $where_type_joiner = $o_fun->where->type;
+            $cond_list = $o_fun->where->cond_list;
+            $where_list = $o_fun->where->where_list;
+            foreach ($cond_list as $cond) {
+                /* @var MyCond $cond */
+                $field = $model->field_list[$cond->field];
+                $field_type = $field->type;
+                $key = $field->name;
+                $cond_type = $cond->type;
+                $v1_type = $cond->v1_type;
+                $v2_type = $cond->v2_type;
+
+                if ($cond_type == Constant::COND_TYPE_BETWEEN || $cond_type == Constant::COND_TYPE_DATE || $cond_type == Constant::COND_TYPE_TIME || $cond_type == Constant::COND_TYPE_NOTBETWEEN) {
+                    if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                        $jj++;
+                        $prefix = self::_procKeyPrefix($field_type);
+                        $key2 = "{$prefix}_{$jj}_from_{$key}";
+                        $a_temp[] = "`{$key}` = {$key2}";
+                    }
+                    if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+                        if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                            $a_temp[] = "`{$key}` = {$cond->v1}";
+                        } else {
+                            $a_temp[] = "`{$key}` = '{$cond->v1}'";
+                        }
+                    }
+                    if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+                        $a_temp[] = "`{$key}` = {$cond->v1}()";
+                    }
+                    //第二个参数
+                    if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                        $jj++;
+                        $prefix = self::_procKeyPrefix($field_type);
+                        $key2 = "{$prefix}_{$jj}_to_{$key}";
+                        $a_temp[] = "`{$key}` = {$key2}";
+                    }
+                    if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
+                        if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                            $a_temp[] = "`{$key}` = {$cond->v2}";
+                        } else {
+                            $a_temp[] = "`{$key}` = '{$cond->v2}'";
+                        }
+                    }
+                    if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
+                        $a_temp[] = "`{$key}` = {$cond->v2}()";
+                    }
+                } else {
+                    if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                        $jj++;
+                        $prefix = self::_procKeyPrefix($field_type);
+                        $key2 = "{$prefix}_{$jj}_w_{$key}";
+                        $a_temp[] = "`{$key}` = {$key2}";
+                    }
+                    if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+                        if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                            $a_temp[] = "`{$key}` = {$cond->v1}";
+                        } else {
+                            $a_temp[] = "`{$key}` = '{$cond->v1}'";
+                        }
+                    }
+                    if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+                        $a_temp[] = "`{$key}` = {$cond->v1}()";
+                    }
+                }
+            }
+            foreach ($where_list as $where2) {
+                if ($where2 != null) {
+                    $cond_list2 = $where2->cond_list;
+                    $a_temp2 = array();
+                    foreach ($cond_list2 as $cond) {
+                        /* @var MyCond $cond */
+                        $field = $model->field_list[$cond->field];
+                        $field_type = $field->type;
+                        $key = $field->name;
+                        $cond_type = $cond->type;
+                        $v1_type = $cond->v1_type;
+                        $v2_type = $cond->v2_type;
+
+                        if ($cond_type == Constant::COND_TYPE_BETWEEN || $cond_type == Constant::COND_TYPE_DATE || $cond_type == Constant::COND_TYPE_TIME || $cond_type == Constant::COND_TYPE_NOTBETWEEN) {
+                            if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                $jj++;
+                                $prefix = self::_procKeyPrefix($field_type);
+                                $key2 = "{$prefix}_{$jj}_from_{$key}";
+                                $a_temp2[] = "`{$key}` = {$key2}";
+                            }
+                            if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+                                if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                                    $a_temp2[] = "`{$key}` = {$cond->v1}";
+                                } else {
+                                    $a_temp2[] = "`{$key}` = '{$cond->v1}'";
+                                }
+                            }
+                            if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+                                $a_temp2[] = "`{$key}` = {$cond->v1}()";
+                            }
+                            //第二个参数
+                            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                                $jj++;
+                                $prefix = self::_procKeyPrefix($field_type);
+                                $key2 = "{$prefix}_{$jj}_to_{$key}";
+                                $a_temp2[] = "`{$key}` = {$key2}";
+                            }
+                            if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
+                                if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                                    $a_temp2[] = "`{$key}` = {$cond->v2}";
+                                } else {
+                                    $a_temp2[] = "`{$key}` = '{$cond->v2}'";
+                                }
+                            }
+                            if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
+                                $a_temp2[] = "`{$key}` = {$cond->v2}()";
+                            }
+                        } else {
+                            if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                $jj++;
+                                $prefix = self::_procKeyPrefix($field_type);
+                                $key2 = "{$prefix}_{$jj}_w_{$key}";
+                                $a_temp2[] = "`{$key}` = {$key2}";
+                            }
+                            if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+                                if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                                    $a_temp2[] = "`{$key}` = {$cond->v1}";
+                                } else {
+                                    $a_temp2[] = "`{$key}` = '{$cond->v1}'";
+                                }
+                            }
+                            if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+                                $a_temp2[] = "`{$key}` = {$cond->v1}()";
+                            }
+                        }
+                    }
+                    $where_type_joiner2 = $where2->type;
+                    $a_temp = "(" . implode("\n" . _tab(2) . "{$where_type_joiner2} ", $a_temp2) . ")";
+                }
+            }
+            $s_temp = implode("\n" . _tab(1) . "{$where_type_joiner} ", $a_temp);
+        }
+        return $s_temp;
+
+    }
 
     /**
      * 方法 list-1 构造可变参数sql
@@ -845,7 +1379,7 @@ class DbMysql extends DbBase
                 //$a_temp[] = self::_procParam($field);
                 $ii++;
                 $p_type = $model->table_fields[$key]['type'];
-                $prefix = self::_procGetKeyPrefix($p_type);
+                $prefix = self::_procKeyPrefix($p_type);
 
                 if ($p_type == "int") {
                     echo "IF {$prefix}_{$key} >= 0 THEN\n";
@@ -1062,6 +1596,26 @@ class DbMysql extends DbBase
         return;
     }
 
+    /**
+     * 获取大于小于的操作符号
+     * @param string $gt_eq_lt
+     * @return string
+     */
+    static function _procGtEqLt($gt_eq_lt)
+    {
+        switch ($gt_eq_lt) {
+            case "gt":
+                return ">";
+            case "gte":
+                return ">=";
+            case "lt":
+                return "<";
+            case "lte":
+                return "<=";
+            default:
+                return "=";
+        }
+    }
 
     /**
      * 方法 list-2 构造可变参数

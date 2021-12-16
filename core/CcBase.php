@@ -13,53 +13,58 @@ interface CcBase
 {
 
     //有一个特性的输出目录
-    
+
 
     /**
      * 增加
      * @param MyModel $model
+     * @param $fun
      * @return mixed
      */
-    function cAdd($model);
+    function cAdd(MyModel $model, MyFun $fun);
 
     /**
      * 修改
      * @param MyModel $model
+     * @param $fun
      * @return mixed
      */
-    function cUpdate($model);
+    function cUpdate(MyModel $model, MyFun $fun);
 
 
     /**
      * 删除
      * @param MyModel $model
+     * @param $fun
      * @return mixed
      */
-    function cDelete($model);
+    function cDelete(MyModel $model, MyFun $fun);
 
 
     /**
      * 读取一个
      * @param MyModel $model
+     * @param $fun
      * @return mixed
      */
-    function cFetch($model);
-
+    function cFetch(MyModel $model, MyFun $fun);
 
 
     /**
      * 聚合查询、统计
      * @param $model
+     * @param $fun
      * @return mixed
      */
-    function cList($model);
+    function cList(MyModel $model, MyFun $fun);
 
 
     /**
      * 聚合查询、统计数量
      * @param $model
+     * @param $fun
      * @return mixed
      */
-    function cCount($model);
+    function cCount(MyModel $model, MyFun $fun);
 
 }
