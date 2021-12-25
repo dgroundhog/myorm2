@@ -71,11 +71,15 @@
                             </button>
 
                             <button type="button" class="btn btn-danger btn_sync_project">
-                                <i class="fa fa-save"></i> 同步到服务器
+                                <i class="fa fa-save"></i> 同步服务器
                             </button>
 
                             <button type="button" class="btn btn-info">
-                                <i class="fa fa-file"></i> 关联文档TODO
+                                <i class="fa fa-file"></i> 关联文档
+                            </button>
+
+                            <button type="button" class="btn btn-danger" id="btn_build">
+                                <i class="fa fa-flag"></i> 构建
                             </button>
 
                             <button type="button" class="btn btn-success float-right" id="btn_add_app">

@@ -184,6 +184,9 @@ switch (trim($_act)) {
         //删除某个项目的某个版本
         drop_project($_project, $_version1);
         break;
+    case "build":
+        build_project($_project, $_version1);
+        break;
     case "test":
         var_dump($_data);
         var_dump(base64_decode($_data));
@@ -408,6 +411,32 @@ function drop_project($project, $version)
     }
     echo json_encode($a_return);
 }
+
+
+function build_project($project, $version)
+{
+    global $g_data_root_path;
+    $a_return = array();
+    $a_return['code'] = "ok";
+    $a_return['msg'] = "done";
+    $a_return['data'] = array();
+
+    //如果项目存在就返回那个项目的信息
+    $project_path = $g_data_root_path . DIRECTORY_SEPARATOR . $project . ".json";
+    if (file_exists($project_path)) {
+        $str_project = file_get_contents($project_path);
+        $a_project_info = json_decode($str_project, true);
+        $o_project = new MyProject();
+        $o_project->parseToObj($a_project_info);
+        $o_project->build($version,"db");
+
+    } else {
+        $a_return['code'] = "project_not_exist";
+        $a_return['msg'] = "项目不存在4";
+    }
+    echo json_encode($a_return);
+}
+
 
 
 /**

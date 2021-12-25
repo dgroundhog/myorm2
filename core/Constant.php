@@ -46,6 +46,7 @@ class Constant
      */
     const   WHERE_JOIN_AND = "AND";
     const   WHERE_JOIN_OR = "OR";
+
     /**
      * 条件链接方式
      */
@@ -252,6 +253,7 @@ class Constant
     const COND_TYPE_KW = "KW";//关键字模糊匹配
     const COND_TYPE_DATE = "DATE";//关键字模糊匹配
     const COND_TYPE_TIME = "TIME";//日期范围内
+    const COND_TYPE_DATETIME = "DATETIME";//日期范围内
     const COND_TYPE_IN = "IN";//离散量范围内
     const COND_TYPE_NOTIN = "NOTIN";//离散量范围外
     const COND_TYPE_BETWEEN = "BETWEEN";//标量范围内
@@ -271,10 +273,45 @@ class Constant
         self::COND_TYPE_KW => "关键字模糊匹配",
         self::COND_TYPE_DATE => "日期范围内",
         self::COND_TYPE_TIME => "时间范围内",
+        self::COND_TYPE_DATETIME => "日期时间范围内",
         self::COND_TYPE_IN => "离散量范围内",
         self::COND_TYPE_NOTIN => "离散量范围外",
         self::COND_TYPE_BETWEEN => "标量范围内",
         self::COND_TYPE_NOTBETWEEN => "标量范围外"
+    );
+
+    /**
+     *  查询条件
+     * @var string[]
+     */
+    public static $a_cond_type_on_sql_1 = array(
+        self::COND_TYPE_EQ => " = ",
+        self::COND_TYPE_NEQ => " != ",
+        self::COND_TYPE_GT => " > ",
+        self::COND_TYPE_GTE => " >= ",
+        self::COND_TYPE_LT => " < ",
+        self::COND_TYPE_LTE => " <= "
+    );
+
+    /**
+     *  查询条件
+     * @var string[]
+     */
+    public static $a_cond_type_on_sql_2 = array(
+        self::COND_TYPE_DATE => " BETWEEN ",
+        self::COND_TYPE_TIME => " BETWEEN ",
+        self::COND_TYPE_DATETIME => " BETWEEN ",
+        self::COND_TYPE_BETWEEN => " BETWEEN ",
+        self::COND_TYPE_NOTBETWEEN => " NOT BETWEEN "
+    );
+
+    /**
+     *  查询条件
+     * @var string[]
+     */
+    public static $a_cond_type_on_sql_3 = array(
+        self::COND_TYPE_IN => " IN ",
+        self::COND_TYPE_NOTIN => " NOT IN "
     );
 
 

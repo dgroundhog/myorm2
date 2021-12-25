@@ -3605,11 +3605,11 @@ App.dt.project.modelFunCondEdit = function (where_id, cond_id) {
 
     } else {
         console.log("编辑旧条件");
-        console.log(where_id);
-        console.log(cond_id);
+        //console.log(where_id);
+        //console.log(cond_id);
         $("#btn_save_cond").text("保存旧条件");
         //var _currCond =  new MyCond();
-        console.log(self.project.curr_where.where_list)
+        //console.log(self.project.curr_where.where_list)
         var _currCond = null;
         if (undefined != self.project.curr_where.cond_list[cond_id]) {
             console.log(111);
@@ -3630,12 +3630,49 @@ App.dt.project.modelFunCondEdit = function (where_id, cond_id) {
         sel_fun_cond_type.val(_currCond.type);
         sel_fun_cond_v1_type.val(_currCond.v1_type);
         sel_fun_cond_v2_type.val(_currCond.v2_type);
+
         $("#txt_fun_cond_v1").val(_currCond.v1);
         $("#txt_fun_cond_v2").val(_currCond.v2);
         //cond_id
         $("#txt_cond_uuid").val(_currCond.uuid);
     }
+
+    sel_fun_cond_field.change();
+    sel_fun_cond_type.change();
+    sel_fun_cond_v1_type.change();
+    sel_fun_cond_v2_type.change();
+
     $("#block_edit_mode_conf").show();
+}
+
+App.dt.project.buildCC  = function () {
+    var self = App.dt;
+    var _curr_project = self.project.getCurrProject();
+    if (null == _curr_project) {
+        self.fail("未选中项目")
+        return;
+    }
+
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选中应用")
+        return;
+    }
+
+    var sbf = new StringBuffer();
+    sbf.append("act=build");
+    sbf.append("&project=");
+    sbf.append(encodeURIComponent(_curr_app.project_id));
+    sbf.append("&version=");
+    sbf.append(encodeURIComponent(_curr_app.uuid));
+
+    var _data = sbf.toString();
+    var _cb = function (){
+        self.succ("构建成功");
+    }
+    self.succ("请稍后---");
+    self.aPost(_data, _cb);
+
 }
 
 /**
@@ -3863,6 +3900,13 @@ App.dt.init = function () {
     $("#btn_save_cond").click(function () {
         self.project.modelFunCondSave();
     });
+
+    $("#btn_build").click(function () {
+        self.project.buildCC();
+    });
+
+
+
 
 
     /**

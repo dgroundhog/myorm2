@@ -4,6 +4,7 @@ if (!defined("CC_ROOT")) {
 }
 include_once(CC_ROOT . "/_util.inc.php");
 include_once(CC_ROOT . "/_cc.inc.php");
+include_once(CC_ROOT . "/CcBase.php");
 include_once(CC_ROOT . "/MyStruct.php");
 include_once(CC_ROOT . "/MyArch.php");
 include_once(CC_ROOT . "/MyDb.php");
@@ -13,6 +14,8 @@ include_once(CC_ROOT . "/MyIndex.php");
 include_once(CC_ROOT . "/MyFun.php");
 include_once(CC_ROOT . "/MyWhere.php");
 include_once(CC_ROOT . "/MyCond.php");
+
+include_once(CC_ROOT . "/db/DbMysql.php");
 
 /**
  * 主程序模型

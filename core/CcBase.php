@@ -54,9 +54,10 @@ interface CcBase
      * 聚合查询、统计
      * @param $model
      * @param $fun
+     * @param $count_only
      * @return mixed
      */
-    function cList(MyModel $model, MyFun $fun);
+    function cList(MyModel $model, MyFun $fun, $count_only);
 
 
     /**
