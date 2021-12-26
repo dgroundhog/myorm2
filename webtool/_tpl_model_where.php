@@ -41,13 +41,9 @@
                         {assign var="cond_field" value=$cond.field}
                         <tr>
                             <td>
-                                {if $cond_field eq '##'}
-                                聚合新健
-                                {else}
                                 {foreach $model_field_list as $ii => $iff4}
                                 {if $cond_field eq $iff4.uuid} {$iff4.name}{/if}
                                 {/foreach}
-                                {/if}
                             </td>
                             <td>{$cond.type}</td>
                             <td>{$cond.v1_type}</td>
@@ -56,12 +52,24 @@
                             <td>{$cond.v2}</td>
                             <td class="text-right py-0 align-middle">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="###" class="btn btn-info"
+                                    <button type="button"  class="btn btn-info btn-sm"
                                        onclick="javascript:App.dt.project.modelFunCondEdit('{$where0.uuid}','{$cond.uuid}');"
-                                    ><i class="fas fa-edit"></i> 改</a>
-                                    <a href="###" class="btn btn-danger"
-                                       onclick="javascript:App.dt.project.modelFunCondDrop('{$where0.uuid}','{$cond.uuid}');"
-                                    ><i class="fas fa-trash"></i> 删</a>
+                                    ><i class="fas fa-edit"></i> 改</button>
+
+
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-danger dropdown-toggle dropdown-icon" data-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-trash"></i> 删
+                                        </button>
+                                        <div class="dropdown-menu" style="">
+                                            <a class="dropdown-item" href="#">-</a>
+                                            <a class="dropdown-item" href="#">--</a>
+                                            <a class="dropdown-item" href="#">---</a>
+                                            <a class="dropdown-item"
+                                               onclick="javascript:App.dt.project.modelFunCondDrop('{$where0.uuid}','{$cond.uuid}');"
+                                               href="####">确认删除</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -102,13 +110,9 @@
                                                     {assign var="cond_field" value=$cond.field}
                                                     <tr>
                                                         <td>
-                                                            {if $cond_field eq '##'}
-                                                            聚合新健
-                                                            {else}
                                                             {foreach $model_field_list as $ii => $iff4}
                                                             {if $cond_field eq $iff4.uuid} {$iff4.name}{/if}
                                                             {/foreach}
-                                                            {/if}
                                                         </td>
                                                         <td>{$cond.type}</td>
                                                         <td>{$cond.v1_type}</td>
@@ -118,12 +122,24 @@
 
                                                         <td class="text-right py-0 align-middle">
                                                             <div class="btn-group btn-group-sm">
-                                                                <a href="###" class="btn btn-info"
+                                                                <button type="button"  class="btn btn-info btn-sm"
                                                                    onclick="javascript:App.dt.project.modelFunCondEdit('{$where1.uuid}','{$cond.uuid}');"
-                                                                ><i class="fas fa-edit"></i> 改</a>
-                                                                <a href="###" class="btn btn-danger"
-                                                                   onclick="javascript:App.dt.project.modelFunCondDrop('{$where1.uuid}','{$cond.uuid}');"
-                                                                ><i class="fas fa-trash"></i> 删</a>
+                                                                ><i class="fas fa-edit"></i> 改</button>
+
+
+                                                                <div class="btn-group">
+                                                                    <button type="button" class="btn btn-danger btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown" aria-expanded="false">
+                                                                        <i class="fas fa-trash"></i> 删
+                                                                    </button>
+                                                                    <div class="dropdown-menu" style="">
+                                                                        <a class="dropdown-item" href="#">-</a>
+                                                                        <a class="dropdown-item" href="#">--</a>
+                                                                        <a class="dropdown-item" href="#">---</a>
+                                                                        <a class="dropdown-item"
+                                                                           onclick="javascript:App.dt.project.modelFunCondDrop('{$where1.uuid}','{$cond.uuid}');"
+                                                                           href="####">确认删除</a>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </td>
                                                     </tr>

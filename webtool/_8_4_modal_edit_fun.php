@@ -86,6 +86,13 @@
                                 </div>
                             </div>
 
+                            <div class="form-group row">
+                                <label for="txt_fun_limit" class="col-sm-2 col-form-label">操作限制</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control form-control-sm" id="txt_fun_limit"
+                                           placeholder="默认1，0表示不限制，或者外部输入"/>
+                                </div>
+                            </div>
 
                             <div class="form-group row">
                                 <label for="txt_fun_order_enable" class="col-sm-2 col-form-label">是否排序</label>
@@ -124,6 +131,14 @@
                                 </div>
                             </div>
 
+                            <div class="form-group row">
+                                <label for="txt_fun_query_optimize" class="col-sm-2 col-form-label">大表优化</label>
+                                <div class="col-sm-10">
+                                    <input id="txt_fun_query_optimize" type="checkbox" checked data-bootstrap-switch
+                                           data-off-color="danger" data-on-color="success">
+                                </div>
+                            </div>
+
 
                             <input type="hidden" id="txt_model_fun_mid" value=""/>
                             <input type="hidden" id="txt_model_fun_fid" value=""/>
@@ -147,7 +162,7 @@
 
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">查询条件</h3>
+                                <h3 class="card-title">WHERE组合查询条件</h3>
                                 <div class="card-tools">
                                     <button class="btn btn-tool" type="button"
                                             onclick="javascript:App.dt.project.modelFunWhereAdd('','AND');">
@@ -163,9 +178,13 @@
 
                             </div>
 
+
+                            <hr/>
+
+
                             <div class="card-footer" id="block_edit_mode_conf">
                                 <form class="form-horizontal ">
-                                    <div class="form-group row">
+                                    <div class="form-group row" id="block_fun_cond_field">
                                         <label for="sel_fun_cond_field" class="col-sm-4 col-form-label">操作字段</label>
                                         <div class="col-sm-8">
                                             <select id="sel_fun_cond_field"
@@ -181,7 +200,7 @@
                                                 <?php foreach (Constant::$a_cond_type as $key => $value) { ?>
                                                     <option value="<?= $key ?>">
                                                         <?= $key ?> ｜ <?= $value ?>
-                                                        </option>
+                                                    </option>
                                                 <?php } ?>
                                             </select>
                                         </div>
@@ -235,13 +254,64 @@
                                         <label for="btn_save_cond" class="col-sm-4 col-form-label"></label>
                                         <div class="col-sm-8">
                                             <button type="button" class="btn btn-success btn-sm" id="btn_save_cond">
-                                                保存条件
+                                                保存where条件
+                                            </button>
+
+                                            <button type="button" class="btn btn-success btn-sm" id="btn_save_having">
+                                                保存having条件
                                             </button>
                                         </div>
                                     </div>
+
                                     <input type="hidden" id="txt_cond_uuid"/>
                                     <input type="hidden" id="txt_where_uuid"/>
                                 </form>
+                            </div>
+
+                            <hr/>
+                            <div class="card-header">
+                                <h3 class="card-title">HAVING聚合后过滤（模糊过滤无效）</h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-tool" type="button"
+                                            onclick="javascript:App.dt.project.modelFunHavingEdit();">
+                                        <i class="fas fa-edit"></i> 编辑
+                                    </button>
+
+                                </div>
+                            </div>
+                            <div class="card-body p-1" id="block_having">
+                                <table class="table table-striped table-sm">
+                                    <tr>
+                                        <td>
+                                            聚合健
+                                        </td>
+                                        <td id="txt_having_type">{$cond.type}</td>
+                                        <td id="txt_having_v1_type">{$cond.v1_type}</td>
+                                        <td id="txt_having_v1">{$cond.v1}</td>
+                                        <td id="txt_having_v2_type">{$cond.v2_type}</td>
+                                        <td id="txt_having_v2">{$cond.v2}</td>
+
+                                        <td class="text-right py-0 align-middle">
+                                            <div class="btn-group btn-group-sm" id="btn_drop_having">
+                                                <button type="button"
+                                                        class="btn btn-danger dropdown-toggle dropdown-icon"
+                                                        data-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-trash"></i> 移除
+                                                </button>
+                                                <div class="dropdown-menu" style="">
+                                                    <a class="dropdown-item" href="#">-</a>
+                                                    <a class="dropdown-item" href="#">--</a>
+                                                    <a class="dropdown-item" href="#">---</a>
+                                                    <a class="dropdown-item"
+                                                       onclick="javascript:App.dt.project.modelFunHavingDrop();"
+                                                       href="####">确认移除</a>
+                                                </div>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
                             </div>
                         </div>
                     </div>

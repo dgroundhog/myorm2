@@ -81,7 +81,7 @@ MyProject.prototype.parse = function (json_one) {
  * 静态方法,是否有效的UID
  */
 MyProject.isGoodName = function (_name) {
-    console.log(_name);
+    //console.log(_name);
     var reg_text = /^[a-zA-Z][_0-9a-zA-Z]*$/.test(_name);
     if (!reg_text) {
         console.log("~isGoodName--111");
@@ -398,11 +398,14 @@ function MyFun() {
     this.field_list = [];//操作字段
     this.group_field = "";
     this.group_by = "";
+    this.group_having = null;//MyCond
     this.order_enable = "0";
     this.order_by = "";
     this.order_dir = "";
     this.pager_enable = "";//是否需要排序
     this.pager_size = "";//排序字段，为空时外部输入
+    this.query_optimize = "0";//查询优化，百万表内不用考虑
+    this.limit = 0;//更新或者删除限制
 
 }
 
@@ -423,12 +426,24 @@ MyFun.prototype.parse = function (json_one) {
     //this.where = json_one.where;
     this.group_field = json_one.group_field;
     this.group_by = json_one.group_by;
+    this.group_having = null;
+    if(undefined != json_one.group_having && null != json_one.group_having && null != json_one.group_having.uuid){
+        console.log(json_one.group_having);
+        var o_having  =  new MyCond();
+        o_having.parse(json_one.group_having);
+        this.group_having = o_having;
+    }
+    console.log(this.group_having);
+
     this.order_enable = json_one.order_enable;
     this.order_by = json_one.order_by;
     this.order_dir = json_one.order_dir;
 
     this.pager_enable = json_one.pager_enable;
     this.pager_size = json_one.pager_size;
+
+    this.query_optimize = json_one.query_optimize;
+    this.limit = json_one.limit;
 
     this.where = null;
     if(undefined != json_one.where && null != json_one.where ){
@@ -523,4 +538,6 @@ MyCond.prototype.parse = function (json_one) {
     this.v2 = json_one.v2;
     this.v1_type = json_one.v1_type;
     this.v2_type = json_one.v2_type;
+
+
 }

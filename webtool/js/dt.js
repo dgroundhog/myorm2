@@ -480,7 +480,7 @@ App.dt.data.ccGlobalFields = function (key) {
     if (undefined != _obj) {
         _currApp.field_list[_obj.uuid] = _obj;
         self.project.setCurrApp(_currApp);
-        return  _obj;
+        return _obj;
     }
     return new MyField();
 }
@@ -518,7 +518,7 @@ App.dt.data.ccModel_Group = function () {
     var _f_name = self.data.ccField_Name("name", "组名");
     var _f_memo = self.data.ccField_Text("memo", "备注");
     var _f_state = self.data.ccField_State("state", "状态");
-    var _f_flag =  self.data.ccGlobalFields("flag");
+    var _f_flag = self.data.ccGlobalFields("flag");
     var _f_ctime = self.data.ccGlobalFields("ctime");
     var _f_utime = self.data.ccGlobalFields("utime");
     var _f_cadmin = self.data.ccGlobalFields("cadmin");
@@ -806,13 +806,13 @@ App.dt.data.ccModel_User = function () {
     var _f_type = self.data.ccField_Name("type", "类型");
     var _f_memo = self.data.ccField_Text("memo", "备注");
     var _f_state = self.data.ccField_State("state", "状态");
-    var _f_flag =  self.data.ccGlobalFields("flag");
+    var _f_flag = self.data.ccGlobalFields("flag");
     var _f_ctime = self.data.ccGlobalFields("ctime");
     var _f_utime = self.data.ccGlobalFields("utime");
     var _f_cadmin = self.data.ccGlobalFields("cadmin");
     var _f_uadmin = self.data.ccGlobalFields("uadmin");
 
-    var _f_photo = self.data.ccField_Img("photo","头像");
+    var _f_photo = self.data.ccField_Img("photo", "头像");
 
     _f_type.input_hash = "C00,A类;C01,B类";
 
@@ -915,6 +915,7 @@ App.dt.data.ccModel_User = function () {
     _funDelete.order_dir = "";
     _funDelete.pager_enable = 0;
     _funDelete.pager_size = 0;
+    _funDelete.limit = 1;
     _funDelete.field_list = [];
     _funDelete.where = deepCopy(_pkWhere);
     _modelUser.fun_list[_funDelete.uuid] = _funDelete;
@@ -935,6 +936,7 @@ App.dt.data.ccModel_User = function () {
     _funUpdate.order_dir = "";
     _funUpdate.pager_enable = 0;
     _funUpdate.pager_size = 0;
+    _funDelete.limit = 1;
     _funUpdate.field_list = {};
 
 
@@ -1131,7 +1133,7 @@ App.dt.data.ccModel_User = function () {
     _timeCond.v1 = "";
     _timeCond.v2 = "";
     _timeCond.v1_type = "INPUT";
-    _timeCond.v2_type = "";
+    _timeCond.v2_type = "INPUT";
 
     _listWhere.cond_list = {};
     _listWhere.cond_list[_gidCond.uuid] = _gidCond;
@@ -1197,7 +1199,7 @@ App.dt.data.ccModel_Admin = function () {
     var _f_name = self.data.ccField_Name("name", "姓名");
     var _f_memo = self.data.ccField_Text("memo", "备注");
     var _f_state = self.data.ccField_State("state", "业务状态");
-    var _f_flag =  self.data.ccGlobalFields("flag");
+    var _f_flag = self.data.ccGlobalFields("flag");
     var _f_ctime = self.data.ccGlobalFields("ctime");
     var _f_utime = self.data.ccGlobalFields("utime");
     var _f_cadmin = self.data.ccGlobalFields("cadmin");
@@ -1539,7 +1541,7 @@ App.dt.data.ccModel_Admin = function () {
     _timeCond.v1 = "";
     _timeCond.v2 = "";
     _timeCond.v1_type = "INPUT";
-    _timeCond.v2_type = "";
+    _timeCond.v2_type = "INPUT";
 
     _listWhere.cond_list = {};
     _listWhere.cond_list[_stateCond.uuid] = _stateCond;
@@ -1656,6 +1658,35 @@ App.dt.project.onLoadAll = function (_server_return) {
     }
 };
 
+App.dt.project.buildCC = function () {
+    var self = App.dt;
+    var _curr_project = self.project.getCurrProject();
+    if (null == _curr_project) {
+        self.fail("未选中项目")
+        return;
+    }
+
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选中应用")
+        return;
+    }
+
+    var sbf = new StringBuffer();
+    sbf.append("act=build");
+    sbf.append("&project=");
+    sbf.append(encodeURIComponent(_curr_app.project_id));
+    sbf.append("&version=");
+    sbf.append(encodeURIComponent(_curr_app.uuid));
+
+    var _data = sbf.toString();
+    var _cb = function () {
+        self.succ("构建成功");
+    }
+    self.succ("请稍后---");
+    self.aPost(_data, _cb);
+
+}
 
 /**
  * 加载1个项目
@@ -3279,7 +3310,6 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
     self.project.curr_where = null;
     for (var ii in _curr_model.field_list) {
         var ff = _curr_model.field_list[ii];
-        console.log(ff)
         var typeU = ff.type.toUpperCase();
         if (typeU == 'INT' || typeU == 'CHAR' || typeU == 'STRING' || typeU == 'LONGINT' || typeU == 'DATE' || typeU == 'DATETIME') {
             self.project.curr_fieldCanIndex[ii] = ff;
@@ -3340,6 +3370,9 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
         sel_fun_order_by.val("@@");
         $("#sel_fun_order_dir").val("@@");
 
+        $("#txt_fun_limit").val("");
+        self.editor.setBootSwitchVal("#txt_fun_query_optimize", "0");
+
         self.editor.setBootSwitchVal("#txt_fun_all_field", "1");
         self.editor.setBootSwitchVal("#txt_fun_order_enable", "0");
         self.editor.setBootSwitchVal("#txt_fun_pager_enable", "0");
@@ -3349,6 +3382,7 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
         console.log("编辑旧函数22");
         $("#txt_model_fun_fid").val(fun_id);
         var o_fun = _curr_model.fun_list[fun_id];
+        console.log(o_fun);
         $("#txt_fun_name").val(o_fun.name);
         $("#sel_fun_type").val(o_fun.type);
         $("#sel_fun_type").change();
@@ -3361,6 +3395,10 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
         sel_fun_order_by.val(o_fun.order_by);
         $("#sel_fun_order_dir").val(o_fun.order_dir);
 
+        $("#txt_fun_limit").val(o_fun.limit);
+        self.editor.setBootSwitchVal("#txt_fun_query_optimize", o_fun.query_optimize);
+
+
         self.editor.setBootSwitchVal("#txt_fun_all_field", o_fun.all_field);
         self.editor.setBootSwitchVal("#txt_fun_order_enable", o_fun.order_enable);
         self.editor.setBootSwitchVal("#txt_fun_pager_enable", o_fun.pager_enable);
@@ -3368,6 +3406,9 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
 
         self.project.curr_where = o_fun.where;
         self.project.modelFunWhereInit();
+
+        self.project.curr_having = o_fun.group_having;
+        self.project.modelFunHavingInit();
     }
     //需要操作的字段
     var sel_fun_field = $("#sel_fun_field");
@@ -3441,7 +3482,14 @@ App.dt.project.modelFunSave = function () {
     o_fun.pager_enable = self.editor.getBootSwitchVal("#txt_fun_pager_enable");
     o_fun.pager_size = $("#txt_fun_pager_size").val();
 
+    o_fun.query_optimize = self.editor.getBootSwitchVal("#txt_fun_query_optimize");
+    o_fun.limit = $("#txt_fun_limit").val();
+
     o_fun.where = self.project.curr_where;
+
+    o_fun.group_having = self.project.curr_having;
+
+
 
     console.log("过滤可用于操作的的字段")
 
@@ -3453,6 +3501,7 @@ App.dt.project.modelFunSave = function () {
             o_fun.field_list[_fid] = _curr_model.field_list[_fid];
         }
     });
+    console.log(o_fun);
     _curr_model.fun_list[o_fun.uuid] = o_fun;
     _curr_app.model_list[_model_id] = _curr_model;
     if (self.project.setCurrApp(_curr_app)) {
@@ -3507,6 +3556,16 @@ App.dt.project.modelFunDrop = function (model_id, fun_id) {
  * @type {MyWhere}
  */
 App.dt.project.curr_where = new MyWhere();
+/**
+ * havidng 仅是一个独立的查询条件
+ * @type {MyCond}
+ */
+App.dt.project.curr_having = new MyCond();
+
+/**
+ * 当前可用来索引的字段
+ * @type {{}}
+ */
 App.dt.project.curr_fieldCanIndex = {};
 
 /**
@@ -3519,12 +3578,38 @@ App.dt.project.modelFunWhereInit = function () {
     var a_data = {};
     //处理一下这个
     a_data['where0'] = self.project.curr_where;
-    console.log(self.project.curr_where);
     a_data['model_field_list'] = self.project.curr_fieldCanIndex;
 
     var tpl = new jSmart(self.getTpl('tpl_model_where'));
     var res = tpl.fetch(a_data);
     $("#block_where").html(res);
+
+
+}
+
+/**
+ * 初始化渲染一个having条件
+ * cond_list
+ * where_list
+ */
+App.dt.project.modelFunHavingInit = function () {
+    var self = App.dt;
+    console.log(self.project.curr_having);
+    if (undefined != self.project.curr_having && self.project.curr_having != null) {
+        $("#txt_having_type").html(self.project.curr_having.type);
+        $("#txt_having_v1").html(self.project.curr_having.v1);
+        $("#txt_having_v1_type").html(self.project.curr_having.v1_type);
+        $("#txt_having_v2").html(self.project.curr_having.v2);
+        $("#txt_having_v2_type").html(self.project.curr_having.v2_type);
+        $("#btn_drop_having").show();
+    } else {
+        $("#txt_having_type").html("");
+        $("#txt_having_v1").html("");
+        $("#txt_having_v1_type").html("");
+        $("#txt_having_v2").html("");
+        $("#txt_having_v2_type").html("");
+        $("#btn_drop_having").hide();
+    }
 }
 
 /**
@@ -3589,6 +3674,9 @@ App.dt.project.modelFunCondEdit = function (where_id, cond_id) {
         return;
     }
     $("#txt_where_uuid").val(where_id);
+    $("#block_fun_cond_field").show();
+    $("#btn_save_having").hide();
+    $("#btn_save_cond").show();
 
     var sel_fun_cond_field = $("#sel_fun_cond_field");
     var sel_fun_cond_type = $("#sel_fun_cond_type");
@@ -3645,35 +3733,6 @@ App.dt.project.modelFunCondEdit = function (where_id, cond_id) {
     $("#block_edit_mode_conf").show();
 }
 
-App.dt.project.buildCC  = function () {
-    var self = App.dt;
-    var _curr_project = self.project.getCurrProject();
-    if (null == _curr_project) {
-        self.fail("未选中项目")
-        return;
-    }
-
-    var _curr_app = self.project.getCurrApp();
-    if (null == _curr_app) {
-        self.fail("未选中应用")
-        return;
-    }
-
-    var sbf = new StringBuffer();
-    sbf.append("act=build");
-    sbf.append("&project=");
-    sbf.append(encodeURIComponent(_curr_app.project_id));
-    sbf.append("&version=");
-    sbf.append(encodeURIComponent(_curr_app.uuid));
-
-    var _data = sbf.toString();
-    var _cb = function (){
-        self.succ("构建成功");
-    }
-    self.succ("请稍后---");
-    self.aPost(_data, _cb);
-
-}
 
 /**
  * 保存一个查询条件
@@ -3727,13 +3786,124 @@ App.dt.project.modelFunCondSave = function () {
     self.project.modelFunWhereInit();
 }
 
-
 /**
  * 删除一个查询条件
  */
-App.dt.project.modelFunCondDrop = function () {
-
+App.dt.project.modelFunCondDrop = function (_where_id, _cond_id) {
+    var self = App.dt;
+    if (null == self.project.curr_where) {
+        self.fail("没有条件--modelFunCondDrop");
+        return;
+    }
+    if (!App.su.isEmpty(_cond_id)) {
+        var _currWhere = self.project.curr_where;
+        if (undefined != _currWhere.cond_list[_cond_id]) {
+            console.log("删除的在主条件中11");
+            delete _currWhere.cond_list[_cond_id];
+        } else {
+            if (undefined != _currWhere.where_list[_where_id]) {
+                console.log("删除的在主条件中22");
+                if (undefined != _currWhere.where_list[_where_id].cond_list[_cond_id]) {
+                    delete _currWhere.where_list[_where_id].cond_list[_cond_id];
+                    console.log("删除的在主条件中33");
+                }
+            }
+        }
+        self.project.curr_where = _currWhere;
+        self.project.modelFunWhereInit();
+        return;
+    }
+    self.fail("没有条件--空的--modelFunCondDrop");
+    return;
 }
+
+/**
+ * 编辑一个having条件
+ */
+App.dt.project.modelFunHavingEdit = function () {
+    var self = App.dt;
+    $("#txt_where_uuid").val("");
+
+    var sel_fun_cond_field = $("#sel_fun_cond_field");
+    var sel_fun_cond_type = $("#sel_fun_cond_type");
+    var sel_fun_cond_v1_type = $("#sel_fun_cond_v1_type");
+    var sel_fun_cond_v2_type = $("#sel_fun_cond_v2_type");
+
+    $("#block_fun_cond_field").hide();
+    $("#btn_save_cond").hide();
+    $("#btn_save_having").show();
+
+    var _currCond = self.project.curr_having;
+    $("#btn_save_having").text("保存聚合过滤条件");
+    if (undefined == _currCond || App.su.isEmpty(_currCond.uuid)) {
+        console.log("编辑新Having 条件");
+
+        $("#txt_fun_cond_v1").val("");
+        $("#txt_fun_cond_v2").val("");
+        $("#txt_cond_uuid").val("");
+
+
+    } else {
+        console.log("编辑旧Having 条件");
+        //sel_fun_cond_field.val(_currCond.field);
+        sel_fun_cond_type.val(_currCond.type);
+        sel_fun_cond_v1_type.val(_currCond.v1_type);
+        sel_fun_cond_v2_type.val(_currCond.v2_type);
+
+        $("#txt_fun_cond_v1").val(_currCond.v1);
+        $("#txt_fun_cond_v2").val(_currCond.v2);
+        //cond_id
+        $("#txt_cond_uuid").val(_currCond.uuid);
+    }
+
+    //sel_fun_cond_field.change();
+    sel_fun_cond_type.change();
+    sel_fun_cond_v1_type.change();
+    sel_fun_cond_v2_type.change();
+
+    $("#block_edit_mode_conf").show();
+}
+
+
+/**
+ * 保存一个having条件
+ */
+App.dt.project.modelFunHavingSave = function () {
+    var self = App.dt;
+    var _currCond = self.project.curr_having;
+
+    var _now = App.su.datetime.getCurrentDateTime();
+    if (null == _currCond) {
+        console.log("保存新配置");
+        _currCond = new MyCond();
+        _currCond.uuid = App.su.maths.uuid.create();
+        ;
+        _currCond.ctime = _now;
+    } else {
+        console.log("保存旧配置");
+    }
+    _currCond.utime = _now;
+    //_currCond.field = $("#sel_fun_cond_field").val();
+    _currCond.type = $("#sel_fun_cond_type").val();
+    _currCond.v1_type = $("#sel_fun_cond_v1_type").val();
+    _currCond.v2_type = $("#sel_fun_cond_v2_type").val();
+    _currCond.v1 = $("#txt_fun_cond_v1").val();
+    _currCond.v2 = $("#txt_fun_cond_v2").val();
+
+    self.project.curr_having = _currCond;
+    $("#block_edit_mode_conf").hide();
+    self.project.modelFunHavingInit();
+}
+
+/**
+ * 删除having条件
+ */
+App.dt.project.modelFunHavingDrop = function () {
+    var self = App.dt;
+    self.project.curr_having = null;
+    self.project.modelFunHavingInit();
+}
+
 
 /**
  * 主程序入口
@@ -3901,12 +4071,13 @@ App.dt.init = function () {
         self.project.modelFunCondSave();
     });
 
+    $("#btn_save_having").click(function () {
+        self.project.modelFunHavingSave();
+    });
+
     $("#btn_build").click(function () {
         self.project.buildCC();
     });
-
-
-
 
 
     /**

@@ -25,18 +25,29 @@ class MyFun extends MyStruct
      */
     public $where = [];
 
-public $limit =0;
+    /**
+     * @var int 操作限制
+     * 0表示不限制
+     */
+    public $limit = 0;
 
     /**
      * 被聚合的字段
      * @var string
      */
     public $group_field = "";
+
     /**
      * 聚合字段
      * @var string
      */
     public $group_by = "";
+
+    /**
+     * having的条件
+     * @var MyCond
+     */
+    public $group_having = null;
 
 
     /**
@@ -50,6 +61,8 @@ public $limit =0;
     public $pager_enable = 0;//是否需要排序
     public $pager_size = 20;//排序字段，为空时外部输入
 
+    public $query_optimize  = 0;//是否需要排序
+
     public $basic_keys = array(
         "all_field",
         "group_field",
@@ -59,6 +72,8 @@ public $limit =0;
         "order_dir",
         "pager_enable",
         "pager_size",
+        "query_optimize",
+        "limit"
     );
 
     /**
@@ -87,6 +102,11 @@ public $limit =0;
         /* @var MyWhere $o_where */
         $o_where = $this->where;
         $a_data['where'] = $o_where->getAsArray();
+
+        /* @var MyCond $o_having */
+        $o_having = $this->group_having;
+        $a_data['group_having'] = $o_having->getAsArray();
+
         return $a_data;
     }
 
@@ -106,6 +126,10 @@ public $limit =0;
         $o_obj = new MyWhere();
         $o_obj->parseToObj($a_data['where']);
         $this->where = $o_obj;
+
+        $o_obj = new MyCond();
+        $o_obj->parseToObj($a_data['group_having']);
+        $this->group_having = $o_obj;
 
         return $this;
     }

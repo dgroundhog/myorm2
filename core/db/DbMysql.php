@@ -408,7 +408,7 @@ class DbMysql extends DbBase
         //echo "COMMIT;\n";
         echo "SET @s_new_id = CONCAT('', m_new_id);\n";
 
-        echo "CALL p_debug('{$proc_name}', @s_new_id);\n";
+        echo "CALL p__debug('{$proc_name}', @s_new_id);\n";
         if ($return_new_id) {
             echo "SELECT m_new_id INTO v_new_id;\n";
             echo "SELECT m_new_id AS i_new_id;\n";
@@ -687,7 +687,7 @@ class DbMysql extends DbBase
         echo "SET m_affected_rows = ROW_COUNT();\n";
         //echo "COMMIT;\n";
         echo "SET s_affected_rows = CONCAT( 'deleted_rows--' , m_affected_rows);\n";
-        echo "CALL p_debug('{$proc_name}', s_affected_rows);\n";
+        echo "CALL p__debug('{$proc_name}', s_affected_rows);\n";
         echo "SELECT m_affected_rows INTO v_affected_rows;\n";
         echo "SELECT m_affected_rows AS i_affected_rows;\n";
 
@@ -722,7 +722,7 @@ class DbMysql extends DbBase
             }
             foreach ($cond_list as $cond) {
                 $jj++;
-                list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(2, $jj, $model, $cond, $where_joiner);
+                list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(1, $jj, $model, $cond, $where_joiner);
                 if ($_param != "") {
                     $a_param[] = $_param;
                 }
@@ -757,7 +757,7 @@ class DbMysql extends DbBase
                     foreach ($cond_list2 as $cond) {
 
                         $jj++;
-                        list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(3, $jj, $model, $cond, $where_joiner2);
+                        list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(2, $jj, $model, $cond, $where_joiner2);
                         if ($_param != "") {
                             $a_param[] = $_param;
                         }
@@ -898,7 +898,7 @@ class DbMysql extends DbBase
         }
 
         if ($has_if) {
-            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+            if ($f_type != Constant::DB_FIELD_TYPE_INT && $f_type != Constant::DB_FIELD_TYPE_LONGINT) {
                 $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' THEN\n";
                 $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
                 $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
@@ -959,9 +959,9 @@ class DbMysql extends DbBase
         $s_param_key2_join= "";
         $s_param_key2_input= "";
 
-        $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} (";
-        $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} (";
-        SeasLog::info($s_sql2);
+        $s_sql1 = " {$WHERE_JOIN} (`{$key}` {$s_cond} ";
+        $s_sql2 = "' {$WHERE_JOIN} (`{$key}` {$s_cond} ";
+
         $has_if = false;
         //v1输入值
         if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
@@ -970,9 +970,9 @@ class DbMysql extends DbBase
             $s_param_key1_input = $param_key_input;
 
 
-            $s_sql1 = $s_sql1 . " {$s_param_key1_join} , ";
-            $s_sql2 = $s_sql2 . " {$s_param_key1_join} , ";
-            SeasLog::info($v1_type . "---" . $v2_type);
+            $s_sql1 = $s_sql1 . " {$s_param_key1_join} AND ";
+            $s_sql2 = $s_sql2 . " {$s_param_key1_join} AND ";
+
             //v2输入值
             if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
                 list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
@@ -1008,12 +1008,12 @@ class DbMysql extends DbBase
         //v1固定值
         if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
             if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                $s_sql1 = $s_sql1 . " {$val1} ,";
-                $s_sql2 = $s_sql2 . " {$val1} ,";
+                $s_sql1 = $s_sql1 . " {$val1} AND";
+                $s_sql2 = $s_sql2 . " {$val1} AND";
 
             } else {
-                $s_sql1 = $s_sql1 . " \'{$val1}\' ,";
-                $s_sql2 = $s_sql2 . " \'{$val1}\' ,";
+                $s_sql1 = $s_sql1 . " \'{$val1}\' AND";
+                $s_sql2 = $s_sql2 . " \'{$val1}\' AND";
             }
 
             //v2输入值
@@ -1046,8 +1046,8 @@ class DbMysql extends DbBase
         }
         //v1函数
         if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
-            $s_sql1 = $s_sql1 . " {$val2}() ,";
-            $s_sql2 = $s_sql2 . " {$val2}() ,";
+            $s_sql1 = $s_sql1 . " {$val2}() AND";
+            $s_sql2 = $s_sql2 . " {$val2}() AND";
 
             //v2输入值
             if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
@@ -1087,7 +1087,7 @@ class DbMysql extends DbBase
         }
 
         if ($has_if) {
-            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+            if ($f_type != Constant::DB_FIELD_TYPE_INT && $f_type != Constant::DB_FIELD_TYPE_LONGINT) {
                 $s_sql3 = _tab($tab_idx) . "IF {$s_param_key1_join} != '' AND {$s_param_key2_join} != '' THEN\n";
                 $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
                 $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
@@ -1353,7 +1353,7 @@ class DbMysql extends DbBase
         echo "SET m_affected_rows = ROW_COUNT();\n";
         //echo "COMMIT;\n";
         echo "SET s_affected_rows = CONCAT( 'updated_rows--' , m_affected_rows);\n";
-        echo "CALL p_debug('{$proc_name}', s_affected_rows);\n";
+        echo "CALL p__debug('{$proc_name}', s_affected_rows);\n";
 
         echo "SELECT m_affected_rows INTO v_affected_rows;\n";
         echo "SELECT m_affected_rows AS i_affected_rows;\n";
@@ -1389,6 +1389,7 @@ class DbMysql extends DbBase
      */
     function cList(MyModel $model, MyFun $o_fun, $count_only = false)
     {
+        //SELECT * FROM xxx a JOIN (select id from xxx limit 1000000, 20) b ON a.ID = b.id;
         $base_fun = strtolower($o_fun->type);
         $fun_name = $o_fun->name;
         if ($count_only) {
@@ -1561,7 +1562,7 @@ class DbMysql extends DbBase
                 echo "SET @s_sql = CONCAT( @s_sql, ' LIMIT ', m_offset, ',', m_length);\n";
             }
         }
-        echo "CALL p_debug('{$proc_name}', @s_sql);\n";
+        echo "CALL p__debug('{$proc_name}', @s_sql);\n";
         echo "PREPARE stmt FROM @s_sql;\n";
         echo "EXECUTE stmt;\n";
 
@@ -2127,7 +2128,7 @@ class DbMysql extends DbBase
         echo "SET @s_sql = 'SELECT COUNT(`{$my_list->list_count_key}`) AS i_count FROM`t_{$model['table_name']}` WHERE 1=1 '; \n";
 
         _mysql_proc_list_sql($model, $my_list, true);
-        echo "CALL p_debug('{$proc_name}', @s_sql);\n";
+        echo "CALL p__debug('{$proc_name}', @s_sql);\n";
         echo "PREPARE stmt FROM @s_sql;\n";
         echo "EXECUTE stmt;\n";
         //echo "COMMIT;\n";
@@ -2185,7 +2186,7 @@ class DbMysql extends DbBase
         echo " FROM `t_{$model['table_name']}` WHERE 1=1 '; \n";
 
         _mysql_proc_list_sql($model, $my_list, false);
-        echo "CALL p_debug('{$proc_name}', @s_sql);\n";
+        echo "CALL p__debug('{$proc_name}', @s_sql);\n";
         echo "PREPARE stmt FROM @s_sql;\n";
         echo "EXECUTE stmt;\n";
         //echo "COMMIT;\n";
