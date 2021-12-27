@@ -954,10 +954,10 @@ class DbMysql extends DbBase
         $key = $o_field->name;
 
         $s_param = "";
-        $s_param_key1_join= "";
-        $s_param_key1_input= "";
-        $s_param_key2_join= "";
-        $s_param_key2_input= "";
+        $s_param_key1_join = "";
+        $s_param_key1_input = "";
+        $s_param_key2_join = "";
+        $s_param_key2_input = "";
 
         $s_sql1 = " {$WHERE_JOIN} (`{$key}` {$s_cond} ";
         $s_sql2 = "' {$WHERE_JOIN} (`{$key}` {$s_cond} ";
@@ -980,7 +980,7 @@ class DbMysql extends DbBase
                 $s_param_key2_join = $param_key_join;
                 $s_param_key2_input = $param_key_input;
 
-                $s_param = "{$s_param_key1_input},\n"._tab($tab_idx)."{$s_param_key2_input}";
+                $s_param = "{$s_param_key1_input},\n" . _tab($tab_idx) . "{$s_param_key2_input}";
                 $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
                 $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
                 $has_if = true;
@@ -1399,10 +1399,11 @@ class DbMysql extends DbBase
 
         $fun_type = $o_fun->type;
         $group_field = "";
+        $o_group_field = null;
         $group_field_id = $o_fun->group_field;
         if (isset($model->field_list[$group_field_id])) {
-            $o_f = $model->field_list[$group_field_id];
-            $group_field = $o_f->name;
+            $o_group_field = $model->field_list[$group_field_id];
+            $group_field = $o_group_field->name;
         }
         //
         $group_by = "";
@@ -1418,6 +1419,7 @@ class DbMysql extends DbBase
             $o_f = $model->field_list[$order_by_id];
             $order_by = $o_f->name;
         }
+        //TODO 先处理having
 
 
         $group_field_final = "";
@@ -1452,8 +1454,68 @@ class DbMysql extends DbBase
                 break;
         }
 
-        //TODO 预先处理查询条件的
+        //预先处理查询条件的
         list($_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
+
+
+        //预先处理hading的条件
+        $o_having = $o_fun->group_having;
+        $_param_having = "";
+        $_sql1_having = "";
+        $_sql2_having = "";
+
+        if ($group_by != "" && $o_having != null && $group_field_final) {
+            switch ($o_having->type) {
+                case Constant::COND_TYPE_EQ:// = "EQ";//= 等于
+                case Constant::COND_TYPE_NEQ:// = "NEQ";//!= 不等于
+                case Constant::COND_TYPE_GT:// = "GT";//&GT; 大于
+                case Constant::COND_TYPE_GTE:// = "GTE";//&GT;= 大于等于
+                case Constant::COND_TYPE_LT:// = "LT";//&LT; 少于
+                case Constant::COND_TYPE_LTE:// = "LTE";//&LT;= 少于等于
+                    list($_param_having, $_sql1_having, $_sql2_having) = $this->_procHaving_V1(1, 1,
+                        $group_field_final,
+                        $o_group_field,
+                        $o_having->type,
+                        $o_having->v1_type,
+                        $o_having->v1);
+                    break;
+                case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
+                case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
+                case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
+                case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
+                case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
+                    list($_param_having, $_sql1_having, $_sql2_having) = $this->_procHaving_V2(1, 1,
+                        $group_field_final,
+                        $o_group_field,
+                        $o_having->type,
+                        $o_having->v1_type,
+                        $o_having->v1,
+                        $o_having->v2_type,
+                        $o_having->v2
+                    );
+                    break;
+                case Constant::COND_TYPE_IN:// = "IN";//离散量范围内
+                case Constant::COND_TYPE_NOTIN:// = "NOTIN";//离散量范围外
+                    list($_param_having, $_sql1_having, $_sql2_having) = $this->_procHaving_V_range(1, 1,
+                        $group_field_final,
+                        $o_group_field,
+                        $o_having->type,
+                        $o_having->v1_type,
+                        $o_having->v1);
+                    break;
+                default:
+
+                    break;
+            }
+        }
+        if ($o_having != null && $group_field_final != "") {
+            if ($_param != "") {
+                $_param = $_param . ",\n" . _tab(1) . $_param_having;
+            } else {
+                $_param = $_param_having;
+            }
+        }
+
         if (!$count_only) {
             if ($allow_pager && $o_fun->pager_enable == 1) {
                 //带有分页
@@ -1497,8 +1559,6 @@ class DbMysql extends DbBase
             } else {
                 echo "SET @s_sql = 'SELECT COUNT(`{$group_by}`) AS i_count  FROM `t_{$model->table_name}` WHERE ';\n";
             }
-
-
         } else {
             if ($allow_pager && $o_fun->pager_enable) {
                 echo "DECLARE m_offset INT;\n";
@@ -1533,11 +1593,13 @@ class DbMysql extends DbBase
 
         if ($group_by != "") {
             echo "SET @s_sql = CONCAT( @s_sql, ' GROUP BY {$group_by}');\n";
+
+            if ($o_having != null && $group_field_final != "") {
+                echo "SET @s_sql = CONCAT( @s_sql, ' HAVING ', {$_sql2_having});\n";
+            }
         }
 
         if (!$count_only) {
-
-
             if ($o_fun->order_enable) {
 
                 if ($o_fun->order_by == "@@") {
@@ -1568,6 +1630,313 @@ class DbMysql extends DbBase
 
         self::_procEnd($model, $proc_name);
 
+    }
+
+    /**
+     * Having聚合的都是整数
+     *
+     *
+     * @param $tab_idx
+     * @param $inc
+     * @param $new_group_key
+     * @param $o_field
+     * @param $v_cond
+     * @param $v_type
+     * @param $val
+     * @return string|string[]
+     */
+    function _procHaving_V1($tab_idx, $inc, $new_group_key, $o_field, $v_cond, $v_type, $val)
+    {
+        if (!isset(Constant::$a_cond_type_on_sql_1[$v_cond])) {
+            SeasLog::error("known cond_type1 to proc");
+            return;
+        }
+        $s_cond = Constant::$a_cond_type_on_sql_1[$v_cond];
+
+        $s_param1 = "";
+        $s_param_input = "";
+        $s_sql1 = "";
+        $s_sql2 = "";
+
+        //输入值
+        if ($v_type == Constant::COND_VAl_TYPE_INPUT) {
+            list($param_key, $param_key2) = $this->_procParam($o_field, $inc, "gw");
+            $s_param1 = $param_key;
+            //$s_param_input = $param_key2;
+            $s_sql1 = "  `{$new_group_key}` {$s_cond} {$s_param1}";
+            $s_sql2 = "' `{$new_group_key}` {$s_cond} {$s_param1}'";
+            $s_param_input = "IN {$s_param1} INT";
+            $has_if = true;
+        }
+        //固定值
+        if ($v_type == Constant::COND_VAl_TYPE_FIXED) {
+            $s_param_input = "";
+            $s_sql1 = " {$new_group_key}` {$s_cond} {$val}";
+            $s_sql2 = "' {$new_group_key}` {$s_cond} {$val}'";
+        }
+        //函数
+        if ($v_type == Constant::COND_VAl_TYPE_FUN) {
+            $s_param_input = "";
+            $s_sql1 = " {$new_group_key}` {$s_cond} {$val}()";
+            $s_sql2 = "' {$new_group_key}` {$s_cond} {$val}()'";
+        }
+
+        if ($s_sql1 != "") {
+            $s_sql1 = _tab($tab_idx) . $s_sql1;
+        }
+
+        return array($s_param_input, $s_sql1, $s_sql2);
+    }
+
+    /**
+     * 用来拼接的， 双函数结构
+     * 不能忽略
+     * 用来拼接的 int or notin
+     * - 参数结构
+     * - 直接的sql语句
+     * - 拼接的sql语句
+     *
+     * @param $tab_idx
+     * @param $inc
+     * @param $new_group_key
+     * @param $o_field
+     * @param $v_cond
+     * @param $v1_type
+     * @param $val1
+     * @param $v2_type
+     * @param $val2
+     * @return string
+     */
+    function _procHaving_V2($tab_idx, $inc, $new_group_key, $o_field, $v_cond, $v1_type, $val1, $v2_type, $val2)
+    {
+
+        //SeasLog::info("_procWhere_V2");
+        if (!isset(Constant::$a_cond_type_on_sql_2[$v_cond])) {
+            SeasLog::error("unknown cond_type2 to proc");
+            return;
+        }
+        $s_cond = Constant::$a_cond_type_on_sql_2[$v_cond];
+
+        $f_type = $o_field->type;
+        $key = $o_field->name;
+
+        $s_param = "";
+        $s_param_key1_join = "";
+        $s_param_key1_input = "";
+        $s_param_key2_join = "";
+        $s_param_key2_input = "";
+
+        $s_sql1 = " {$new_group_key} {$s_cond} ";
+        $s_sql2 = "' {$new_group_key} {$s_cond} ";
+
+        $has_if = false;
+        //v1输入值
+        if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
+            list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "gfrom");
+            $s_param_key1_join = $param_key_join;
+            $s_param_key1_input = $param_key_input;
+            $s_param_key1_input = "IN {$s_param_key1_join} INT";
+
+            $s_sql1 = $s_sql1 . " {$s_param_key1_join} AND ";
+            $s_sql2 = $s_sql2 . " {$s_param_key1_join} AND ";
+
+            //v2输入值
+            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "gto");
+
+                $s_param_key2_join = $param_key_join;
+                $s_param_key2_input = $param_key_input;
+
+                $s_param_key2_input = "IN {$s_param_key2_join} INT";
+
+                $s_param = "{$s_param_key1_input},\n" . _tab($tab_idx) . "{$s_param_key2_input}";
+                $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
+                $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
+                $has_if = true;
+            }
+            //v2固定值
+            if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
+                $s_param = "{$s_param_key1_input}";
+                $s_sql1 = $s_sql1 . " {$val2} ";
+                $s_sql2 = $s_sql2 . " {$val2} ";
+            }
+            //v2函数
+            if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
+                $s_param = "{$s_param_key1_input}";
+                $s_sql1 = $s_sql1 . " {$val2}() ";
+                $s_sql2 = $s_sql2 . " {$val2}() ";
+            }
+
+        }
+        //v1固定值
+        if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
+            $s_sql1 = $s_sql1 . " {$val1} AND";
+            $s_sql2 = $s_sql2 . " {$val1} AND";
+
+            //v2输入值
+            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "gto");
+
+                $s_param_key2_join = $param_key_join;
+                $s_param_key2_input = $param_key_input;
+                $s_param = "{$s_param_key2_input}";
+
+                $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
+                $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
+            }
+            //v2固定值
+            if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
+                $s_sql1 = $s_sql1 . " {$val2} ";
+                $s_sql2 = $s_sql2 . " {$val2} ";
+            }
+            //v2函数
+            if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
+                $s_sql1 = $s_sql1 . " {$val2}() ";
+                $s_sql2 = $s_sql2 . " {$val2}() ";
+            }
+        }
+        //v1函数
+        if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
+            $s_sql1 = $s_sql1 . " {$val2}() AND";
+            $s_sql2 = $s_sql2 . " {$val2}() AND";
+
+            //v2输入值
+            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "gto");
+
+                $s_param_key2_join = $param_key_join;
+                $s_param_key2_input = $param_key_input;
+                $s_param = "{$s_param_key2_input}";
+
+                $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
+                $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
+            }
+            //v2固定值
+            if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
+                $s_sql1 = $s_sql1 . " {$val2} ";
+                $s_sql2 = $s_sql2 . " {$val2} ";
+            }
+            //v2函数
+            if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
+
+                $s_sql1 = $s_sql1 . " {$val2}() ";
+                $s_sql2 = $s_sql2 . " {$val2}() ";
+            }
+        }
+
+
+        if ($s_sql1 != "") {
+            $s_sql1 = _tab($tab_idx) . $s_sql1;
+        }
+
+
+
+        return array($s_param, $s_sql1, $s_sql2);
+    }
+
+    /**
+     * 用来拼接的
+     * 用来拼接的 in or notin
+     * - 参数结构
+     * - 直接的sql语句
+     * - 拼接的sql语句
+     *
+     * @param $tab_idx
+     * @param $inc
+     * @param $new_group_key
+     * @param $o_field
+     * @param $v_cond
+     * @param $v_type
+     * @param $val
+     * @return string|string[]
+     */
+    function _procHaving_V_range($tab_idx, $inc, $new_group_key, $o_field, $v_cond, $v_type, $val)
+    {
+
+        if (!isset(Constant::$a_cond_type_on_sql_3[$v_cond])) {
+            SeasLog::error("unknown cond_type3 to proc");
+            return;
+        }
+        $s_cond = Constant::$a_cond_type_on_sql_3[$v_cond];
+
+        $s_param_join = "";
+        $s_param_input = "";
+        $s_sql1 = "";
+        $s_sql2 = "";
+        $has_if = false;
+
+        $f_type = $o_field->type;
+        $key = $o_field->name;
+
+
+        //输入值
+        if ($v_type == Constant::COND_VAl_TYPE_INPUT) {
+            $has_if = true;
+            list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "", true);
+            $s_param_join = $param_key_join;
+            $s_param_input = $param_key_input;
+            $s_sql1 = " {$new_group_key} {$s_cond} ($param_key_join)";
+            $s_sql2 = "' {$new_group_key} {$s_cond} ($param_key_join)'";
+            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+
+            } else {
+                //字符串类
+                //需要外部输入时，先行添加单引号来隔离字符串
+
+                //echo _tab(1) . "SET @s_sql_v = REPLACE(s_{$cond}_{$key}, '|', '\',\'');\n";
+                //echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' {$key} NOT IN(\'',@s_sql_v,'\') ');\n";
+            }
+            $s_param_input = "IN {$s_param_join} VARCHAR(9999)";
+        }
+        //固定值
+        if ($v_type == Constant::COND_VAl_TYPE_FIXED) {
+
+            $s_sql1 = " {$new_group_key} {$s_cond} ($val)";
+            $s_sql2 = "' {$new_group_key} {$s_cond} ($val)'";
+        }
+        //函数
+        if ($v_type == Constant::COND_VAl_TYPE_FUN) {
+
+            $s_sql1 = " {$new_group_key} {$s_cond}({$val}())";
+            $s_sql2 = "' {$new_group_key} {$s_cond}({$val}())'";
+        }
+
+        return array($s_param_input, $s_sql1, $s_sql2);
+    }
+
+    /**
+     * 获取聚合的新key
+     * @param $fun_type
+     * @param $group_field
+     * @return string
+     */
+    public function getGroupKey($fun_type, $group_field)
+    {
+        $group_field_final = "";
+        switch ($fun_type) {
+            case Constant::FUN_TYPE_LIST_WITH_AVG:
+                $group_field_final = "i_agv_{$group_field}";
+                break;
+            case Constant::FUN_TYPE_LIST_WITH_SUM:
+                $group_field_final = "i_sum_{$group_field}";
+
+                break;
+            case Constant::FUN_TYPE_LIST_WITH_MAX:
+                $group_field_final = "i_max_{$group_field}";
+
+                break;
+            case Constant::FUN_TYPE_LIST_WITH_MIN:
+                $group_field_final = "i_min_{$group_field}";
+
+                break;
+            case Constant::FUN_TYPE_LIST_WITH_COUNT:
+                $group_field_final = "i_count_{$group_field}";
+
+                break;
+            default:
+                break;
+        }
+        return $group_field_final;
     }
 
     /**
