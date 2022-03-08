@@ -2,7 +2,10 @@
     {foreach $arch_list as $i => $arch}
 
     <tr>
-        <td>{$arch.utime}</td>
+        <td
+        title="创建({$arch.ctime})更新({$arch.utime})"
+        >{$arch.name}</td>
+
         <td>{$arch.mvc}</td>
         <td>{$arch.ui}</td>
         <td>
@@ -33,10 +36,10 @@
         <td class="text-right py-0 align-middle">
             <div class="btn-group btn-group-sm">
                 <a href="###" class="btn btn-info"
-                   onclick="javascript:App.dt.project.confEdit('{$arch.uuid}');"
+                   onclick="javascript:App.dt.project.archEdit('{$arch.uuid}');"
                 ><i class="fas fa-edit"></i> 编辑</a>
                 <a href="###" class="btn btn-danger"
-                   onclick="javascript:App.dt.project.confDrop('{$arch.uuid}');"
+                   onclick="javascript:App.dt.project.archDrop('{$arch.uuid}');"
                 ><i class="fas fa-trash"></i> 删除</a>
             </div>
         </td>

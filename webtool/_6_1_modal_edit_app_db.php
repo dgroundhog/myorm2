@@ -11,6 +11,13 @@
             <div class="modal-body">
                 <form class="form-horizontal">
                     <div class="form-group row">
+                        <label for="txt_db_name" class="col-sm-2 col-form-label">配置名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control form-control-sm" id="txt_db_name"
+                                   placeholder="新配置"/>
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <label for="sel_db_driver" class="col-sm-2 col-form-label">数据驱动</label>
                         <div class="col-sm-10">
                             <select id="sel_db_driver" class="form-control form-control-sm select2">

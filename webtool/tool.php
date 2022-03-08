@@ -23,6 +23,8 @@ $_uuid = @$_POST['uuid'];
 $_name = @$_POST['name'];
 $_title = @$_POST['title'];
 $_memo = @$_POST['memo'];
+$_arch = @$_POST['arch'];
+$_db = @$_POST['db'];
 
 $img_id = @$_GET['img_id'];
 
@@ -185,7 +187,7 @@ switch (trim($_act)) {
         drop_project($_project, $_version1);
         break;
     case "build":
-        build_project($_project, $_version1);
+        build_project($_project, $_version1, $_arch, $_db);
         break;
     case "test":
         var_dump($_data);
@@ -216,40 +218,7 @@ function load_projects($_project)
     $a_return['code'] = "ok";
     $a_return['msg'] = "done";
     $a_return['data'] = array();
-    $a_projects = array(
-        "project1" => array(
-            "uuid" => "pp1",
-            "name" => "project1",
-            "versions" => array(
-                "version1" => array(
-                    "ctime" => "001",
-                    "utime" => "001",
-                    "version" => "001"
-                ),
-                "version2" => array(
-                    "ctime" => "002",
-                    "utime" => "002",
-                    "version" => "002"
-                )
-            )
-        ),
-        "project2" => array(
-            "uuid" => "pp2",
-            "name" => "project2",
-            "versions" => array(
-                "version1" => array(
-                    "ctime" => "0031",
-                    "utime" => "003",
-                    "version" => "001"
-                ),
-                "version2" => array(
-                    "ctime" => "002",
-                    "utime" => "002",
-                    "version" => "004"
-                )
-            )
-        )
-    );
+    $a_projects = array("project1" => array("uuid" => "pp1", "name" => "project1", "versions" => array("version1" => array("ctime" => "001", "utime" => "001", "version" => "001"), "version2" => array("ctime" => "002", "utime" => "002", "version" => "002"))), "project2" => array("uuid" => "pp2", "name" => "project2", "versions" => array("version1" => array("ctime" => "0031", "utime" => "003", "version" => "001"), "version2" => array("ctime" => "002", "utime" => "002", "version" => "004"))));
 
     $a_return['data']['projects'] = $a_projects;
 
@@ -324,7 +293,7 @@ function add_project($project, $new_version_name)
 
         $o_app = new MyApp();
         $o_app->init($o_project->name);
-        $_uuid =  $o_app->uuid;
+        $_uuid = $o_app->uuid;
         $o_app->name = $new_version_name;
         $o_project->version_list[$_uuid] = $o_app;
         $a_project_info = $o_project->getAsArray();
@@ -412,8 +381,15 @@ function drop_project($project, $version)
     echo json_encode($a_return);
 }
 
-
-function build_project($project, $version)
+/**
+ * 构建app
+ * @param $project
+ * @param $version
+ * @param $arch
+ * @param $db
+ * @return void
+ */
+function build_project($project, $version, $arch, $db)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -428,7 +404,7 @@ function build_project($project, $version)
         $a_project_info = json_decode($str_project, true);
         $o_project = new MyProject();
         $o_project->parseToObj($a_project_info);
-        $o_project->build($version,"db");
+        $o_project->build($version, $arch, $db);
 
     } else {
         $a_return['code'] = "project_not_exist";
@@ -436,7 +412,6 @@ function build_project($project, $version)
     }
     echo json_encode($a_return);
 }
-
 
 
 /**

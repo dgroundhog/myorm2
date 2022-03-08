@@ -236,6 +236,7 @@ MyModel.prototype.parse = function (json_one) {
  */
 function MyArch() {
     MyStruct.call(this);
+    this.name = "tech1";
     this.scope = "ARCH";
     this.mvc = "";
     this.ui = "";

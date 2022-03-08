@@ -1672,12 +1672,24 @@ App.dt.project.buildCC = function () {
         return;
     }
 
+    var _sel_mvc = $("#sel_build_mvc").val();
+    var _sel_db = $("#sel_build_db").val();
+    if ("" == _sel_mvc || "" ==  _sel_db) {
+        self.fail("未选中应用框架配置和数据库配置");
+        return;
+    }
+
+
     var sbf = new StringBuffer();
     sbf.append("act=build");
     sbf.append("&project=");
     sbf.append(encodeURIComponent(_curr_app.project_id));
     sbf.append("&version=");
     sbf.append(encodeURIComponent(_curr_app.uuid));
+    sbf.append("&arch=");
+    sbf.append(encodeURIComponent(_sel_mvc));
+    sbf.append("&db=");
+    sbf.append(encodeURIComponent(_sel_db));
 
     var _data = sbf.toString();
     var _cb = function () {
@@ -1739,13 +1751,15 @@ App.dt.project.loadProject = function (project_name, app_version) {
         //其他更新
         self.editor.updateTitle();
         //加载配置
-        self.project.confLoad();
+        self.project.archLoad();
         //加载数据库
         self.project.dbLoad();
         //加载全局字段
         self.project.fieldLoad();
         //加载模型
         self.project.modelLoad();
+        //加载可构建选项
+        self.project.reloadBuild(_app);
     }
 
 }
@@ -1938,9 +1952,37 @@ App.dt.project.onSyncApp = function (_server_return) {
 
     $(".txt_app_utime").val(_app.utime);
 
+    self.project.reloadBuild(_app);
+
     self.succ("和服务器同步成功");
 }
 
+/**
+ * 更新可构建的清单
+ * @param project_name
+ */
+App.dt.project.reloadBuild = function (_app) {
+    $("#sel_build_mvc").empty();
+    $("#sel_build_db").empty();
+
+    for(var ii in _app.arch_list ){
+        var _obj = _app.arch_list[ii];
+        var _name = _obj.name;
+        var _uuid = _obj.uuid;
+        var _sel = '<option value="'+_uuid+'" >'+_name+'</option>';
+        $("#sel_build_mvc").append(_sel);
+    }
+
+    for(var ii in _app.db_list ){
+        var _obj = _app.db_list[ii];
+        var _name = _obj.name;
+        var _uuid = _obj.uuid;
+        var _sel = '<option value="'+_uuid+'" >'+_name+'</option>';
+        $("#sel_build_db").append(_sel);
+    }
+
+    $('.select2').change();
+}
 
 /**
  * 修改当前项目的标题和备注
@@ -2271,7 +2313,7 @@ App.dt.project.setCurrApp = function (app) {
 /**
  * 加载配置
  */
-App.dt.project.confLoad = function () {
+App.dt.project.archLoad = function () {
     var self = App.dt;
     var _curr_app = self.project.getCurrApp();
     if (null == _curr_app) {
@@ -2288,7 +2330,7 @@ App.dt.project.confLoad = function () {
 /**
  * 保存配置
  */
-App.dt.project.confSave = function () {
+App.dt.project.archSave = function () {
     var self = App.dt;
     var _uuid = $("#txt_conf_uuid").val();
     var _conf = new MyArch();
@@ -2300,9 +2342,10 @@ App.dt.project.confSave = function () {
     }
 
     if (App.su.isEmpty(_uuid)) {
+        //新建的
         var new_uuid = App.su.maths.uuid.create();
         _conf.uuid = new_uuid;
-        _conf.name = now;
+        _conf.name = "new_arch";
         _conf.ctime = now;
         _conf.utime = now;
         _uuid = new_uuid;
@@ -2311,6 +2354,7 @@ App.dt.project.confSave = function () {
         _conf.utime = now;
     }
 
+    _conf.name = $("#txt_conf_name").val();
     _conf.mvc = $("#sel_app_mvc").val();
     _conf.ui = $("#sel_app_ui").val();
 
@@ -2329,13 +2373,13 @@ App.dt.project.confSave = function () {
         self.fail("暂存失败");
     }
     $("#modal_edit_app_conf").modal('hide');
-    self.project.confLoad();
+    self.project.archLoad();
 }
 
 /**
  * 编辑配置
  */
-App.dt.project.confEdit = function (_uuid) {
+App.dt.project.archEdit = function (_uuid) {
     var self = App.dt;
     var _curr_app = self.project.getCurrApp();
     if (null == _curr_app) {
@@ -2356,7 +2400,7 @@ App.dt.project.confEdit = function (_uuid) {
         $("#txt_conf_uuid").val(_uuid);
         var _conf = _curr_app.arch_list[_uuid];
 
-
+        $("#txt_conf_name").val(_conf.name);
         $("#sel_app_mvc").val(_conf.mvc);
         $("#sel_app_ui").val(_conf.ui);
 
@@ -2371,7 +2415,7 @@ App.dt.project.confEdit = function (_uuid) {
 /**
  * 编辑配置
  */
-App.dt.project.confDrop = function (_uuid) {
+App.dt.project.archDrop = function (_uuid) {
     var self = App.dt;
     var _curr_app = self.project.getCurrApp();
     if (null == _curr_app) {
@@ -2391,7 +2435,7 @@ App.dt.project.confDrop = function (_uuid) {
                 } else {
                     self.fail("移除失败1");
                 }
-                self.project.confLoad();
+                self.project.archLoad();
             }
         });
     }
@@ -2431,7 +2475,7 @@ App.dt.project.dbSave = function () {
     if (App.su.isEmpty(_uuid)) {
         var new_uuid = App.su.maths.uuid.create();
         _db.uuid = new_uuid;
-        _db.name = now;
+
         _db.ctime = now;
         _db.utime = now;
         _uuid = new_uuid;
@@ -2439,7 +2483,7 @@ App.dt.project.dbSave = function () {
         _db = _curr_app.db_list[_uuid];
         _db.utime = now;
     }
-
+    _db.name = $("#txt_db_name").val();
     _db.driver = $("#sel_db_driver").val();
     _db.source = $("#sel_db_source").val();
     _db.host = $("#txt_db_host").val();
@@ -2484,6 +2528,7 @@ App.dt.project.dbEdit = function (_uuid) {
         _db = _curr_app.db_list[_uuid];
     }
 
+    $("#txt_db_name").val(_db.name);
     $("#txt_db_host").val(_db.host);
     $("#txt_db_port").val(_db.port);
     $("#txt_db_database").val(_db.database);
@@ -4022,11 +4067,11 @@ App.dt.init = function () {
      * 1.5 添加app
      */
     $("#btn_edit_conf").click(function () {
-        self.project.confEdit("");
+        self.project.archEdit("");
     });
 
     $("#btn_save_conf").click(function () {
-        self.project.confSave();
+        self.project.archSave();
     });
 
     /**

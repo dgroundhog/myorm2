@@ -62,7 +62,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <?php include("./_4_session_basic.php"); ?>
 
         <!--1.3 应用基本配置 -->
-        <?php include("./_5_session_conf.php"); ?>
+        <?php include("./_5_session_arch.php"); ?>
 
         <!--1.4 数据库基本配置 -->
         <?php include("./_6_session_db.php"); ?>
@@ -99,7 +99,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     </footer>
 
     <?php include("./_4_1_modal_edit_app_info.php"); ?>
-    <?php include("./_5_1_modal_edit_app_conf.php"); ?>
+    <?php include("./_5_1_modal_edit_app_arch.php"); ?>
     <?php include("./_6_1_modal_edit_app_db.php"); ?>
     <?php include("./_7_1_modal_edit_field.php"); ?>
     <?php include("./_8_1_modal_edit_model.php"); ?>

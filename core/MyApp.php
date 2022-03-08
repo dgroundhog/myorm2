@@ -99,15 +99,19 @@ class MyApp extends MyStruct
     }
 
     /**
+     * 获取当前的db配置
      * @return MyDb
      */
     public function getCurrDb()
     {
-        if (isset($this->db_list[$this->curr_db])) {
-            return $this->db_list[$this->curr_db];
+        if($this->curr_db != ""){
+            if (isset($this->db_list[$this->curr_db])) {
+                return $this->db_list[$this->curr_db];
+            }
         }
 
-        /* @var MyArch $first_db */
+
+        /* @var MyDb $first_db */
         $first_db = null;
         foreach ($this->db_list as $kk => $db) {
             $this->curr_db = $kk;
@@ -304,10 +308,11 @@ class MyApp extends MyStruct
 
     /**
      * 构建生成代码
-     * @param $a_tags
+     * @param $arch   目标结构配置
+     * @param $db     数据库配置
      * @return void
      */
-    public function build($a_tags)
+    public function build($arch,$db)
     {
         if (count($this->arch_list) == 0 || count($this->db_list) == 0) {
             SeasLog::error("没有有效的架构和数据库配置！！！");
@@ -326,11 +331,12 @@ class MyApp extends MyStruct
             return;
         }
 
-        if (in_array("db", $a_tags)) {
-            //数据库
-            $this->buildDb();
-        }
+        $this->curr_db = $db;//这是UUID
+        //数据库
+        $this->buildDb();
 
+        $a_tags = array();
+        //TODO
         if (in_array("model", $a_tags)) {
             //模型
             $this->buildModel(null);
@@ -356,8 +362,9 @@ class MyApp extends MyStruct
     /**
      * 构建数据库的初始化配置
      * 构建数据库
+     * @return void
      */
-    public function buildDb()
+    public function buildDb( )
     {
         $dbc = DbBase::findCc($this);
         if ($dbc == null) {

@@ -110,10 +110,11 @@ class MyProject extends MyStruct
     /**
      * 根基不同的版本构建
      * @param $version
-     * @param $tags   目标结构  conf/db/ui/model
+     * @param $arch   目标结构配置
+     * @param $db     数据库配置
      * @return void
      */
-    function build($version, $tags)
+    function build($version,  $arch, $db)
     {
 
         if (!$this->version_list || count($this->version_list) == 0 || !isset($this->version_list[$version])) {
@@ -124,9 +125,6 @@ class MyProject extends MyStruct
         $o_curr_app = $this->version_list[$version];
         /* @var MyApp $o_curr_app */
 
-        if (!is_array($tags)) {
-            $tags = explode(",", $tags);
-        }
-        $o_curr_app->build($tags);
+        $o_curr_app->build($arch, $db);
     }
 }

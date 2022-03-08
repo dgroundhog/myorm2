@@ -26,7 +26,7 @@
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>时间</th>
+                                <th>配置名</th>
                                 <th>驱动</th>
                                 <th>来源</th>
                                 <th>主机</th>

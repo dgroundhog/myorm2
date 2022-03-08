@@ -11,6 +11,14 @@
             <div class="modal-body">
                 <form class="form-horizontal">
                     <div class="form-group row">
+                        <label for="txt_conf_name" class="col-sm-2 col-form-label">配置名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control form-control-sm" id="txt_conf_name"
+                                   placeholder="新配置"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
                         <label for="sel_app_mvc" class="col-sm-2 col-form-label">开发技术</label>
                         <div class="col-sm-10">
                             <select id="sel_app_mvc" class="form-control form-control-sm select2">

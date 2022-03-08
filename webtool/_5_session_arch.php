@@ -26,8 +26,7 @@
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>时间</th>
-
+                                <th>配置名</th>
                                 <th>框架</th>
                                 <th>前端UI</th>
                                 <th>启用restful</th>

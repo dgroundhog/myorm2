@@ -2,7 +2,9 @@
     {foreach $db_list as $i => $db}
 
     <tr>
-        <td>{$db.utime}</td>
+        <td
+                title="创建({$db.ctime})更新({$db.utime})"
+        >{$db.name}</td>
         <td>{$db.driver}</td>
         <td>{$db.source}</td>
         <td>{$db.host}</td>

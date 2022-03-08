@@ -46,22 +46,20 @@
                             </div>
 
                             <div class="form-group row">
-                                <label for="txt_project_ctime" class="col-sm-2 col-form-label">创建时间</label>
-                                <div class="col-sm-10">
+                                <label for="txt_project_ctime" class="col-sm-2 col-form-label">更新时间</label>
+                                <div class="col-sm-5">
                                     <input type="text" class="form-control form-control-sm"
                                            id="txt_project_ctime"
                                            readonly="readonly"/>
                                 </div>
-                            </div>
-
-                            <div class="form-group row">
-                                <label for="txt_project_utime" class="col-sm-2 col-form-label">最后更新</label>
-                                <div class="col-sm-10">
+                                <div class="col-sm-5">
                                     <input type="text" class="form-control form-control-sm"
                                            id="txt_project_utime"
                                            readonly="readonly"/>
                                 </div>
                             </div>
+
+
                         </div>
                         <!-- /.card-body -->
 
@@ -78,9 +76,7 @@
                                 <i class="fa fa-file"></i> 关联文档
                             </button>
 
-                            <button type="button" class="btn btn-danger" id="btn_build">
-                                <i class="fa fa-flag"></i> 构建
-                            </button>
+
 
                             <button type="button" class="btn btn-success float-right" id="btn_add_app">
                                 <i class="fa fa-plus"></i> 创建新版本
@@ -88,6 +84,8 @@
                         </div>
 
                     </div>
+
+
 
                     <div class="card card-info card-outline">
                         <div class="card-header">
@@ -192,20 +190,17 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-sm-2 col-form-label">创建时间</label>
-                                <div class="col-sm-10">
+                                <label class="col-sm-2 col-form-label">更新时间</label>
+                                <div class="col-sm-5">
                                     <input type="text" class="form-control form-control-sm txt_app_ctime"
                                            readonly="readonly"/>
                                 </div>
-                            </div>
-
-                            <div class="form-group row">
-                                <label class="col-sm-2 col-form-label">最后更新</label>
-                                <div class="col-sm-10">
+                                <div class="col-sm-5">
                                     <input type="text" class="form-control form-control-sm txt_app_utime"
                                            readonly="readonly"/>
                                 </div>
                             </div>
+
 
                         </div>
                         <!-- /.card-body -->
@@ -227,6 +222,38 @@
 
                     </div>
                 </form>
+
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fa fa fa-cogs"></i>
+                            构建
+                        </h3>
+
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col">
+                                <select id="sel_build_mvc" class="form-control form-control-sm select2">
+
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select id="sel_build_db" class="form-control form-control-sm select2">
+
+                                </select>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-danger" id="btn_build">
+                                    <i class="fa fa-flag"></i> 构建
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <!-- /.col-md-6 -->
 
