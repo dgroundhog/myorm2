@@ -14,7 +14,6 @@ abstract class MyStruct implements MyBase
 
     public $scope;//范畴
 
-
     public $uuid;//隐形唯一
     public $name;//显性唯一
     public $title;//标题别称

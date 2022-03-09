@@ -8,7 +8,6 @@ include_once(DB_ROOT . "/DbBase.php");
 class DbMysql extends DbBase
 {
 
-
     /**
      * 创建初始化结构
      * @param MyDb $db
@@ -238,7 +237,8 @@ class DbMysql extends DbBase
     function ccProc(MyModel $model)
     {
 
-        $a_all_fields = array();//转换用name作为主键
+        $a_all_fields = array();
+        //转换用name作为主键
         foreach ($model->field_list as $field) {
             /* @var MyField $field */
             $key = $field->name;
@@ -271,6 +271,10 @@ class DbMysql extends DbBase
                     $this->cFetch($model, $o_fun);
                     break;
 
+                case Constant::FUN_TYPE_COUNT:
+                    $this->cCount($model, $o_fun);
+                    break;
+
                 case Constant::FUN_TYPE_LIST_WITH_COUNT:
                 case Constant::FUN_TYPE_LIST_WITH_AVG:
                 case Constant::FUN_TYPE_LIST_WITH_SUM:
@@ -280,6 +284,7 @@ class DbMysql extends DbBase
                 default:
                     $this->cList($model, $o_fun);
                     if ($o_fun->pager_enable) {
+                        //和查询配套的统计数字
                         $this->cList($model, $o_fun, true);
                     }
                     break;
@@ -427,14 +432,21 @@ class DbMysql extends DbBase
      */
     function _procHeader($model, $fun_name, $fun_title, $base_fun)
     {
-
-        if ($fun_name != "" && $fun_name != "default" && $fun_name != $base_fun) {
-            $fun = "{$base_fun}_{$fun_name}";
-        } else {
-            $fun = $base_fun;
+        switch ($fun_name) {
+            case $base_fun:
+            case "default":
+            case "":
+                $fun = $base_fun;
+                break;
+            case "default_c":
+                $fun = "{$base_fun}_c";
+                break;
+            default:
+                $fun = "{$base_fun}_{$fun_name}";
+                break;
         }
 
-        $real_fun = "p_{$model->table_name}_{$fun}";
+        $real_fun = "p_{$model->table_name}__{$fun}";
 
         _db_comment_begin();
         _db_comment("Procedure structure for {$real_fun}");
@@ -556,17 +568,10 @@ class DbMysql extends DbBase
             $type_size = "VARCHAR(9999)";
         }
         if ($has_charset) {
-            return array(
-                $param_key,
-                "IN `{$param_key}` {$type_size} CHARSET {$charset}"
-            );
+            return array($param_key, "IN `{$param_key}` {$type_size} CHARSET {$charset}");
         }
-        return array(
-            $param_key,
-            "IN `{$param_key}` {$type_size}"
-        );
+        return array($param_key, "IN `{$param_key}` {$type_size}");
     }
-
 
     /**
      * 获取参数的前缀
@@ -694,7 +699,6 @@ class DbMysql extends DbBase
         self::_procEnd($model, $proc_name);
     }
 
-
     /**
      * 条件的输入参数
      * @param MyModel $model
@@ -722,7 +726,7 @@ class DbMysql extends DbBase
             }
             foreach ($cond_list as $cond) {
                 $jj++;
-                list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(1, $jj, $model, $cond, $where_joiner);
+                list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(0, $jj, $model, $cond, $where_joiner);
                 if ($_param != "") {
                     $a_param[] = $_param;
                 }
@@ -757,7 +761,7 @@ class DbMysql extends DbBase
                     foreach ($cond_list2 as $cond) {
 
                         $jj++;
-                        list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(2, $jj, $model, $cond, $where_joiner2);
+                        list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(1, $jj, $model, $cond, $where_joiner2);
                         if ($_param != "") {
                             $a_param[] = $_param;
                         }
@@ -770,7 +774,7 @@ class DbMysql extends DbBase
                     }
 
                     $s_sql1 = $s_sql1 . "\n" . $ss_sql1 . ")";
-                    $s_sql2 = $s_sql2 . "\n" . ")";
+                    $s_sql2 = $s_sql2 . "\n" . "SET @s_sql = CONCAT( @s_sql, ')');\n\n";
                 }
             }
             $s_param = implode(",\n" . _tab(1), $a_param);
@@ -834,6 +838,12 @@ class DbMysql extends DbBase
     }
 
     /**
+     * @inheritDoc
+     * 创建存储过程-查询多个、聚合、统计
+     * @param MyModel $model
+     */
+
+    /**
      * 用来拼接的
      * 用来拼接的 int or notin
      * - 参数结构
@@ -866,36 +876,42 @@ class DbMysql extends DbBase
         $key = $o_field->name;
         $has_if = false;
 
-        //输入值
-        if ($v_type == Constant::COND_VAl_TYPE_INPUT) {
-            list($param_key, $param_key2) = $this->_procParam($o_field, $inc, "w");
-            $s_param1 = $param_key;
-            $s_param2 = $param_key2;
-            $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$s_param1}";
-            $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$s_param1}'";
-            $has_if = true;
-        }
-        //固定值
-        if ($v_type == Constant::COND_VAl_TYPE_FIXED) {
-            $s_param2 = "";
-            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$val}";
-                $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$val}'";
-            } else {
-                $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} '{$val}'";
-                $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} \'{$val}\''";
-            }
-        }
-        //函数
-        if ($v_type == Constant::COND_VAl_TYPE_FUN) {
-            $s_param2 = "";
-            $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$val}()";
-            $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$val}()'";
+        switch ($v_type) {
+
+            //固定值
+            case Constant::COND_VAl_TYPE_FIXED:
+                if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                    $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$val}";
+                    $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$val}'";
+                } else {
+                    $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} '{$val}'";
+                    $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} \'{$val}\''";
+                }
+                break;
+
+            //函数
+            case   Constant::COND_VAl_TYPE_FUN:
+                if($val==""){
+                    SeasLog::error("DB FUN is Empty");
+                    return array("", "", "");
+                    break;
+                }
+                $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$val}()";
+                $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$val}()'";
+                break;
+            //输入值
+            case Constant::COND_VAl_TYPE_INPUT:
+            default:
+                list($param_key, $param_key2) = $this->_procParam($o_field, $inc, "w");
+                $s_param1 = $param_key;
+                $s_param2 = $param_key2;
+                $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$s_param1}";
+                $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$s_param1}'";
+                $has_if = true;
+                break;
         }
 
-        if ($s_sql1 != "") {
-            $s_sql1 = _tab($tab_idx) . $s_sql1;
-        }
+        $s_sql1 = _tab($tab_idx) . $s_sql1;
 
         if ($has_if) {
             if ($f_type != Constant::DB_FIELD_TYPE_INT && $f_type != Constant::DB_FIELD_TYPE_LONGINT) {
@@ -914,12 +930,6 @@ class DbMysql extends DbBase
 
         return array($s_param2, $s_sql1, $s_sql2);
     }
-
-    /**
-     * @inheritDoc
-     * 创建存储过程-查询多个、聚合、统计
-     * @param MyModel $model
-     */
 
     /**
      * 用来拼接的， 双函数结构
@@ -949,9 +959,10 @@ class DbMysql extends DbBase
             return;
         }
         $s_cond = Constant::$a_cond_type_on_sql_2[$v_cond];
-
         $f_type = $o_field->type;
         $key = $o_field->name;
+
+        //SeasLog::debug($key."---".$f_type."---".$v1_type."---".$v2_type);
 
         $s_param = "";
         $s_param_key1_join = "";
@@ -963,146 +974,157 @@ class DbMysql extends DbBase
         $s_sql2 = "' {$WHERE_JOIN} (`{$key}` {$s_cond} ";
 
         $has_if = false;
-        //v1输入值
-        if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
-            list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "from");
-            $s_param_key1_join = $param_key_join;
-            $s_param_key1_input = $param_key_input;
 
-
-            $s_sql1 = $s_sql1 . " {$s_param_key1_join} AND ";
-            $s_sql2 = $s_sql2 . " {$s_param_key1_join} AND ";
-
-            //v2输入值
-            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
-                list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
-
-                $s_param_key2_join = $param_key_join;
-                $s_param_key2_input = $param_key_input;
-
-                $s_param = "{$s_param_key1_input},\n" . _tab($tab_idx) . "{$s_param_key2_input}";
-                $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
-                $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
-                $has_if = true;
-            }
-            //v2固定值
-            if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
-                $s_param = "{$s_param_key1_input}";
+        switch ($v1_type) {
+            //v1固定值
+            case Constant::COND_VAl_TYPE_FIXED:
                 if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                    $s_sql1 = $s_sql1 . " {$val2} ";
-                    $s_sql2 = $s_sql2 . " {$val2} ";
+                    $s_sql1 = $s_sql1 . " {$val1} AND";
+                    $s_sql2 = $s_sql2 . " {$val1} AND";
 
                 } else {
-                    $s_sql1 = $s_sql1 . " \'{$val2}\' ";
-                    $s_sql2 = $s_sql2 . " \'{$val2}\' ";
+                    $s_sql1 = $s_sql1 . " \'{$val1}\' AND";
+                    $s_sql2 = $s_sql2 . " \'{$val1}\' AND";
                 }
-            }
-            //v2函数
-            if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
-                $s_param = "{$s_param_key1_input}";
-                $s_sql1 = $s_sql1 . " {$val2}() ";
-                $s_sql2 = $s_sql2 . " {$val2}() ";
-            }
 
-        }
-        //v1固定值
-        if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
-            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                $s_sql1 = $s_sql1 . " {$val1} AND";
-                $s_sql2 = $s_sql2 . " {$val1} AND";
+                switch ($v2_type) {
+                    //v2固定值
+                    case Constant::COND_VAl_TYPE_FIXED:
+                        if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                            $s_sql1 = $s_sql1 . " {$val2} ";
+                            $s_sql2 = $s_sql2 . " {$val2} ";
+                        } else {
+                            $s_sql1 = $s_sql1 . " \'{$val2}\' ";
+                            $s_sql2 = $s_sql2 . " \'{$val2}\' ";
+                        }
+                        break;
 
-            } else {
-                $s_sql1 = $s_sql1 . " \'{$val1}\' AND";
-                $s_sql2 = $s_sql2 . " \'{$val1}\' AND";
-            }
+                    //v2函数
+                    case Constant::COND_VAl_TYPE_FUN:
+                        $s_sql1 = $s_sql1 . " {$val2}() ";
+                        $s_sql2 = $s_sql2 . " {$val2}() ";
+                        break;
 
-            //v2输入值
-            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
-                list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
+                    //v2输入值
+                    case Constant::COND_VAl_TYPE_INPUT:
+                    default:
+                        list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
+                        $s_param_key2_join = $param_key_join;
+                        $s_param_key2_input = $param_key_input;
+                        $s_param = "{$s_param_key2_input}";
 
-                $s_param_key2_join = $param_key_join;
-                $s_param_key2_input = $param_key_input;
-                $s_param = "{$s_param_key2_input}";
+                        $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
+                        $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
+                        break;
+                }
+                break;
+            //v1函数
+            case Constant::COND_VAl_TYPE_FUN:
+                $s_sql1 = $s_sql1 . " {$val2}() AND";
+                $s_sql2 = $s_sql2 . " {$val2}() AND";
 
-                $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
-                $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
-            }
-            //v2固定值
-            if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
-                if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                    $s_sql1 = $s_sql1 . " {$val2} ";
-                    $s_sql2 = $s_sql2 . " {$val2} ";
+                switch ($v2_type) {
+                    //v2固定值
+                    case Constant::COND_VAl_TYPE_FIXED:
+                        if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                            $s_sql1 = $s_sql1 . " {$val2} ";
+                            $s_sql2 = $s_sql2 . " {$val2} ";
 
+                        } else {
+                            $s_sql1 = $s_sql1 . " \'{$val2}\' ";
+                            $s_sql2 = $s_sql2 . " \'{$val2}\' ";
+                        }
+                        break;
+                    //v2函数
+                    case Constant::COND_VAl_TYPE_FUN:
+                        $s_sql1 = $s_sql1 . " {$val2}() ";
+                        $s_sql2 = $s_sql2 . " {$val2}() ";
+                        break;
+
+                    //v2输入值
+                    case Constant::COND_VAl_TYPE_INPUT:
+                    default:
+                        list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
+
+                        $s_param_key2_join = $param_key_join;
+                        $s_param_key2_input = $param_key_input;
+                        $s_param = "{$s_param_key2_input}";
+
+                        $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
+                        $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
+                        break;
+                }
+                break;
+            //v1输入值
+            case  Constant::COND_VAl_TYPE_INPUT:
+            default:
+                list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "from");
+                $s_param_key1_join = $param_key_join;
+                $s_param_key1_input = $param_key_input;
+
+                $s_sql1 = $s_sql1 . " {$s_param_key1_join} AND ";
+                $s_sql2 = $s_sql2 . " {$s_param_key1_join} AND ";
+
+                switch ($v2_type) {
+                    //v2固定值
+                    case Constant::COND_VAl_TYPE_FIXED:
+                        $s_param = "{$s_param_key1_input}";
+                        if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                            $s_sql1 = $s_sql1 . " {$val2} ";
+                            $s_sql2 = $s_sql2 . " {$val2} ";
+
+                        } else {
+                            $s_sql1 = $s_sql1 . " \'{$val2}\' ";
+                            $s_sql2 = $s_sql2 . " \'{$val2}\' ";
+                        }
+                        break;
+
+                    //v2函数
+                    case Constant::COND_VAl_TYPE_FUN:
+                        $s_param = "{$s_param_key1_input}";
+                        $s_sql1 = $s_sql1 . " {$val2}() ";
+                        $s_sql2 = $s_sql2 . " {$val2}() ";
+                        break;
+
+                    case  Constant::COND_VAl_TYPE_INPUT:
+                    default:
+                        list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
+
+                        $s_param_key2_join = $param_key_join;
+                        $s_param_key2_input = $param_key_input;
+
+                        $s_param = "{$s_param_key1_input},\n" . _tab($tab_idx) . "{$s_param_key2_input}";
+                        $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
+                        $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
+                        $has_if = true;
+                        break;
+                }
+
+                $s_sql1 = $s_sql1 . " )";
+                $s_sql2 = $s_sql2 . " )' ";
+
+//        if ($s_sql1 != "") {
+//            $s_sql1 = _tab($tab_idx) . $s_sql1;
+//        }
+
+                if ($has_if) {
+                    if ($f_type != Constant::DB_FIELD_TYPE_INT && $f_type != Constant::DB_FIELD_TYPE_LONGINT) {
+                        $s_sql3 = _tab($tab_idx) . "IF {$s_param_key1_join} != '' AND {$s_param_key2_join} != '' THEN\n";
+                        $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
+                        $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
+                    } else {
+                        $s_sql3 = _tab($tab_idx) . "IF {$s_param_key1_join} != -1 AND {$s_param_key2_join} != -1  THEN\n";
+                        $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
+                        $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
+                    }
+                    $s_sql2 = $s_sql3;
                 } else {
-                    $s_sql1 = $s_sql1 . " \'{$val2}\' ";
-                    $s_sql2 = $s_sql2 . " \'{$val2}\' ";
+                    $s_sql2 = _tab($tab_idx) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
                 }
-            }
-            //v2函数
-            if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
-                $s_sql1 = $s_sql1 . " {$val2}() ";
-                $s_sql2 = $s_sql2 . " {$val2}() ";
-            }
+
+
+                return array($s_param, $s_sql1, $s_sql2);
         }
-        //v1函数
-        if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
-            $s_sql1 = $s_sql1 . " {$val2}() AND";
-            $s_sql2 = $s_sql2 . " {$val2}() AND";
-
-            //v2输入值
-            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
-                list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
-
-                $s_param_key2_join = $param_key_join;
-                $s_param_key2_input = $param_key_input;
-                $s_param = "{$s_param_key2_input}";
-
-                $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
-                $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
-            }
-            //v2固定值
-            if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
-                if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                    $s_sql1 = $s_sql1 . " {$val2} ";
-                    $s_sql2 = $s_sql2 . " {$val2} ";
-
-                } else {
-                    $s_sql1 = $s_sql1 . " \'{$val2}\' ";
-                    $s_sql2 = $s_sql2 . " \'{$val2}\' ";
-                }
-            }
-            //v2函数
-            if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
-
-                $s_sql1 = $s_sql1 . " {$val2}() ";
-                $s_sql2 = $s_sql2 . " {$val2}() ";
-            }
-        }
-
-        $s_sql1 = $s_sql1 . " )";
-        $s_sql2 = $s_sql2 . " )' ";
-
-        if ($s_sql1 != "") {
-            $s_sql1 = _tab($tab_idx) . $s_sql1;
-        }
-
-        if ($has_if) {
-            if ($f_type != Constant::DB_FIELD_TYPE_INT && $f_type != Constant::DB_FIELD_TYPE_LONGINT) {
-                $s_sql3 = _tab($tab_idx) . "IF {$s_param_key1_join} != '' AND {$s_param_key2_join} != '' THEN\n";
-                $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
-                $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
-            } else {
-                $s_sql3 = _tab($tab_idx) . "IF {$s_param_key1_join} != -1 AND {$s_param_key2_join} != -1  THEN\n";
-                $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
-                $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
-            }
-            $s_sql2 = $s_sql3;
-        } else {
-            $s_sql2 = _tab($tab_idx) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
-        }
-
-
-        return array($s_param, $s_sql1, $s_sql2);
     }
 
     /**
@@ -1381,6 +1403,41 @@ class DbMysql extends DbBase
 
     }
 
+    function cCount(MyModel $model, MyFun $o_fun)
+    {
+        //SELECT * FROM xxx a JOIN (select id from xxx limit 1000000, 20) b ON a.ID = b.id;
+        $base_fun = strtolower($o_fun->type);
+        $fun_name = $o_fun->name;
+        $fun_type = $o_fun->type;
+
+        $proc_name = self::_procHeader($model, $fun_name, $o_fun->title, $base_fun);
+        $group_field = "";
+
+        $group_field_id = $o_fun->group_field;
+        if (isset($model->field_list[$group_field_id])) {
+            $o_group_field = $model->field_list[$group_field_id];
+            $group_field = $o_group_field->name;
+        }
+
+        //预先处理查询条件的
+        list($_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
+        $this->_procBegin($_param);
+        if ($group_field == "") {
+            $group_field = "id";
+        }
+
+        echo "SET @s_sql = 'SELECT COUNT(`{$group_field}`) AS i_count  FROM `t_{$model->table_name}` WHERE ';\n";
+
+        //基本条件sql
+        echo $_sql2;
+
+        echo "CALL p__debug('{$proc_name}', @s_sql);\n";
+        echo "PREPARE stmt FROM @s_sql;\n";
+        echo "EXECUTE stmt;\n";
+
+        self::_procEnd($model, $proc_name);
+    }
+
     /**
      * @param MyModel $model
      * @param MyFun $o_fun
@@ -1419,9 +1476,7 @@ class DbMysql extends DbBase
             $o_f = $model->field_list[$order_by_id];
             $order_by = $o_f->name;
         }
-        //TODO 先处理having
-
-
+        //先处理having
         $group_field_final = "";
         $group_field_sel = "";
         $allow_pager = false;
@@ -1472,36 +1527,18 @@ class DbMysql extends DbBase
                 case Constant::COND_TYPE_GTE:// = "GTE";//&GT;= 大于等于
                 case Constant::COND_TYPE_LT:// = "LT";//&LT; 少于
                 case Constant::COND_TYPE_LTE:// = "LTE";//&LT;= 少于等于
-                    list($_param_having, $_sql1_having, $_sql2_having) = $this->_procHaving_V1(1, 1,
-                        $group_field_final,
-                        $o_group_field,
-                        $o_having->type,
-                        $o_having->v1_type,
-                        $o_having->v1);
+                    list($_param_having, $_sql1_having, $_sql2_having) = $this->_procHaving_V1(1, 1, $group_field_final, $o_group_field, $o_having->type, $o_having->v1_type, $o_having->v1);
                     break;
                 case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
                 case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
                 case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
                 case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
                 case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
-                    list($_param_having, $_sql1_having, $_sql2_having) = $this->_procHaving_V2(1, 1,
-                        $group_field_final,
-                        $o_group_field,
-                        $o_having->type,
-                        $o_having->v1_type,
-                        $o_having->v1,
-                        $o_having->v2_type,
-                        $o_having->v2
-                    );
+                    list($_param_having, $_sql1_having, $_sql2_having) = $this->_procHaving_V2(1, 1, $group_field_final, $o_group_field, $o_having->type, $o_having->v1_type, $o_having->v1, $o_having->v2_type, $o_having->v2);
                     break;
                 case Constant::COND_TYPE_IN:// = "IN";//离散量范围内
                 case Constant::COND_TYPE_NOTIN:// = "NOTIN";//离散量范围外
-                    list($_param_having, $_sql1_having, $_sql2_having) = $this->_procHaving_V_range(1, 1,
-                        $group_field_final,
-                        $o_group_field,
-                        $o_having->type,
-                        $o_having->v1_type,
-                        $o_having->v1);
+                    list($_param_having, $_sql1_having, $_sql2_having) = $this->_procHaving_V_range(1, 1, $group_field_final, $o_group_field, $o_having->type, $o_having->v1_type, $o_having->v1);
                     break;
                 default:
 
@@ -1574,10 +1611,12 @@ class DbMysql extends DbBase
                 echo "*";
                 $has_pre_key = ",";
             } else {
-                $a_field_return = $model->field_list;
-                foreach ($model->field_list2 as $skey => $o_filed) {
-                    $a_temp[] = "`{$skey}`\n";
-                    $has_pre_key = ",";
+                $a_temp = array();
+                foreach ($o_fun->field_list as $s_key => $o_filed) {
+                    if (isset($model->field_list[$s_key])) {
+                        $a_temp[] = "\n" . _tab(1) . "`{$o_filed->name}`";
+                        $has_pre_key = ",";
+                    }
                 }
                 echo implode(",", $a_temp);
             }
@@ -1586,14 +1625,13 @@ class DbMysql extends DbBase
                 echo "{$has_pre_key} {$group_field_sel}";
             }
 
-            echo " FROM `t_{$model->table_name}` WHERE ';\n";
+            echo "\nFROM `t_{$model->table_name}` WHERE ';\n";
         }
-
+        //基本条件sql
         echo $_sql2;
 
         if ($group_by != "") {
             echo "SET @s_sql = CONCAT( @s_sql, ' GROUP BY {$group_by}');\n";
-
             if ($o_having != null && $group_field_final != "") {
                 echo "SET @s_sql = CONCAT( @s_sql, ' HAVING ', {$_sql2_having});\n";
             }
@@ -1601,7 +1639,6 @@ class DbMysql extends DbBase
 
         if (!$count_only) {
             if ($o_fun->order_enable) {
-
                 if ($o_fun->order_by == "@@") {
                     //输入排序主键
                     echo "SET @s_sql = CONCAT( @s_sql, ' ORDER BY ',v_order_by);\n";
@@ -1830,7 +1867,6 @@ class DbMysql extends DbBase
         }
 
 
-
         return array($s_param, $s_sql1, $s_sql2);
     }
 
@@ -1937,663 +1973,5 @@ class DbMysql extends DbBase
                 break;
         }
         return $group_field_final;
-    }
-
-    /**
-     * 条件的输入参数,内部二次拼接
-     * @param MyModel $model
-     * @param MyFun $o_fun
-     */
-    function _procWhereCond2($model, $o_fun)
-    {
-        $s_temp = "1=1";
-        $a_temp = array();
-        $jj = 0;
-        if ($o_fun->where != null) {
-            $where_type_joiner = $o_fun->where->type;
-            $cond_list = $o_fun->where->cond_list;
-            $where_list = $o_fun->where->where_list;
-            foreach ($cond_list as $cond) {
-                /* @var MyCond $cond */
-                $field = $model->field_list[$cond->field];
-                $field_type = $field->type;
-                $key = $field->name;
-                $cond_type = $cond->type;
-                $v1_type = $cond->v1_type;
-                $v2_type = $cond->v2_type;
-
-                if ($cond_type == Constant::COND_TYPE_BETWEEN || $cond_type == Constant::COND_TYPE_DATE || $cond_type == Constant::COND_TYPE_TIME || $cond_type == Constant::COND_TYPE_NOTBETWEEN) {
-                    if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                        $jj++;
-                        $prefix = self::_procKeyPrefix($field_type);
-                        $key2 = "{$prefix}_{$jj}_from_{$key}";
-                        $a_temp[] = "`{$key}` = {$key2}";
-                    }
-                    if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
-                        if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                            $a_temp[] = "`{$key}` = {$cond->v1}";
-                        } else {
-                            $a_temp[] = "`{$key}` = '{$cond->v1}'";
-                        }
-                    }
-                    if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
-                        $a_temp[] = "`{$key}` = {$cond->v1}()";
-                    }
-                    //第二个参数
-                    if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
-                        $jj++;
-                        $prefix = self::_procKeyPrefix($field_type);
-                        $key2 = "{$prefix}_{$jj}_to_{$key}";
-                        $a_temp[] = "`{$key}` = {$key2}";
-                    }
-                    if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
-                        if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                            $a_temp[] = "`{$key}` = {$cond->v2}";
-                        } else {
-                            $a_temp[] = "`{$key}` = '{$cond->v2}'";
-                        }
-                    }
-                    if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
-                        $a_temp[] = "`{$key}` = {$cond->v2}()";
-                    }
-                } else {
-                    if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                        $jj++;
-                        $prefix = self::_procKeyPrefix($field_type);
-                        $key2 = "{$prefix}_{$jj}_w_{$key}";
-                        $a_temp[] = "`{$key}` = {$key2}";
-                    }
-                    if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
-                        if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                            $a_temp[] = "`{$key}` = {$cond->v1}";
-                        } else {
-                            $a_temp[] = "`{$key}` = '{$cond->v1}'";
-                        }
-                    }
-                    if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
-                        $a_temp[] = "`{$key}` = {$cond->v1}()";
-                    }
-                }
-            }
-            foreach ($where_list as $where2) {
-                if ($where2 != null) {
-                    $cond_list2 = $where2->cond_list;
-                    $a_temp2 = array();
-                    foreach ($cond_list2 as $cond) {
-                        /* @var MyCond $cond */
-                        $field = $model->field_list[$cond->field];
-                        $field_type = $field->type;
-                        $key = $field->name;
-                        $cond_type = $cond->type;
-                        $v1_type = $cond->v1_type;
-                        $v2_type = $cond->v2_type;
-
-                        if ($cond_type == Constant::COND_TYPE_BETWEEN || $cond_type == Constant::COND_TYPE_DATE || $cond_type == Constant::COND_TYPE_TIME || $cond_type == Constant::COND_TYPE_NOTBETWEEN) {
-                            if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                                $jj++;
-                                $prefix = self::_procKeyPrefix($field_type);
-                                $key2 = "{$prefix}_{$jj}_from_{$key}";
-                                $a_temp2[] = "`{$key}` = {$key2}";
-                            }
-                            if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
-                                if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                                    $a_temp2[] = "`{$key}` = {$cond->v1}";
-                                } else {
-                                    $a_temp2[] = "`{$key}` = '{$cond->v1}'";
-                                }
-                            }
-                            if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
-                                $a_temp2[] = "`{$key}` = {$cond->v1}()";
-                            }
-                            //第二个参数
-                            if ($v2_type == Constant::COND_VAl_TYPE_INPUT) {
-                                $jj++;
-                                $prefix = self::_procKeyPrefix($field_type);
-                                $key2 = "{$prefix}_{$jj}_to_{$key}";
-                                $a_temp2[] = "`{$key}` = {$key2}";
-                            }
-                            if ($v2_type == Constant::COND_VAl_TYPE_FIXED) {
-                                if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                                    $a_temp2[] = "`{$key}` = {$cond->v2}";
-                                } else {
-                                    $a_temp2[] = "`{$key}` = '{$cond->v2}'";
-                                }
-                            }
-                            if ($v2_type == Constant::COND_VAl_TYPE_FUN) {
-                                $a_temp2[] = "`{$key}` = {$cond->v2}()";
-                            }
-                        } else {
-                            if ($v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                                $jj++;
-                                $prefix = self::_procKeyPrefix($field_type);
-                                $key2 = "{$prefix}_{$jj}_w_{$key}";
-                                $a_temp2[] = "`{$key}` = {$key2}";
-                            }
-                            if ($v1_type == Constant::COND_VAl_TYPE_FIXED) {
-                                if ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                                    $a_temp2[] = "`{$key}` = {$cond->v1}";
-                                } else {
-                                    $a_temp2[] = "`{$key}` = '{$cond->v1}'";
-                                }
-                            }
-                            if ($v1_type == Constant::COND_VAl_TYPE_FUN) {
-                                $a_temp2[] = "`{$key}` = {$cond->v1}()";
-                            }
-                        }
-                    }
-                    $where_type_joiner2 = $where2->type;
-                    $a_temp = "(" . implode("\n" . _tab(2) . "{$where_type_joiner2} ", $a_temp2) . ")";
-                }
-            }
-            $s_temp = implode("\n" . _tab(1) . "{$where_type_joiner} ", $a_temp);
-        }
-        return $s_temp;
-
-    }
-
-    /**
-     * 方法 list-1 构造可变参数sql
-     *
-     * @param array $model 模型
-     * @param MyFunList $my_list 查询结构
-     * @param boolean $count_only 仅计数
-     * @return void
-     */
-    function _mysql_proc_list_sql($model, $my_list, $count_only)
-    {
-
-        $ii = 0;
-
-        if (count($my_list->list_by) > 0) {
-            foreach ($my_list->list_by as $key) {
-                //$a_temp[] = self::_procParam($field);
-                $ii++;
-                $p_type = $model->table_fields[$key]['type'];
-                $prefix = self::_procKeyPrefix($p_type);
-
-                if ($p_type == "int") {
-                    echo "IF {$prefix}_{$key} >= 0 THEN\n";
-                    echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' AND `{$key}` =  \'', {$prefix}_{$key}, '\' ' );\n";
-                    echo "END IF;\n";
-                } else {
-                    echo "IF {$prefix}_{$key} != '' THEN\n";
-                    echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' AND `{$key}` =  \'', {$prefix}_{$key}, '\' ' );\n";
-                    echo "END IF;\n";
-                }
-            }
-        }
-
-        $a_has_key = _php_list_get_conds();
-        foreach ($a_has_key as $cond) {
-
-            $bv = "list_has_{$cond}";
-            $kv = "list_{$cond}_key";
-            if ($my_list->$bv) {
-                switch ($cond) {
-                    //搜索关键字
-                    case "kw":
-                        //$a_temp[] = "IN `s_kw` VARCHAR ( 255 )";
-                        echo "IF v_kw != '' THEN\n";
-                        echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' AND (\n";
-                        $a_temp0 = array();
-                        foreach ($my_list->list_kw as $key) {
-                            $a_temp0[] = "LOCATE(\'',s_kw,'\',`{$key}`) > 0  ";
-                        }
-                        echo implode("\n" . _tab(2) . "OR", $a_temp0);
-                        echo "\n";
-                        echo _tab(1) . " )');\n";
-                        echo "END IF;\n";
-                        $ii++;
-                        break;
-                    //开始日期--结束日期
-                    case "date":
-                        //$a_temp[] = "IN `s_date_from` VARCHAR ( 10 )";
-                        //$a_temp[] = "IN `s_date_to` VARCHAR ( 10 )";
-
-                        echo "IF s_date_from != '' AND  s_date_to != '' THEN\n";
-                        echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' AND (";
-                        $date_key = $my_list->$kv;
-                        $p_type = $model->table_fields[$date_key]['type'];
-                        if ($p_type == "datetime") {
-                            echo "{$date_key} BETWEEN \'', s_date_from, ' 00:00:00\' AND \'', s_date_to,' 23:59:59\')'";
-                        } else {
-                            echo "{$date_key} BETWEEN \'', s_date_from, '\' AND \'', s_date_to,'\')'";
-                        }
-                        echo " );\n";
-                        echo "END IF;\n";
-
-                        $ii++;
-                        $ii++;
-                        break;
-                    //开始时间--结束时间
-                    case "time":
-                        //$a_temp[] = "IN `s_time_from` VARCHAR ( 19 )";
-                        //$a_temp[] = "IN `s_time_to` VARCHAR ( 19 )";
-                        echo "IF s_time_from != '' AND  s_time_to != '' THEN\n";
-                        echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' AND (";
-                        $time_key = $my_list->$kv;
-                        echo "{$time_key} BETWEEN \'', s_time_from, '\' AND \'', s_time_to,'\')'";
-                        echo " );\n";
-                        echo "END IF;\n";
-
-                        $ii++;
-                        $ii++;
-                        break;
-
-                    //
-                    case "between":
-                        //$a_temp[] = "IN `i_between_from` INT";
-                        //$a_temp[] = "IN `i_between_to` INT";
-                        $ii++;
-                        $ii++;
-                        echo "SET @s_sql = CONCAT( @s_sql, ' AND (";
-                        $between_key = $my_list->$kv;
-                        echo "{$between_key} BETWEEN \'', i_between_from, '\' AND \'', i_between_to,'\')'";
-                        echo " );\n";
-
-                        break;
-
-                    //
-                    case "notbetween":
-                        //$a_temp[] = "IN `i_between_before` INT";
-                        //$a_temp[] = "IN `i_between_after` INT";
-                        $ii++;
-                        $ii++;
-                        echo "SET @s_sql = CONCAT( @s_sql, ' AND (";
-                        $between_key = $my_list->$kv;
-                        echo "{$between_key} NOT BETWEEN \'', i_between_before, '\' AND \'', i_between_after,'\')'";
-                        echo " );\n";
-                        break;
-
-                    //
-                    case "in":
-                        $key = $my_list->$kv;
-                        //$a_temp[] = "IN `s_{$cond}_{$key}` VARCHAR ( 9999 )";
-                        $ii++;
-                        echo "IF s_{$cond}_{$key} != '' THEN\n";
-                        if ($key == "int") {
-                            echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' {$key} IN(', s_{$cond}_{$key}, ') ');\n";
-                        } else {
-                            echo _tab(1) . "SET @s_sql_v = REPLACE(s_{$cond}_{$key}, '|', '\',\'');\n";
-                            echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' {$key} IN(\'',@s_sql_v,'\') ');\n";
-                        }
-                        echo "END IF;\n";
-                        break;
-
-                    case "notin":
-                        $key = $my_list->$kv;
-                        //$a_temp[] = "IN `s_{$cond}_{$key}` VARCHAR ( 9999 )";
-                        $ii++;
-                        echo "IF s_{$cond}_{$key} != '' THEN\n";
-                        if ($key == "int") {
-                            echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' {$key} NOT IN(', s_{$cond}_{$key}, ') ');\n";
-                        } else {
-                            echo _tab(1) . "SET @s_sql_v = REPLACE(s_{$cond}_{$key}, '|', '\',\'');\n";
-                            echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' {$key} NOT IN(\'',@s_sql_v,'\') ');\n";
-                        }
-                        echo "END IF;\n";
-                        break;
-
-                    //
-                    case "gt":
-                    case "gte":
-                    case "lt":
-                    case "lte":
-                        $key = $my_list->$kv;
-                        //$a_temp[] = "IN `i_{$cond}_{$key}` INT";
-                        $ii++;
-                        $real_cond = self::_procGtEqLt($cond);
-                        echo "SET @s_sql = CONCAT( @s_sql, ' AND (";
-                        $gtelt_key = $my_list->$kv;
-                        echo "{$gtelt_key}  {$real_cond}  \'', i_{$cond}_{$key},'\')'";
-                        echo " );\n";
-                        break;
-
-                    default:
-                        break;
-
-                }
-            }
-        }
-
-        if (isset($model->table_fields['flag'])) {
-            echo "SET @s_sql = CONCAT( @s_sql, ' AND `flag` = \'n\'');\n";
-        }
-
-        //仅查询数量
-        if ($count_only) {
-            return;
-        }
-
-
-        if (!$my_list->list_has_group && $my_list->list_has_pager) {
-            if ($my_list->list_pager_type != "normal") {
-                $kkk = $my_list->cursor_offset_key;
-                if ($my_list->list_order_dir == "" || $my_list->list_order_dir == "DESC") {
-                    echo "SET @s_sql = CONCAT( @s_sql, ' AND {$kkk} < ',i_cursor_from,' ');\n";
-                } else {
-                    echo "SET @s_sql = CONCAT( @s_sql, ' AND {$kkk} > ',i_cursor_from,' ');\n";
-                }
-            }
-        }
-
-        //排序
-        if ($my_list->list_has_order) {
-            //        if ($my_list->list_order_by == "") {
-            //            $a_temp[] = "IN `s_order_by` VARCHAR ( 255 )";
-            //            $ii++;
-            //        }
-            //        $a_temp[] = "IN `s_order_dir` VARCHAR ( 255 )";
-            //        $ii++;
-            if (!is_array($my_list->list_order_by)) {
-                if ($my_list->list_order_by == "" && $my_list->list_order_dir == "") {
-                    $ii++;
-                    echo "SET @s_sql = CONCAT( @s_sql, ' ORDER BY ',s_order_by,' ',s_order_dir);\n";
-                } else {
-                    if ($my_list->list_order_dir == "") {
-                        echo "SET @s_sql = CONCAT( @s_sql, ' ORDER BY {$my_list->list_order_by} ',s_order_dir);\n";
-                        //echo "SET @s_sql = CONCAT( @s_sql, ' ORDER BY ',s_order_by,' {$my_list->list_order_dir}');\n";
-                    } else {
-                        //不允许 list_order_by为空，而s_order_dir 不为空
-                    }
-                }
-            } else {
-                $a_temp = array();
-                foreach ($my_list->list_order_by as $order_by => $order_dir) {
-                    $a_temp[] = "{$order_by} {$order_dir}";
-                }
-                if (count($a_temp) > 0) {
-                    $s_temp = implode(", ", $a_temp);
-                    echo "SET @s_sql = CONCAT( @s_sql, ' ORDER BY {$s_temp}');\n";
-                }
-            }
-        }
-
-        if (!$my_list->list_has_group) {
-            if ($my_list->list_has_pager) {
-                //$a_temp[] = "IN `i_page` INT";
-                //$a_temp[] = "IN `i_page_size` INT";
-                $ii++;
-                $ii++;
-                if ($my_list->list_pager_type == "normal") {
-                    echo "SET @s_sql = CONCAT( @s_sql, ' LIMIT  ', m_offset, ',',m_length);\n";
-                } else {
-                    //页码,TODO 偏移量  大于数id
-                    echo "SET @s_sql = CONCAT( @s_sql, ' LIMIT  ', i_cursor_offset);\n";
-                }
-            }
-        }
-        return;
-    }
-
-    /**
-     * 获取大于小于的操作符号
-     * @param string $gt_eq_lt
-     * @return string
-     */
-    static function _procGtEqLt($gt_eq_lt)
-    {
-        switch ($gt_eq_lt) {
-            case "gt":
-                return ">";
-            case "gte":
-                return ">=";
-            case "lt":
-                return "<";
-            case "lte":
-                return "<=";
-            default:
-                return "=";
-        }
-    }
-
-    /**
-     * 方法 list-2 构造可变参数
-     *
-     * @param array $model 模型
-     * @param MyFunList $my_list 查询结构
-     * @param boolean $count_only 仅计数
-     * @return array 参数组合
-     */
-    function _mysql_proc_list_param($model, $my_list, $count_only)
-    {
-
-        $ii = 0;
-        $a_temp = array();
-        //$a_temp[] = "1 = 1";
-
-        if (count($my_list->list_by) > 0) {
-            foreach ($my_list->list_by as $key) {
-                $a_temp[] = self::_procParam($field);
-                $ii++;
-            }
-        }
-
-        $a_has_key = _php_list_get_conds();
-        foreach ($a_has_key as $cond) {
-
-            $bv = "list_has_{$cond}";
-            $kv = "list_{$cond}_key";
-            if ($my_list->$bv) {
-                switch ($cond) {
-                    //搜索关键字
-                    case "kw":
-                        $a_temp[] = "IN `s_kw` VARCHAR ( 255 )";
-                        $ii++;
-                        break;
-                    //开始日期--结束日期
-                    case "date":
-                        $a_temp[] = "IN `s_date_from` VARCHAR ( 10 )";
-                        $a_temp[] = "IN `s_date_to` VARCHAR ( 10 )";
-                        $ii++;
-                        $ii++;
-                        break;
-                    //开始时间--结束时间
-                    case "time":
-                        $a_temp[] = "IN `s_time_from` VARCHAR ( 19 )";
-                        $a_temp[] = "IN `s_time_to` VARCHAR ( 19 )";
-                        $ii++;
-                        $ii++;
-                        break;
-
-                    //
-                    case "between":
-                        $a_temp[] = "IN `i_between_from` INT";
-                        $a_temp[] = "IN `i_between_to` INT";
-                        $ii++;
-                        $ii++;
-                        break;
-
-                    //
-                    case "notbetween":
-                        $a_temp[] = "IN `i_between_before` INT";
-                        $a_temp[] = "IN `i_between_after` INT";
-                        $ii++;
-                        $ii++;
-                        break;
-
-                    //
-                    case "in":
-                    case "notin":
-                        $key = $my_list->$kv;
-                        $a_temp[] = "IN `s_{$cond}_{$key}` VARCHAR ( 9999 )";
-                        $ii++;
-                        break;
-
-                    //
-                    case "gt":
-                    case "gte":
-                    case "lt":
-                    case "lte":
-                        $key = $my_list->$kv;
-                        $a_temp[] = "IN `i_{$cond}_{$key}` INT";
-                        $ii++;
-                        break;
-
-                    default:
-                        break;
-
-                }
-            }
-        }
-
-        //仅查询数量
-        if ($count_only) {
-            return $a_temp;
-        }
-
-        //排序
-        if ($my_list->list_has_order) {
-            if (!is_array($my_list->list_order_by)) {
-                //TODO
-                if ($my_list->list_order_by == "") {
-                    $a_temp[] = "IN `s_order_by` VARCHAR ( 255 )";
-                    $ii++;
-                    $a_temp[] = "IN `s_order_dir` VARCHAR ( 255 )";
-                    $ii++;
-                } else {
-                    if ($my_list->list_order_dir == "") {
-                        $a_temp[] = "IN `s_order_dir` VARCHAR ( 255 )";
-                        $ii++;
-                    }
-                }
-            }
-        }
-
-        if (!$my_list->list_has_group) {
-            if ($my_list->list_has_pager) {
-
-                if ($my_list->list_pager_type == "normal") {
-                    $a_temp[] = "IN `i_page` INT";
-                    $a_temp[] = "IN `i_page_size` INT";
-                    $ii++;
-                    $ii++;
-                } else {
-                    //cursor
-                    $a_temp[] = "IN `i_cursor_from` INT";
-                    $a_temp[] = "IN `i_cursor_offset` INT";
-                    $ii++;
-                    $ii++;
-                }
-            }
-        }
-
-        return $a_temp;
-    }
-
-    /**
-     * mysql存储过程--获取列表的计数器
-     *
-     * @param array $model
-     * @param MyFunList $my_list 查询结构
-     */
-    function _mysql_create_proc_count($model, $my_list)
-    {
-        $proc_name = self::_procHeader($model, $my_list->list_name, $my_list->fetch_title, "count");
-
-        $a_temp = _mysql_proc_list_param($model, $my_list, true);
-        self::_procBegin($a_temp);
-
-        echo "SET @s_sql = 'SELECT COUNT(`{$my_list->list_count_key}`) AS i_count FROM`t_{$model['table_name']}` WHERE 1=1 '; \n";
-
-        _mysql_proc_list_sql($model, $my_list, true);
-        echo "CALL p__debug('{$proc_name}', @s_sql);\n";
-        echo "PREPARE stmt FROM @s_sql;\n";
-        echo "EXECUTE stmt;\n";
-        //echo "COMMIT;\n";
-        self::_procEnd($model, $proc_name);
-    }
-
-    /**
-     * mysql存储过程--获取列表
-     *
-     * @param array $model
-     * @param MyFunList $my_list 查询结构
-     */
-    function _mysql_create_proc_list($model, $my_list)
-    {
-        $proc_name = self::_procHeader($model, $my_list->list_name, $my_list->list_title, "list");
-
-        $a_temp = _mysql_proc_list_param($model, $my_list, false);
-        self::_procBegin($a_temp);
-
-        if (!$my_list->list_has_group && $my_list->list_has_pager) {
-            if ($my_list->list_pager_type == "normal") {
-                echo "DECLARE m_offset INT;\n";
-                echo "DECLARE m_length INT;\n";
-                echo "SET m_length = i_page_size;\n";
-                echo "SET m_offset = ( i_page - 1 ) * i_page_size;\n\n";
-            }
-        }
-
-
-        echo "SET @s_sql = 'SELECT ";
-
-        if (!$my_list->list_has_group) {
-            if (count($my_list->list_keys) == 0) {
-                echo "*";
-            } else {
-                if ($my_list->is_distinct) {
-                    echo "DISTINCT ";
-                }
-                $a_temp = array();
-                foreach ($my_list->list_keys as $skey) {
-                    $a_temp[] = "`{$skey}`";
-                }
-                echo implode(",", $a_temp);
-            }
-        } else {
-            $list_group_type = $my_list->list_group_type;
-            $list_group_key = $my_list->list_group_key;
-            $a_temp = array();
-            $a_temp[] = strtoupper($list_group_type) . "(`{$list_group_key}`) AS i_" . strtolower($list_group_type);
-            foreach ($my_list->list_group_by as $skey) {
-                $a_temp[] = "`{$skey}`";
-            }
-            echo implode(",", $a_temp);
-        }
-        echo " FROM `t_{$model['table_name']}` WHERE 1=1 '; \n";
-
-        _mysql_proc_list_sql($model, $my_list, false);
-        echo "CALL p__debug('{$proc_name}', @s_sql);\n";
-        echo "PREPARE stmt FROM @s_sql;\n";
-        echo "EXECUTE stmt;\n";
-        //echo "COMMIT;\n";
-        self::_procEnd($model, $proc_name);
-
-    }
-
-    /**
-     * mysql存储过程--获取列表
-     *
-     * @param $model
-     */
-    function mysql_create_proc_list($model)
-    {
-        $a_list_confs = _model_get_ok_list($model);
-        foreach ($a_list_confs as $list_key => $my_list) {
-
-            /**
-             * @var MyFunList $my_list
-             */
-            if (!$my_list->list_has_group) {
-                //普通查询
-                if ($my_list->count_only == true) {
-                    _mysql_create_proc_count($model, $my_list);
-                } else {
-                    _mysql_create_proc_count($model, $my_list);
-                    _mysql_create_proc_list($model, $my_list);
-                }
-            } else {
-                //聚合的只有列表
-                _mysql_create_proc_list($model, $my_list);
-            }
-
-        }
-    }
-
-    function cCount(MyModel $model, MyFun $fun)
-    {
-        // TODO: Implement cCount() method.
     }
 }

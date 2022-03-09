@@ -32,39 +32,48 @@ class MyApp extends MyStruct
     public $img_logo_id = "";
     public $img_icon_id = "";
 
+    //包名
+    public $package = "";
+
     //当前的架构
     public $curr_arch = "";
 
     //当前的数据配置
     public $curr_db = "";
+
     /**
      * app配置
      * @var MyArch
      */
     public $arch_list = null;
+
     /**
      * 数据库配置
      * @var MyDb
      */
     public $db_list = null;
+
     /**
      * 全局字段
      * @var array
      */
     public $field_list = array();
+
     /**
      * 包含的模型，key => MyModel
      * @var array
      */
     public $model_list = array();
+
     /**
      * app数据ok
      * @var boolean
      */
     public $checked_app_data_is_good = false;
-    public $basic_keys = array("project_id", "img_icon_id", "img_logo_id");
+    public $basic_keys = array("project_id", "package", "img_icon_id", "img_logo_id");
     public $data_root = "";
     public $build_root = "";
+
     /**
      * 输出目录
      * 每次构建都有一个独立的输出目录
@@ -77,25 +86,26 @@ class MyApp extends MyStruct
         $this->scope = "APP";
     }
 
+
     /**
+     * 获取当前的框架配置
      * @return MyArch
      */
     public function getCurrArch()
     {
-        if (isset($this->arch_list[$this->curr_arch])) {
-            return $this->arch_list[$this->curr_arch];
+        if ($this->curr_arch != "") {
+            if (isset($this->arch_list[$this->curr_arch])) {
+                return $this->arch_list[$this->curr_arch];
+            }
         }
-
         /* @var MyArch $first_arch */
         $first_arch = null;
-        foreach ($this->arch_list as $kk => $arch) {
+        foreach ($this->arch_list as $kk => $db) {
             $this->curr_arch = $kk;
-            $first_arch = $arch;
+            $first_arch = $db;
             break;
         }
-
         return $first_arch;
-
     }
 
     /**
@@ -104,7 +114,7 @@ class MyApp extends MyStruct
      */
     public function getCurrDb()
     {
-        if($this->curr_db != ""){
+        if ($this->curr_db != "") {
             if (isset($this->db_list[$this->curr_db])) {
                 return $this->db_list[$this->curr_db];
             }
@@ -138,6 +148,7 @@ class MyApp extends MyStruct
         $this->title = "{$project_id}的新应用{$now_str2}";
         $this->ctime = $now_str;
         $this->utime = $now_str;
+        $this->package = "";
 
         $this->model_list = array();
         $this->db_list = array();
@@ -312,7 +323,7 @@ class MyApp extends MyStruct
      * @param $db     数据库配置
      * @return void
      */
-    public function build($arch,$db)
+    public function build($arch, $db)
     {
         if (count($this->arch_list) == 0 || count($this->db_list) == 0) {
             SeasLog::error("没有有效的架构和数据库配置！！！");
@@ -332,8 +343,11 @@ class MyApp extends MyStruct
         }
 
         $this->curr_db = $db;//这是UUID
+        $this->curr_arch = $arch;//这也是UUID
         //数据库
         $this->buildDb();
+        //数据库配套模型
+        $this->buildModel();
 
         $a_tags = array();
         //TODO
@@ -364,7 +378,7 @@ class MyApp extends MyStruct
      * 构建数据库
      * @return void
      */
-    public function buildDb( )
+    public function buildDb()
     {
         $dbc = DbBase::findCc($this);
         if ($dbc == null) {
@@ -372,7 +386,7 @@ class MyApp extends MyStruct
             return;
         }
         $path_dbcc = $dbc->db_output;
-        $_target = $path_dbcc .DS. "init_db.sql";
+        $_target = $path_dbcc . DS . "init_db.sql";
         ob_start();
         $dbc->ccInitDb();
         $cc_data = ob_get_contents();
@@ -380,10 +394,10 @@ class MyApp extends MyStruct
         file_put_contents($_target, $cc_data);
 
         foreach ($this->model_list as $o_model) {
-            /* @var MyModel $o_model*/
+            /* @var MyModel $o_model */
             $model_name = $o_model->name;
             SeasLog::info("建表语句--{$model_name}");
-            $_target = $path_dbcc .DS. "{$model_name}_cc_table.sql";
+            $_target = $path_dbcc . DS . "{$model_name}_cc_table.sql";
             ob_start();
             $dbc->ccTable($o_model);
             $cc_data = ob_get_contents();
@@ -391,7 +405,7 @@ class MyApp extends MyStruct
             file_put_contents($_target, $cc_data);
 
             SeasLog::info("删表语句--{$model_name}");
-            $_target = $path_dbcc .DS. "{$model_name}_reset_table.sql";
+            $_target = $path_dbcc . DS . "{$model_name}_reset_table.sql";
             ob_start();
             $dbc->ccTable_reset($o_model);
             $cc_data = ob_get_contents();
@@ -399,7 +413,7 @@ class MyApp extends MyStruct
             file_put_contents($_target, $cc_data);
 
             SeasLog::info("存储过程--{$model_name}");
-            $_target = $path_dbcc .DS. "{$model_name}_proc.sql";
+            $_target = $path_dbcc . DS . "{$model_name}_proc.sql";
             ob_start();
             $dbc->ccProc($o_model);
             $cc_data = ob_get_contents();
@@ -416,21 +430,7 @@ class MyApp extends MyStruct
      */
     public function buildModel(MyModel $model_to_be = null)
     {
-        $mm = null;
-        switch ($this->arch_list->lang) {
-            case Constant::LANG_JAVA:
-                switch ($this->arch_list->mvc) {
-                    case Constant::MVC_JAVA_SERVLET:
-
-                        $mm = new JavaServletModel($this->arch_list, $this->db_list, $this->path_output);
-                        break;
-                    default:
-
-                }
-                break;
-            default:
-
-        }
+        $mm = ModelBase::findCc($this);
         if ($mm == null) {
             return;
         }

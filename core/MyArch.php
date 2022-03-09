@@ -11,7 +11,6 @@ include_once(CC_ROOT . "/MyStruct.php");
 class MyArch extends MyStruct
 {
 
-
     /**
      * 开发框架
      * @var string

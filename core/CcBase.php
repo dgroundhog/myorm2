@@ -12,9 +12,6 @@ include_once(CC_ROOT . "/_cc.inc.php");
 interface CcBase
 {
 
-    //有一个特性的输出目录
-
-
     /**
      * 增加
      * @param MyModel $model

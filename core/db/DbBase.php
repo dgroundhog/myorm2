@@ -26,13 +26,11 @@ abstract class DbBase implements CcBase
 
     /**
      * 构造函数
-     * @param MyApp $db 主应用配置
+     * @param MyApp $db 主应用
      */
     public function __construct(MyApp $app)
     {
-
         $output_root = $app->path_output;
-
         $this->curr_app = $app;
         $this->db_conf = $app->getCurrDb();
 

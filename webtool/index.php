@@ -150,7 +150,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 <script src="./js/app.js"></script>
-<script src="./js/funs.js?_t=<?php echo time();?>"></script>
+<script src="js/struct.js?_t=<?php echo time();?>"></script>
 <script src="./js/dt.js?_t=<?php echo time();?>"></script>
 
 <script type="text/javascript">
