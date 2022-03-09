@@ -4,10 +4,7 @@ if (!defined("MVC_ROOT")) {
 }
 
 include_once(MVC_ROOT . "/ModelBase.php");
-/**
- * java servlet 模型
- */
-class JavaServletModel extends ModelBase
+class PhpPhalconModel extends ModelBase
 {
 
     function cAdd(MyModel $model, MyFun $fun)
@@ -40,5 +37,28 @@ class JavaServletModel extends ModelBase
         // TODO: Implement cCount() method.
     }
 
+    function ccModel($model)
+    {
+        // TODO: Implement ccModel() method.
+    }
 
+    function ccTmpl($model)
+    {
+        // TODO: Implement ccTmpl() method.
+    }
+
+    function ccWeb($model)
+    {
+        // TODO: Implement ccWeb() method.
+    }
+
+    function ccApi($model)
+    {
+        // TODO: Implement ccApi() method.
+    }
+
+    function ccDoc($model)
+    {
+        // TODO: Implement ccDoc() method.
+    }
 }

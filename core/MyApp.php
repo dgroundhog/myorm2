@@ -16,7 +16,8 @@ include_once(CC_ROOT . "/MyWhere.php");
 include_once(CC_ROOT . "/MyCond.php");
 
 include_once(CC_ROOT . "/db/DbMysql.php");
-include_once(CC_ROOT . "/app/DbMysql.php");
+include_once(CC_ROOT . "/mvc/JavaServletModel.php");
+include_once(CC_ROOT . "/mvc/PhpPhalconModel.php");
 
 /**
  * 主程序模型
@@ -429,7 +430,7 @@ class MyApp extends MyStruct
     /**
      * 构建模型
      */
-    public function buildModel(MyModel $model_to_be = null)
+    public function buildModel()
     {
         $mm = ModelBase::findCc($this);
         if ($mm == null) {

@@ -48,10 +48,16 @@ abstract class ModelBase implements CcBase
         if (!file_exists($output_root)) {
             mkdir($output_root);
         }
+        SeasLog::info("package11111");
+        SeasLog::error($app->package);
+        SeasLog::error($this->arch_conf->mvc);
 
-        if(is_ok_app_package($app->package)){
+
+        if(!is_ok_app_package($app->package)){
             $app->package = "default";
         }
+        SeasLog::info("package22222");
+        SeasLog::error($app->package);
 
         if($this->arch_conf->mvc==Constant::MVC_JAVA_SERVLET){
             //src
@@ -143,7 +149,7 @@ abstract class ModelBase implements CcBase
                 $mm = new JavaServletModel($app);
                 break;
             case Constant::MVC_PHP_PHALCON:
-                //TODO
+                $mm = new PhpPhalconModel($app);
             default:
                 break;
             default:
