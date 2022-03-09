@@ -16,6 +16,7 @@ include_once(CC_ROOT . "/MyWhere.php");
 include_once(CC_ROOT . "/MyCond.php");
 
 include_once(CC_ROOT . "/db/DbMysql.php");
+include_once(CC_ROOT . "/app/DbMysql.php");
 
 /**
  * 主程序模型
@@ -434,23 +435,10 @@ class MyApp extends MyStruct
         if ($mm == null) {
             return;
         }
-
-        if ($model_to_be != null) {
-            $mm->ccModel($model_to_be);
-            $mm->ccWeb($model_to_be);
-            $mm->ccTmpl($model_to_be);
-            $mm->ccApi($model_to_be);
-            $mm->ccDoc($model_to_be);
-
-        } else {
-            foreach ($this->model_list as $o_model) {
-
-                $mm->ccModel($o_model);
-                $mm->ccWeb($o_model);
-                $mm->ccTmpl($o_model);
-                $mm->ccApi($o_model);
-                $mm->ccDoc($o_model);
-            }
+        //TODO 全局资源的
+        foreach ($this->model_list as $o_model) {
+            //TODO 个别模型的
         }
+
     }
 }

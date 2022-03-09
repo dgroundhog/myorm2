@@ -19,11 +19,21 @@ abstract class ModelBase implements CcBase
     public $arch_conf = null;
 
     /**
+     * 包含应用层和前端
      * 输出目录
      * @var string
      */
-    public $app_output = "";
-    //包含应用层和前端
+    public $odir_package = "";//包主目录
+    public $odir_resource = "";//资源目录
+    public $odir_webapp = "";//jsp目录或者独立http目录
+
+    public $odir_beans = "";//数据结构
+    public $odir_config = "";//配置
+    public $odir_controllers = "";//控制器
+    public $odir_db = "";//数据驱动
+    public $odir_models = "";//模型
+    public $odir_views = "";//视图或者UI
+    //
 
     /**
      * 构造函数
@@ -39,22 +49,84 @@ abstract class ModelBase implements CcBase
             mkdir($output_root);
         }
 
-        $output_1 = $output_root . DS . "app";
-        if (!file_exists($output_1)) {
-            mkdir($output_1);
+        if(is_ok_app_package($app->package)){
+            $app->package = "default";
         }
 
-        $output_2 = $output_1 . DS . $app->lang;
-        if (!file_exists($output_2)) {
-            mkdir($output_2);
+        if($this->arch_conf->mvc==Constant::MVC_JAVA_SERVLET){
+            //src
+            //..../main/
+            //......../java   主目录
+            //............/__PACKAGE__  自定义包名
+            //................/db
+            //................/enums
+            //................/helper
+            //................/res
+            //................/servlet
+            //................/thread
+            //................/ui
+            //......../resource 资源
+            //......../webapp jsp目录
+            //............/WEB-INF web.xml目录
+
+            $output_main = $output_root . DS . "src". DS . "main";
+
+            $s_package_dirs = str_replace(".",DS,$app->package);
+            $s_package_dirs = str_replace("\\",DS,$s_package_dirs);
+
+            //包主目录
+            $this->odir_package  = $output_main . DS . "java". DS . $s_package_dirs;
+            //资源目录
+            $this->odir_resource = $output_main . DS . "resource";
+            $this->odir_webapp = $output_main . DS . "webapp";
+
+            $this->odir_beans = $this->odir_package. DS . "beans";//数据结构
+            $this->odir_config = $this->odir_package. DS . "config";//配置
+            $this->odir_controllers = $this->odir_package. DS . "controllers";//控制器
+            $this->odir_db = $this->odir_package. DS . "db";//数据驱动
+            $this->odir_models = $this->odir_package. DS . "models";//模型
+            $this->odir_views = $this->odir_webapp. DS . "WEB-INF".DS . "templates";//视图或者UI
+
+        }
+        if($this->arch_conf->mvc==Constant::MVC_PHP_PHALCON){
+            //src
+            //..../app
+            //......../beans
+            //......../config
+            //......../controllers
+            //......../models
+            //......../views
+            //..../public
+            //......../css
+            //......../img
+            //......../js
+
+            $app->package = str_replace(".","\\",$app->package);
+            $output_main = $output_root . DS . "src";
+            //包主目录
+            $this->odir_package  = $output_main . DS . "app";
+            //资源目录
+            $this->odir_resource = $output_main . DS . "resource";//php 不用这个目录
+            $this->odir_webapp = $output_main . DS . "public";//
+            $this->odir_db = $this->odir_package. DS . "db";//数据驱动
+            $this->odir_beans = $this->odir_package. DS . "beans";//数据结构
+            $this->odir_config = $this->odir_package. DS . "config";//配置
+            $this->odir_controllers = $this->odir_package. DS . "controllers";//控制器
+            $this->odir_models = $this->odir_package. DS . "models";//模型
+            $this->odir_views = $this->odir_package. DS . "views";//视图或者UI
         }
 
-        $output_3 = $output_2 . DS . $app->mvc;
-        if (!file_exists($output_3)) {
-            mkdir($output_3);
-        }
-        //~/app/java/servlet   eg
-        $this->app_output = $output_3;
+        dir_create($this->odir_package);
+        dir_create($this->odir_resource);
+        dir_create($this->odir_webapp);
+        dir_create($this->odir_db);
+        dir_create($this->odir_beans);
+        dir_create($this->odir_config);
+        dir_create($this->odir_controllers);
+        dir_create($this->odir_models);
+        dir_create($this->odir_views);
+
+
     }
 
     /**

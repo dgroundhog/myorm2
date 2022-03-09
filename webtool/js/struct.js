@@ -14,6 +14,93 @@ StringBuffer.prototype.toString = function () {
     return this._strings_.join("");
 };
 
+/**
+ * 深度copy
+ * @param obj
+ * @returns {{}|null}
+ */
+function deepCopy(obj) {
+    if (obj == null) {
+        return null;
+    }
+    const keys = Object.keys(obj);
+    const values = Object.values(obj);
+    const newObj = {};
+
+    for (let i = 0; i < keys.length; i++) {
+        if (typeof values[i] == 'object') {
+            values[i] = deepCopy(values[i]);
+        }
+        newObj[keys[i]] = values[i];
+    }
+    return newObj;
+}
+//copy
+function clone(item) {
+    if (!item) {
+        return item;
+    } // null, undefined values check
+
+    var types = [Number, String, Boolean], result;
+
+    // normalizing primitives if someone did new String('aaa'), or new Number('444');
+    types.forEach(function (type) {
+        if (item instanceof type) {
+            result = type(item);
+        }
+    });
+
+    if (typeof result == "undefined") {
+        if (Object.prototype.toString.call(item) === "[object Array]") {
+            result = [];
+            item.forEach(function (child, index, array) {
+                result[index] = clone(child);
+            });
+        } else if (typeof item == "object") {
+            // testing that this is DOM
+            if (item.nodeType && typeof item.cloneNode == "function") {
+                result = item.cloneNode(true);
+            } else if (!item.prototype) { // check that this is a literal
+                if (item instanceof Date) {
+                    result = new Date(item);
+                } else {
+                    // it is an object literal
+                    result = {};
+                    for (var i in item) {
+                        result[i] = clone(item[i]);
+                    }
+                }
+            } else {
+                // depending what you would like here,
+                // just keep the reference, or create new object
+                if (false && item.constructor) {
+                    // would not advice to do that, reason? Read below
+                    result = new item.constructor();
+                } else {
+                    result = item;
+                }
+            }
+        } else {
+            result = item;
+        }
+    }
+    return result;
+}
+
+//copy2
+function copy2(aObject) {
+    if (!aObject) {
+        return aObject;
+    }
+    let v;
+    let bObject = Array.isArray(aObject) ? [] : {};
+    for (const k in aObject) {
+        v = aObject[k];
+        bObject[k] = (typeof v === "object") ? copy2(v) : v;
+    }
+    return bObject;
+}
+
 function MyStruct() {
     this.uuid = "";//唯一码
     this.scope = "";//范畴
@@ -106,6 +193,7 @@ function MyApp() {
     this.project_id = "";
     this.img_icon_id = "";
     this.img_logo_id = "";
+    this.package = "";//包名称
 
     this.arch_list = [];//应用配置列表
     this.db_list = [];//数据库配置列表
@@ -126,8 +214,9 @@ MyApp.prototype.parse = function (json_one) {
     this.project_id = json_one.project_id;
     this.img_icon_id = json_one.img_icon_id;
     this.img_logo_id = json_one.img_logo_id;
+    this.package = json_one.package;
 
-    //配置
+    //架构配置
     this.arch_list = new Object();
     for (var ii in json_one.arch_list) {
         var _conf = new MyArch();
@@ -162,9 +251,24 @@ MyApp.prototype.parse = function (json_one) {
         var _uuid = _model.uuid;
         this.model_list[_uuid] = _model;
     }
-
-    //
 };
+
+/**
+ * 静态方法,是否有效的UID
+ */
+MyApp.isGoodPackageName = function (_name) {
+    //console.log(_name);
+    var reg_text = /^[a-zA-Z]+[0-9a-zA-Z_]*(\.[a-zA-Z]+[0-9a-zA-Z_]*)*(\\[a-zA-Z]+[0-9a-zA-Z_]*)*$/.test(_name);
+    if (!reg_text) {
+        console.log("~isGoodPackageName--111");
+        return false;
+    }
+    if ( _name.length > 32) {
+        console.log("~PackageName limit to 32 chars");
+        return false;
+    }
+    return true;
+}
 
 
 /**

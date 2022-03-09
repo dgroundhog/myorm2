@@ -1,58 +1,44 @@
 <?php
+if (!defined("MVC_ROOT")) {
+    define('MVC_ROOT', realpath(dirname(__FILE__)));
+}
 
+include_once(MVC_ROOT . "/ModelBase.php");
 /**
  * java servlet 模型
  */
 class JavaServletModel extends ModelBase
 {
 
-    function cAdd($model)
+    function cAdd(MyModel $model, MyFun $fun)
     {
         // TODO: Implement cAdd() method.
     }
 
-    function cUpdate($model)
+    function cUpdate(MyModel $model, MyFun $fun)
     {
         // TODO: Implement cUpdate() method.
     }
 
-    function cDelete($model)
+    function cDelete(MyModel $model, MyFun $fun)
     {
         // TODO: Implement cDelete() method.
     }
 
-    function cFetch($model)
+    function cFetch(MyModel $model, MyFun $fun)
     {
         // TODO: Implement cFetch() method.
     }
 
-    function cList($model)
+    function cList(MyModel $model, MyFun $fun,$count_only)
     {
         // TODO: Implement cList() method.
     }
 
-    function cCount($model)
+    function cCount(MyModel $model, MyFun $fun)
     {
         // TODO: Implement cCount() method.
     }
 
-    function ccInitDb($db)
-    {
-        // TODO: Implement ccInitDb() method.
-    }
 
-    function ccTable($model)
-    {
-        // TODO: Implement ccTable() method.
-    }
-
-    function ccTable_reset($model)
-    {
-        // TODO: Implement ccTable_reset() method.
-    }
-
-    function ccProc($model)
-    {
-        // TODO: Implement ccProc() method.
-    }
 }

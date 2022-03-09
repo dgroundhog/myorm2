@@ -25,6 +25,13 @@
                         </div>
                     </div>
                     <div class="form-group row">
+                        <label for="txt_app_title" class="col-sm-2 col-form-label">包名/命名空间</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control form-control-sm txt_app_package" id="txt_app_package"
+                                   placeholder="a.b.c"/>
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <label for="app_file_logo" class="col-sm-2 col-form-label">LOGO</label>
                         <div class="col-sm-10">
                             <table class="table table-sm ">

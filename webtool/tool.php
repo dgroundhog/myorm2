@@ -43,7 +43,7 @@ $g_data_root_path = WT_ROOT . DS . ".." . DS . "data";
 /**
  * 初始化一个项目目录
  */
-function project_init_default($name)
+function ajax_init_project($name)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -75,7 +75,7 @@ function project_init_default($name)
 /**
  * 初始化一个项目目录
  */
-function project_update_basic($_project, $_title, $_memo)
+function ajax_update_project($_project, $_title, $_memo)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -137,22 +137,21 @@ function project_load_index($data_root_path)
 
 switch (trim($_act)) {
 
-    case "index":
-        //加载全部项目索引
-        index_projects();
-        break;
     case "load":
-        //加载项目详情
-        load_projects();
+        //加载全部项目索引
+        ajax_load_projects();
         break;
+        
     case "init":
-        //保存项目
-        project_init_default($_project);
+        //初始化项目
+        ajax_init_project($_project);
         break;
-    case "project_update":
+
+    case "update":
         //保存项目基本信息
-        project_update_basic($_project, $_title, $_memo);
+        ajax_update_project($_project, $_title, $_memo);
         break;
+
     case "app_img":
         //保存项目基本信息
         $app_root = WT_ROOT . DS . ".." . DS . "data" . DS . $_project . DS . $_version1 . DS;
@@ -170,34 +169,37 @@ switch (trim($_act)) {
 
     case "add":
         //保存项目
-        add_project($_project, $_version1);
+        ajax_create_app($_project, $_version1);
         break;
 
     case "save":
         //保存项目
-        save_project($_project, $_version1, $_data);
+        ajax_save_app($_project, $_version1, $_data);
         break;
 
     case "copy":
         //复制一个版本
-        copy_project($_project, $_version1, $_version2);
+        ajax_copy_app($_project, $_version1, $_version2);
         break;
+        
     case "drop":
         //删除某个项目的某个版本
-        drop_project($_project, $_version1);
+        ajax_drop_app($_project, $_version1);
         break;
+
     case "build":
-        build_project($_project, $_version1, $_arch, $_db);
+        ajax_build_app($_project, $_version1, $_arch, $_db);
         break;
+
+    default:
     case "test":
         var_dump($_data);
         var_dump(base64_decode($_data));
         break;
-    default:
-        break;
 }
 
-function index_projects()
+//加载全部项目索引
+function ajax_load_projects()
 {
     global $g_data_root_path;
     $a_return = array();
@@ -212,20 +214,6 @@ function index_projects()
 }
 
 
-function load_projects($_project)
-{
-    $a_return = array();
-    $a_return['code'] = "ok";
-    $a_return['msg'] = "done";
-    $a_return['data'] = array();
-    $a_projects = array("project1" => array("uuid" => "pp1", "name" => "project1", "versions" => array("version1" => array("ctime" => "001", "utime" => "001", "version" => "001"), "version2" => array("ctime" => "002", "utime" => "002", "version" => "002"))), "project2" => array("uuid" => "pp2", "name" => "project2", "versions" => array("version1" => array("ctime" => "0031", "utime" => "003", "version" => "001"), "version2" => array("ctime" => "002", "utime" => "002", "version" => "004"))));
-
-    $a_return['data']['projects'] = $a_projects;
-
-
-    echo json_encode($a_return);
-
-}
 
 /**
  * 仅更新其中一个版本
@@ -233,7 +221,7 @@ function load_projects($_project)
  * @param $version
  * @param $data
  */
-function save_project($project, $version, $data)
+function ajax_save_app($project, $version, $data)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -272,7 +260,8 @@ function save_project($project, $version, $data)
     echo json_encode($a_return);
 }
 
-function add_project($project, $new_version_name)
+//新建一个app
+function ajax_create_app($project, $new_version_name)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -309,7 +298,7 @@ function add_project($project, $new_version_name)
     echo json_encode($a_return);
 }
 
-function copy_project($project, $version, $new_version)
+function ajax_copy_app($project, $version, $new_version)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -352,7 +341,7 @@ function copy_project($project, $version, $new_version)
     echo json_encode($a_return);
 }
 
-function drop_project($project, $version)
+function ajax_drop_app($project, $version)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -389,7 +378,7 @@ function drop_project($project, $version)
  * @param $db
  * @return void
  */
-function build_project($project, $version, $arch, $db)
+function ajax_build_app($project, $version, $arch, $db)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -414,28 +403,3 @@ function build_project($project, $version, $arch, $db)
 }
 
 
-/**
- * 独立函数
- */
-function str_starts_with($haystack, $needle)
-{
-    // search backwards starting from haystack length characters from the end
-    return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== FALSE;
-}
-
-function str_ends_with($haystack, $needle)
-{
-    // search forward starting from end minus needle length characters
-    return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== FALSE);
-}
-
-/**
- * 判断是否合法的名字，字母开头，字母数字组合，2-32个字符
- * @param $name_to_be
- * @return false|int
- */
-function is_ok_project_name($name_to_be)
-{
-    $name_to_be = strtolower($name_to_be);
-    return preg_match("/^[a-z][0-9a-z]{1,32}$/i", $name_to_be);
-}

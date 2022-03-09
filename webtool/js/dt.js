@@ -13,8 +13,9 @@
 if (typeof App == "undefined") {
     App = {};
 }
-App.dt = {};
 
+//data tool
+App.dt = {};
 
 /**
  * 使用toastr做提示
@@ -28,106 +29,6 @@ App.dt.fail = function (_msg) {
 App.dt.succ = function (_msg) {
     console.log(_msg)
     toastr.success(_msg);
-};
-
-//加密、解密算法封装：
-App.dt.base64 = {
-    // private property
-    _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", // public method for encoding
-    encode: function (input) {
-        var output = "";
-        var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-        var i = 0;
-        input = this._utf8_encode(input);
-        while (i < input.length) {
-            chr1 = input.charCodeAt(i++);
-            chr2 = input.charCodeAt(i++);
-            chr3 = input.charCodeAt(i++);
-            enc1 = chr1 >> 2;
-            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-            enc4 = chr3 & 63;
-            if (isNaN(chr2)) {
-                enc3 = enc4 = 64;
-            } else if (isNaN(chr3)) {
-                enc4 = 64;
-            }
-            output = output + this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) + this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
-        }
-        return output;
-    },
-
-    // public method for decoding
-    decode: function (input) {
-        var output = "";
-        var chr1, chr2, chr3;
-        var enc1, enc2, enc3, enc4;
-        var i = 0;
-        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-        while (i < input.length) {
-            enc1 = this._keyStr.indexOf(input.charAt(i++));
-            enc2 = this._keyStr.indexOf(input.charAt(i++));
-            enc3 = this._keyStr.indexOf(input.charAt(i++));
-            enc4 = this._keyStr.indexOf(input.charAt(i++));
-            chr1 = (enc1 << 2) | (enc2 >> 4);
-            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-            chr3 = ((enc3 & 3) << 6) | enc4;
-            output = output + String.fromCharCode(chr1);
-            if (enc3 != 64) {
-                output = output + String.fromCharCode(chr2);
-            }
-            if (enc4 != 64) {
-                output = output + String.fromCharCode(chr3);
-            }
-        }
-        output = this._utf8_decode(output);
-        return output;
-    },
-
-    // private method for UTF-8 encoding
-    _utf8_encode: function (string) {
-        string = string.replace(/\r\n/g, "\n");
-        var utftext = "";
-        for (var n = 0; n < string.length; n++) {
-            var c = string.charCodeAt(n);
-            if (c < 128) {
-                utftext += String.fromCharCode(c);
-            } else if ((c > 127) && (c < 2048)) {
-                utftext += String.fromCharCode((c >> 6) | 192);
-                utftext += String.fromCharCode((c & 63) | 128);
-            } else {
-                utftext += String.fromCharCode((c >> 12) | 224);
-                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                utftext += String.fromCharCode((c & 63) | 128);
-            }
-
-        }
-        return utftext;
-    },
-
-    // private method for UTF-8 decoding
-    _utf8_decode: function (utftext) {
-        var string = "";
-        var i = 0;
-        var c = c1 = c2 = 0;
-        while (i < utftext.length) {
-            c = utftext.charCodeAt(i);
-            if (c < 128) {
-                string += String.fromCharCode(c);
-                i++;
-            } else if ((c > 191) && (c < 224)) {
-                c2 = utftext.charCodeAt(i + 1);
-                string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-                i += 2;
-            } else {
-                c2 = utftext.charCodeAt(i + 1);
-                c3 = utftext.charCodeAt(i + 2);
-                string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-                i += 3;
-            }
-        }
-        return string;
-    }
 };
 
 
@@ -1601,7 +1502,7 @@ App.dt.menu.render = function () {
  */
 App.dt.project.loadAll = function () {
     var self = App.dt;
-    self.aPost("act=index", self.project.onLoadAll);
+    self.aPost("act=load", self.project.onLoadAll);
 }
 
 /**
@@ -1658,6 +1559,7 @@ App.dt.project.onLoadAll = function (_server_return) {
     }
 };
 
+//构建
 App.dt.project.buildCC = function () {
     var self = App.dt;
     var _curr_project = self.project.getCurrProject();
@@ -1736,6 +1638,7 @@ App.dt.project.loadProject = function (project_name, app_version) {
 
         $(".txt_app_name").val(_app.name);
         $(".txt_app_title").val(_app.title);
+        $(".txt_app_package").val(_app.package);
         $(".txt_app_memo").val(_app.memo);
         $(".txt_app_ctime").val(_app.ctime);
         $(".txt_app_utime").val(_app.utime);
@@ -1864,7 +1767,7 @@ App.dt.project.update = function () {
      */
     var _title = $("#txt_project_title").val();
     var _memo = $("#txt_project_memo").val();
-    sbf.append("act=project_update");
+    sbf.append("act=update");
     sbf.append("&project=");
     sbf.append(encodeURIComponent(_curr_project));
     sbf.append("&title=");
@@ -2021,6 +1924,7 @@ App.dt.project.updateApp = function () {
      * 只能保存标题和备注
      */
     var _title = $("#txt_app_title").val();
+    var _package = $("#txt_app_package").val();//报名
     var _memo = $("#txt_app_memo").val();
     var _img_icon_id = $("#img_icon_id").val();
     var _img_logo_id = $("#img_logo_id").val();
@@ -2028,6 +1932,8 @@ App.dt.project.updateApp = function () {
     _curr_app.name = _name;
     _curr_app.memo = _memo;
     _curr_app.title = _title;
+    _curr_app.package = _package;
+
     _curr_app.img_icon_id = _img_icon_id;
     _curr_app.img_logo_id = _img_logo_id;
     self.project.setCurrApp(_curr_app);
@@ -2038,6 +1944,7 @@ App.dt.project.updateApp = function () {
     $(".img_logo_free").attr("src", "");
     $(".txt_app_name").val(_curr_app.name);
     $(".txt_app_title").val(_curr_app.title);
+    $(".txt_app_package").val(_curr_app.package);
     $(".txt_app_memo").val(_curr_app.memo);
     $(".txt_app_ctime").val(_curr_app.ctime);
     $(".txt_app_utime").val(_curr_app.utime);
@@ -2990,86 +2897,6 @@ App.dt.project.modelDrop = function (_uuid) {
     }
 }
 
-function deepCopy(obj) {
-    if (obj == null) {
-        return null;
-    }
-    const keys = Object.keys(obj);
-    const values = Object.values(obj);
-    const newObj = {};
-
-    for (let i = 0; i < keys.length; i++) {
-        if (typeof values[i] == 'object') {
-            values[i] = deepCopy(values[i]);
-        }
-        newObj[keys[i]] = values[i];
-    }
-    return newObj;
-}
-
-function clone(item) {
-    if (!item) {
-        return item;
-    } // null, undefined values check
-
-    var types = [Number, String, Boolean], result;
-
-    // normalizing primitives if someone did new String('aaa'), or new Number('444');
-    types.forEach(function (type) {
-        if (item instanceof type) {
-            result = type(item);
-        }
-    });
-
-    if (typeof result == "undefined") {
-        if (Object.prototype.toString.call(item) === "[object Array]") {
-            result = [];
-            item.forEach(function (child, index, array) {
-                result[index] = clone(child);
-            });
-        } else if (typeof item == "object") {
-            // testing that this is DOM
-            if (item.nodeType && typeof item.cloneNode == "function") {
-                result = item.cloneNode(true);
-            } else if (!item.prototype) { // check that this is a literal
-                if (item instanceof Date) {
-                    result = new Date(item);
-                } else {
-                    // it is an object literal
-                    result = {};
-                    for (var i in item) {
-                        result[i] = clone(item[i]);
-                    }
-                }
-            } else {
-                // depending what you would like here,
-                // just keep the reference, or create new object
-                if (false && item.constructor) {
-                    // would not advice to do that, reason? Read below
-                    result = new item.constructor();
-                } else {
-                    result = item;
-                }
-            }
-        } else {
-            result = item;
-        }
-    }
-    return result;
-}
-
-function copy2(aObject) {
-    if (!aObject) {
-        return aObject;
-    }
-    let v;
-    let bObject = Array.isArray(aObject) ? [] : {};
-    for (const k in aObject) {
-        v = aObject[k];
-        bObject[k] = (typeof v === "object") ? copy2(v) : v;
-    }
-    return bObject;
-}
 
 
 /**

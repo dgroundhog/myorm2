@@ -54,4 +54,64 @@ function dir_copy($source, $destination, $child = 1)
     }
 
     return true;
-}  
+}
+
+/**
+ * 创建多级目录
+ * @param $path
+ * @param $mode
+ * @return void
+ */
+function dir_create($path, $mode = 0777){
+    SeasLog::info('准备创建目录--'.$path);
+    if(is_dir($path)){
+        SeasLog::info('无法创建,已经是目录了');
+        return ;
+    }else{
+        if(mkdir($path, $mode, true)) {
+            SeasLog::info('创建成功');
+        }else{
+            SeasLog::info('创建失败');
+        }
+    }
+}
+
+
+/**
+ * 独立函数
+ */
+function str_starts_with($haystack, $needle)
+{
+    // search backwards starting from haystack length characters from the end
+    return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== FALSE;
+}
+
+function str_ends_with($haystack, $needle)
+{
+    // search forward starting from end minus needle length characters
+    return $needle === "" || (($temp = strlen($haystack) - strlen($needle)) >= 0 && strpos($haystack, $needle, $temp) !== FALSE);
+}
+
+/**
+ * 判断是否合法的名字，字母开头，字母数字组合，2-32个字符
+ * @param $name_to_be
+ * @return false|int
+ */
+function is_ok_project_name($name_to_be)
+{
+    $name_to_be = strtolower($name_to_be);
+    return preg_match("/^[a-z][0-9a-z]{1,32}$/i", $name_to_be);
+}
+
+/**
+ * 判断是否合法的包名
+ * aa.bb.cc
+ * aa\bv\cc
+ * @param $name_to_be
+ * @return false|int
+ */
+function is_ok_app_package($name_to_be)
+{
+    $name_to_be = strtolower($name_to_be);
+    return preg_match("/^[a-zA-Z]+[0-9a-zA-Z_]*(\.[a-zA-Z]+[0-9a-zA-Z_]*)*(\\[a-zA-Z]+[0-9a-zA-Z_]*)*$/i", $name_to_be);
+}
