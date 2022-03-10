@@ -4,7 +4,7 @@
  * 创建模型的基本操作
  * Class DbBase
  */
-abstract class ModelBase implements CcBase
+abstract class MvcBase implements CcBase
 {
     /**
      * 应用配置
@@ -141,7 +141,7 @@ abstract class ModelBase implements CcBase
     /**
      * 找到当前的构建机器
      * @param MyApp $app
-     * @return ModelBase
+     * @return MvcBase
      */
     public static function findCc(MyApp $app)
     {
@@ -149,10 +149,10 @@ abstract class ModelBase implements CcBase
         $mm = null;
         switch ($o_curr_arch->mvc) {
             case Constant::MVC_JAVA_SERVLET:
-                $mm = new JavaServletModel($app);
+                $mm = new JavaServletMvc($app);
                 break;
             case Constant::MVC_PHP_PHALCON:
-                $mm = new PhpPhalconModel($app);
+                $mm = new PhpPhalconMvc($app);
             default:
                 break;
             default:

@@ -113,7 +113,7 @@ function myorm2($project, $a_project_conf, $is_first_time = false)
             "db/base/UnormBase.java",
             "db/mysql/UnormMysql.java",
             "db/DbBase.java",
-            "model/ModelBase.java",
+            "model/MvcBase.java",
             "model/AdminModel.java",
             "model/UnormModelx.java",
             "model/Admin_logModel.java",

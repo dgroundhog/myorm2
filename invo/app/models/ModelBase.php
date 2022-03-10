@@ -84,7 +84,7 @@ class ModelBase extends Model
 
     /**
      * 单一实例的简写
-     * @return ModelBase
+     * @return MvcBase
      */
     public static function getInst()
     {

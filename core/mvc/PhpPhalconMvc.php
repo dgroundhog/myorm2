@@ -3,9 +3,9 @@ if (!defined("MVC_ROOT")) {
     define('MVC_ROOT', realpath(dirname(__FILE__)));
 }
 
-include_once(MVC_ROOT . "/ModelBase.php");
+include_once(MVC_ROOT . "/MvcBase.php");
 
-class PhpPhalconModel extends ModelBase
+class PhpPhalconMvc extends MvcBase
 {
 
     function cAdd(MyModel $model, MyFun $fun)

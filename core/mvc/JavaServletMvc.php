@@ -3,12 +3,12 @@ if (!defined("MVC_ROOT")) {
     define('MVC_ROOT', realpath(dirname(__FILE__)));
 }
 
-include_once(MVC_ROOT . "/ModelBase.php");
+include_once(MVC_ROOT . "/MvcBase.php");
 
 /**
  * java servlet 模型
  */
-class JavaServletModel extends ModelBase
+class JavaServletMvc extends MvcBase
 {
 
     function cAdd(MyModel $model, MyFun $fun)
@@ -57,7 +57,7 @@ class JavaServletModel extends ModelBase
         echo "package  {$this->final_package}.models;\n";
 
         echo "import {$this->final_package}.beans.{$uc_model_name}Bean;\n";
-        echo "import {$this->final_package}.model.ModelBase;\n";
+        echo "import {$this->final_package}.model.MvcBase;\n";
 
 
         echo "import org.slf4j.Logger;\n";
@@ -79,7 +79,7 @@ class JavaServletModel extends ModelBase
 
 
         _java_comment("操作模型类--{$model->title}");
-        echo "public class {$uc_model_name}Model extends ModelBase {\n";
+        echo "public class {$uc_model_name}Model extends MvcBase {\n";
 
         _java_comment("私有日志类", 1);
         echo _tab(1) . "private  static Logger logger = LoggerFactory.getLogger({$uc_model_name}Model.class);\n\n";

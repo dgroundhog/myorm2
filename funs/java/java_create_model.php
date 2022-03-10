@@ -30,7 +30,7 @@ function java_create_model($package, $model)
     echo "package  {$package}.model;\n";
 
     echo "import {$package}.bean.{$uc_table}Bean;\n";
-    echo "import {$package}.model.ModelBase;\n";
+    echo "import {$package}.model.MvcBase;\n";
     echo "import {$package}.db.DBFactory;\n";
 
     echo "import org.slf4j.Logger;\n";
@@ -45,7 +45,7 @@ function java_create_model($package, $model)
 
 
     _java_comment("java mysql 操作模型类--{$model['table_title']}");
-    echo "public class {$uc_table}Model extends ModelBase {\n";
+    echo "public class {$uc_table}Model extends MvcBase {\n";
 
     _java_comment("日志类", 1);
     echo _tab(1) . "private  static Logger logger = LoggerFactory.getLogger({$uc_table}Model.class);\n\n";

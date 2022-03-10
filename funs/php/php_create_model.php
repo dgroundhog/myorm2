@@ -26,7 +26,7 @@ function php_create_model($package, $model)
     echo "use Phalcon\Db as Db;\n";
 
     _php_comment(array("php  操作模型类", $model['table_title']));
-    echo "class {$uc_table} extends ModelBase {\n";
+    echo "class {$uc_table} extends MvcBase {\n";
 
     _php_comment("基本数据结构,定义参看bean", 1);
     echo _tab(1) . "public static \$m_row_map = array(\n";

@@ -88,7 +88,7 @@ function myorm2php($project_name, $a_project_conf, $is_first_time = false)
 
     $a_file_from_to = array(
         "/invo/app/controllers/ControllerBase.php" => "{$project_controller_path}/ControllerBase.php",
-        "/invo/app/models/ModelBase.php" => "{$project_model_path}/ModelBase.php"
+        "/invo/app/models/MvcBase.php" => "{$project_model_path}/MvcBase.php"
     );
     //复制基本的重复的文件
     foreach ($a_file_from_to as $from => $to) {

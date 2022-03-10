@@ -100,7 +100,7 @@ function myorm($project, $package, $a_models, $a_dbs, $project_title, $is_first_
             "db/base/UnormBase.java",
             "db/mysql/UnormMysql.java",
             "db/DbBase.java",
-            "model/ModelBase.java",
+            "model/MvcBase.java",
             "model/AdminModel.java",
             "model/UnormModel.java",
             "model/Admin_logModel.java",

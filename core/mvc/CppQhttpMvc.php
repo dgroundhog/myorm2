@@ -3,7 +3,7 @@
 /**
  * Cpp Qhttp 模型
  */
-class CppQhttpModel extends ModelBase
+class CppQhttpMvc extends MvcBase
 {
 
     function cAdd($model)
