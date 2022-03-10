@@ -432,21 +432,8 @@ class DbMysql extends DbBase
      */
     function _procHeader($model, $fun_name, $fun_title, $base_fun)
     {
-        switch ($fun_name) {
-            case $base_fun:
-            case "default":
-            case "":
-                $fun = $base_fun;
-                break;
-            case "default_c":
-                $fun = "{$base_fun}_c";
-                break;
-            default:
-                $fun = "{$base_fun}_{$fun_name}";
-                break;
-        }
 
-        $real_fun = "p_{$model->table_name}__{$fun}";
+        $real_fun = _db_find_proc_name($model->table_name,$fun_name,$base_fun);
 
         _db_comment_begin();
         _db_comment("Procedure structure for {$real_fun}");
@@ -486,7 +473,7 @@ class DbMysql extends DbBase
         //c_w_2_from_key
         //s_w_3_to_key
         if (!$for_hash) {
-            $prefix = self::_procKeyPrefix($type);
+            $prefix = _get_field_param_prefix($type);
             if ($append != "") {
                 $prefix = "{$prefix}_{$append}";
             }
@@ -573,46 +560,6 @@ class DbMysql extends DbBase
         return array($param_key, "IN `{$param_key}` {$type_size}");
     }
 
-    /**
-     * 获取参数的前缀
-     *
-     * @param string $field_type
-     * @return string
-     */
-    function _procKeyPrefix($field_type)
-    {
-
-        switch ($field_type) {
-            //bool
-            case Constant::DB_FIELD_TYPE_BOOL :
-                return "b";
-
-            //整型
-            case Constant::DB_FIELD_TYPE_INT:
-            case Constant::DB_FIELD_TYPE_LONGINT:
-                return "i";
-
-            case Constant::DB_FIELD_TYPE_BLOB :
-            case Constant::DB_FIELD_TYPE_LONGBLOB :
-                return "lb";
-
-            //日期时间
-            case Constant::DB_FIELD_TYPE_DATE :
-            case Constant::DB_FIELD_TYPE_TIME :
-            case Constant::DB_FIELD_TYPE_DATETIME :
-                return "dt";
-
-            //字符串
-            case Constant::DB_FIELD_TYPE_CHAR:
-            case Constant::DB_FIELD_TYPE_VARCHAR:
-            case Constant::DB_FIELD_TYPE_TEXT :
-            case Constant::DB_FIELD_TYPE_LONGTEXT :
-            default :
-                return "s";
-        }
-
-
-    }
 
     /**
      * 存储过程的参数

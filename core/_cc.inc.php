@@ -60,6 +60,74 @@ function _db_comment($msg, $with_head = false)
     }
 }
 
+/**
+ * 用于生成存储过程的问号
+ * @param $i_param
+ * @return string
+ */
+function _db_question_marks($i_param)
+{
+    $a_qm = array();
+    for ($jj = 0; $jj < $i_param; $jj++) {
+        $a_qm[$jj] = "?";
+    }
+    return implode(",", $a_qm);
+}
+
+/**
+ * 获取存储过程的名字
+ * @param $table_name
+ * @param $fun_name
+ * @param $base_fun
+ * @return string
+ */
+function _db_find_proc_name($table_name,$fun_name,$base_fun){
+    switch ($fun_name) {
+        case $base_fun:
+        case "default":
+        case "":
+            $fun = $base_fun;
+            break;
+        case "default_c":
+            $fun = "{$base_fun}_c";
+            break;
+        default:
+            $fun = "{$base_fun}_{$fun_name}";
+            break;
+    }
+
+    return "p_{$table_name}__{$fun}";
+}
+
+
+/**
+ * 获取模型中函数的名字
+ * @param string $fun_name
+ * @param string $base_fun
+ * @param string $return_bean 针对基本查询，返回bean
+ * @return string
+ */
+function _db_find_model_fun_name($fun_name, $base_fun, $return_bean = false)
+{
+    switch ($fun_name) {
+        case $base_fun:
+        case "default":
+        case "":
+            $fun = $base_fun;
+            break;
+        default:
+            $fun = "{$base_fun}_{$fun_name}";
+            break;
+    }
+
+    $real_fun = "{$fun}";
+    if ($return_bean) {
+        $real_fun = "{$fun}_vBean";
+    }
+    return $real_fun;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  *  添加评论
@@ -80,24 +148,89 @@ function _java_comment($msg, $i_tab = 0)
     echo _tab($i_tab) . " */\n";
 }
 
-function _java_comment_header($msg)
+/**
+ * 符合格式化的备注开始
+ * @param $msg
+ * @param $i
+ * @return void
+ */
+function _java_comment_header($msg,$i=0)
 {
-    echo "\n/**\n";
+    echo "\n"._tab($i)."/**\n";
     if (is_array($msg)) {
         foreach ($msg as $v) {
-            echo "* {$v}\n";
+            echo _tab($i)."* {$v}\n";
         }
     } else {
-        echo "* {$msg}\n";
+        echo _tab($i)." * {$msg}\n";
     }
 }
 
-function _java_comment_footer()
+/**
+ * 符合格式化的备注结尾
+ * @param $i
+ * @return void
+ */
+function _java_comment_footer($i=0)
 {
-    echo " */\n";
+    echo  _tab($i)." */\n";
 }
 
 
+
+function _java_statement_param_bean($key, $p_type, $ii, $bean)
+{
+
+    switch ($p_type) {
+        case "blob":
+        case "longblob":
+            echo "if(v_{$bean}Bean.{$key} == null) {\n";
+            echo _tab(5) . "v_{$bean}Bean.{$key} = new byte[0];\n";
+            echo _tab(4) . "}\n";
+            echo _tab(4) . "ByteArrayInputStream bis_{$key} = new ByteArrayInputStream(v_{$bean}Bean.{$key}); \n";
+            echo _tab(4) . "st.setBinaryStream({$ii}, bis_{$key}, bis_{$key}.available());\n";
+            break;
+
+        case "int":
+            echo "st.setInt({$ii}, v_{$bean}Bean.{$key}); \n";
+            break;
+
+        case "varchar":
+        default:
+            echo "st.setString({$ii}, v_{$bean}Bean.{$key}); \n";
+            break;
+    }
+}
+
+function _java_result_bean($key, $p_type, $bean)
+{
+
+    switch ($p_type) {
+        case "blob":
+        case "longblob":
+            echo "is = rs.getBinaryStream(\"{$key}\");\n";
+            echo _tab(5) . "if (is != null) {\n";
+            echo _tab(6) . "buf = new byte[is.available()];\n";
+            echo _tab(6) . "is.read(buf);\n";
+            echo _tab(6) . "{$bean}Bean.{$key} = buf ;\n";
+            echo _tab(5) . "}\n";
+            break;
+
+        case "int":
+            echo "{$bean}Bean.{$key} = rs.getInt(\"{$key}\");\n";
+            break;
+
+        case "varchar":
+        default:
+            echo "{$bean}Bean.{$key} = rs.getString(\"{$key}\");\n";
+            break;
+    }
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 function _php_header()
 {
@@ -168,434 +301,52 @@ function _php_comment_footer($i_tab = 0)
     );
 }
 
-
 /**
- * 获取可能的查询条件配置
- * @return array
+ * 换行链接符号
+ * @param $ii
+ * @return string
  */
-  function _app_get_query_cnd_types()
+function _warp2join($ii)
 {
-    return array(
-        'eq', //等于
-        'neq', //不等于
-        'kw', //关键字模糊匹配
-        'date', //日期范围
-        'time', //时间范围
-        'in', //离散量范围内
-        'notin', //离散量范围外
-        'between', //标量范围内
-        'notbetween', //标量范围外
-        'gt', //大于
-        'gte', //大于等于
-        'lt', //少于
-        'lte', //少于等于
-    );
+    return ($ii == 0) ? "\n" : ",\n";
 }
 
-
 /**
- * 获取,默认主键查询
+ * 获取参数的前缀
  *
- * @param $model
- * @return array
+ * @param string $field_type
+ * @return string
  */
-function _model_get_ok_fetch_by($model)
-{
-    $a_temp = array();
-    if (!isset($model['fetch_by'])) {
-        return $a_temp;
-    }
-    foreach ($model['fetch_by'] as $pk_key) {
-        if (!isset($model['table_fields'][$pk_key])) {
-            continue;
-        }
-        $a_temp[] = $pk_key;
-    }
-    return $a_temp;
-}
-
-/**
- * 其他获取参数
- *
- * @param $model
- * @return array
- */
-function _model_get_ok_other_fetch_by($model)
-{
-    $a_list = array();
-    if (isset($model['fetch_by_other']) && is_array($model['fetch_by_other'])) {
-        foreach ($model['fetch_by_other'] as $fetch_name => $a_vv) {
-            $lc_kk = strtolower($fetch_name);
-            if (isset($a_vv['fetch_by']) && count($a_vv['fetch_by']) > 0) {
-                $a_temp = array();
-                foreach ($a_vv['fetch_by'] as $pk_key) {
-                    if (!isset($model['table_fields'][$pk_key])) {
-                        continue;
-                    }
-                    $a_temp[] = $pk_key;
-                }
-                if (count($a_temp) > 0) {
-                    //无主键
-                    $a_list[$lc_kk] = array();
-                    $a_list[$lc_kk]["fetch_title"] = $a_vv['fetch_title'];
-                    $a_list[$lc_kk]["fetch_by"] = $a_temp;
-                }
-            }
-        }
-    }
-    return $a_list;
-}
-
-/**
- * 其他获取参数
- *
- * @param $model
- * @return array
- */
-function _model_get_ok_list($model)
-{
-    $a_list = array();
-    /**
-     * 查询列表是一个大数组
-     * list_confs =>
-     *  ----list_name  => title
-     *                  => keys
-     */
-    if (isset($model['list_confs']) && is_array($model['list_confs'])) {
-        $a_list_group_type = _get_list_group_type();
-        foreach ($model['list_confs'] as $list_key => $list_conf) {
-            if (strlen($list_key) == 0) {
-                continue;
-            }
-            $lc_kk = strtolower($list_key);
-
-
-            /**
-             * 基本查询
-             */
-            $my_list = new MyFunList();
-            $my_list->list_name = $list_key;
-            $my_list->list_title = $list_conf['list_title'];
-
-            if (isset($list_conf['list_has_group'])
-                && $list_conf['list_has_group'] == true
-                && isset($list_conf['list_group_type'])
-                && $list_conf['list_group_type'] != ""
-                && isset($a_list_group_type[$list_conf['list_group_type']])
-                && isset($list_conf['list_group_key'])
-                && $list_conf['list_group_key'] != ""
-                && isset($model['table_fields'][$list_conf['list_group_key']])
-            ) {
-                $list_group_type = $list_conf['list_group_type'];
-                $list_group_key = $list_conf['list_group_key'];
-                //TODO
-                $my_list->list_has_group = true;
-                $my_list->list_group_type = $list_group_type;
-                $my_list->list_group_key = $list_group_key;
-
-                //group_key 可以空
-                if (isset($list_conf['list_group_by']) || is_array($list_conf['list_group_by'])) {
-                    $a_temp = array();
-                    foreach ($list_conf['list_group_by'] as $kw_key) {
-                        if (!isset($model['table_fields'][$kw_key])) {
-                            continue;
-                        }
-                        $a_temp[] = $kw_key;
-                    }
-                    $my_list->list_group_by = $a_temp;
-                }
-            }
-
-            //查询的字段不能为空
-            if (!isset($list_conf['list_keys']) || !is_array($list_conf['list_keys'])) {
-                $my_list->list_keys = array();
-            } else {
-                $a_temp = array();
-                foreach ($list_conf['list_keys'] as $kw_key) {
-                    if (!isset($model['table_fields'][$kw_key])) {
-                        continue;
-                    }
-                    $a_temp[] = $kw_key;
-                }
-                $my_list->list_keys = $a_temp;
-            }
-
-            //当选择distinct时，查询的字段不能为空
-            if (count($my_list->list_keys) == 0) {
-                $my_list->is_distinct = false;
-            }
-
-            //基本索引
-            if (isset($list_conf['list_by']) && count($list_conf['list_by']) > 0) {
-
-                $a_temp = array();
-                foreach ($list_conf['list_by'] as $kw_key) {
-                    if (!isset($model['table_fields'][$kw_key])) {
-                        continue;
-                    }
-                    $type = $model['table_fields'][$kw_key]['type'];
-                    if ($type == "int" || $type == "string" || $type == "varchar" || $type == "char") {
-                        $a_temp[] = $kw_key;
-                    }
-                }
-                if (count($a_temp) > 0) {
-                    $my_list->list_by = $a_temp;
-                }
-            }
-
-            //模糊关键字
-            if (isset($list_conf['list_has_kw']) && $list_conf['list_has_kw'] == true && isset($list_conf['list_kw']) && count($list_conf['list_kw']) > 0) {
-                $a_temp = array();
-                foreach ($list_conf['list_kw'] as $kw_key) {
-                    if (!isset($model['table_fields'][$kw_key])) {
-                        continue;
-                    }
-                    $a_temp[] = $kw_key;
-                }
-                if (count($a_temp) > 0) {
-                    $my_list->list_has_kw = true;
-                    $my_list->list_kw = $a_temp;
-                }
-            }
-
-            $a_has_key = _php_list_get_conds();
-            foreach ($a_has_key as $cond) {
-                if ($cond == "kw") {
-                    //多个关键字，单独处理了
-                    continue;
-                }
-                $bv = "list_has_{$cond}";
-                $kv = "list_{$cond}_key";
-                if (isset($list_conf[$bv]) && $list_conf[$bv] == true && isset($list_conf[$kv]) && $list_conf[$kv] != "") {
-                    if (isset($model['table_fields'][$list_conf[$kv]])) {
-                        $my_list->$bv = true;
-                        $my_list->$kv = $list_conf[$kv];
-                    }
-                }
-            }
-
-            //排序，默认true
-            if (isset($list_conf['list_has_order']) && $list_conf['list_has_order'] == false) {
-                $my_list->list_has_order = false;
-            }
-            //有分页时，判断条件
-            if ($my_list->list_has_order) {
-                if (isset($list_conf['list_order_by'])) {
-                    if (is_array($list_conf['list_order_by'])) {
-                        $a_temp[] = array();
-                        foreach ($list_conf['list_order_by'] as $order_by => $order_dir) {
-                            if (!isset($model['table_fields'][$order_by])) {
-                                continue;
-                            }
-                            $lc_order_dir = strtolower($order_dir);
-                            if ($lc_order_dir != "desc") {
-                                $order_dir = "ASC";
-                            } else {
-                                $order_dir = "DESC";
-                            }
-                            $a_temp[$order_by] = $order_dir;
-                        }
-                        $my_list->list_order_by = $a_temp;
-                    } else {
-                        //定向组合
-                        if ($list_conf['list_order_by'] != "") {
-                            if (isset($model['table_fields'][$list_conf['list_order_by']])) {
-                                $my_list->list_order_by = $list_conf['list_order_by'];
-                            }
-                        }
-                        //排序
-                        if (isset($list_conf['list_order_dir']) && $list_conf['list_order_dir'] != "") {
-                            $lc_order_dir = strtolower($list_conf['list_order_dir']);
-                            if ($lc_order_dir != "desc") {
-                                $order_dir = "ASC";
-                            } else {
-                                $order_dir = "DESC";
-                            }
-                            $my_list->list_order_dir = $order_dir;
-                        }
-                    }
-                } else {
-                    // order_by 和 order_dir  都需要输入
-                }
-            }
-
-            //统计数目，默认false,
-            if (isset($list_conf['count_only']) && $list_conf['count_only'] == true) {
-                $my_list->count_only = true;
-
-                if (isset($list_conf['list_count_key']) && $list_conf['list_count_key'] != "") {
-                    if (isset($model['table_fields'][$list_conf['list_count_key']])) {
-                        $my_list->list_count_key = $list_conf['list_count_key'];
-                    }
-                }
-            }
-
-            //分页，默认true, 不分页即获取全部
-            if (isset($list_conf['list_has_page']) && $list_conf['list_has_page'] == false) {
-                $my_list->list_has_pager = false;
-            }
-
-            if ($my_list->list_has_pager == true) {
-                //默认为normal
-                $my_list->list_pager_type = "normal";
-                if (isset($list_conf['list_pager_type']) && $list_conf['list_pager_type'] == "cursor") {
-                    if (isset($list_conf['cursor_offset_key']) && $list_conf['cursor_offset_key'] != "") {
-                        if (isset($model['table_fields'][$list_conf['cursor_offset_key']])) {
-                            $my_list->cursor_offset_key = $list_conf['cursor_offset_key'];
-                            $my_list->list_pager_type = "cursor";
-                        }
-                    }
-                }
-            }
-
-
-            //子列表
-            $my_list->sub_list = array();
-            if (isset($list_conf['sub_list']) && is_array($list_conf['sub_list']) && count($list_conf['sub_list']) > 0) {
-                foreach ($list_conf['sub_list'] as $sub_list_name => $sub_list_conf) {
-                    $sub_lc_list_name = strtolower($sub_list_name);
-                    $my_list->sub_list[$sub_lc_list_name] = $sub_list_conf;
-                }
-            }
-
-            $a_list[$lc_kk] = $my_list;
-        }
-    }
-
-    return $a_list;
-}
-
-
-/**
- * 整理的更新的条件
- * @param array $model
- * @return array
- */
-function _model_get_ok_update($model)
+function _get_field_param_prefix($field_type)
 {
 
-    $a_list = array();
-    /**
-     * 其他可能的主键查询单条语句
-     * update_confs=>
-     *  ----update_name  => title
-     *                  => keys
-     */
-    if (isset($model['update_confs']) && is_array($model['update_confs'])) {
+    switch ($field_type) {
+        //bool
+        case Constant::DB_FIELD_TYPE_BOOL :
+            return "b";
 
-        foreach ($model['update_confs'] as $update_name => $a_update_conf) {
-            if (strlen($update_name) == 0) {
-                continue;
-            }
-            $lc_kk = strtolower($update_name);
+        //整型
+        case Constant::DB_FIELD_TYPE_INT:
+        case Constant::DB_FIELD_TYPE_LONGINT:
+            return "i";
 
+        case Constant::DB_FIELD_TYPE_BLOB :
+        case Constant::DB_FIELD_TYPE_LONGBLOB :
+            return "lb";
 
-            $a_update_keys_tobe = $a_update_conf['update_keys'];//更新的内容
-            $a_update_by_tobe = $a_update_conf['update_by'];//更新依据
+        //日期时间
+        case Constant::DB_FIELD_TYPE_DATE :
+        case Constant::DB_FIELD_TYPE_TIME :
+        case Constant::DB_FIELD_TYPE_DATETIME :
+            return "dt";
 
-            //需要更新的不能为空
-            $a_temp = array();
-            foreach ($a_update_keys_tobe as $pk_key) {
-                if (!isset($model['table_fields'][$pk_key])) {
-                    continue;
-                }
-                $a_temp[] = $pk_key;
-            }
-            if (count($a_temp) == 0) {
-                //无主键
-                continue;
-            }
-            $s_update_keys = $a_temp;
-
-            //更新依据的可以为空
-            if (null == $a_update_by_tobe || !is_array($a_update_by_tobe)) {
-                $a_update_by_tobe = $model['fetch_by'];
-            }
-            $a_temp = array();
-            foreach ($a_update_by_tobe as $pk_key) {
-                if (!isset($model['table_fields'][$pk_key])) {
-                    continue;
-                }
-                $a_temp[] = $pk_key;
-            }
-            $a_list[$lc_kk] = array();
-            $a_list[$lc_kk]["update_keys"] = $s_update_keys;
-            $a_list[$lc_kk]["update_by"] = $a_temp;
-            $a_list[$lc_kk]['update_title'] = $a_update_conf['update_title'];////更新的标题
-
-            //等于0时不限制
-            if (!isset($a_update_conf["limit"]) || $a_update_conf["limit"] < 0) {
-                $a_list[$lc_kk]["limit"] = 1;
-            } else {
-                $a_list[$lc_kk]["limit"] = $a_update_conf["limit"];
-            }
-
-        }
+        //字符串
+        case Constant::DB_FIELD_TYPE_CHAR:
+        case Constant::DB_FIELD_TYPE_VARCHAR:
+        case Constant::DB_FIELD_TYPE_TEXT :
+        case Constant::DB_FIELD_TYPE_LONGTEXT :
+        default :
+            return "s";
     }
 
-    if (isset($model["table_fields"]["flag"]) && !isset($model['update_confs']["flag"])) {
-        $a_update_by = $model['fetch_by'];
-        $a_temp = array();
-        foreach ($a_update_by as $pk_key) {
-            if (!isset($model['table_fields'][$pk_key])) {
-                continue;
-            }
-            $a_temp[] = $pk_key;
-        }
-        if (count($a_temp) > 0) {
-            $lc_kk = "flag";
-            $a_list[$lc_kk] = array();
-            $a_list[$lc_kk]["update_keys"] = array("flag");
-            $a_list[$lc_kk]["update_by"] = $a_temp;
-            $a_list[$lc_kk]['update_title'] = "更新flag用作逻辑删除";
-            $a_list[$lc_kk]["limit"] = 1;
-        }
-    }
-
-    return $a_list;
 }
-
-
-/**
- * 整理的删除的条件
- * @param array $model
- * @return array
- */
-function _model_get_ok_delete($model)
-{
-    $a_list = array();
-    if (isset($model['delete_confs']) && is_array($model['delete_confs'])) {
-
-        foreach ($model['delete_confs'] as $delete_name => $a_delete_conf) {
-            $lc_kk = strtolower($delete_name);
-            $a_delete_by = $a_delete_conf['delete_by'];
-
-            //默认删除依据的不能为空
-            if (null == $a_delete_by || !is_array($a_delete_by)) {
-                $a_delete_by = $model['fetch_by'];
-            }
-
-            $a_temp = array();
-            foreach ($a_delete_by as $pk_key) {
-                if (!isset($model['table_fields'][$pk_key])) {
-                    continue;
-                }
-                $a_temp[] = $pk_key;
-            }
-            //允许删除全部
-            $a_list[$lc_kk] = array();
-            $a_list[$lc_kk]["delete_by"] = $a_temp;
-            $a_list[$lc_kk]['delete_title'] = $a_delete_conf['delete_title'];
-
-            //等于0时不限制
-            if (!isset($a_delete_conf["limit"]) || $a_delete_conf["limit"] < 0) {
-                $a_list[$lc_kk]["limit"] = 1;
-            } else {
-                $a_list[$lc_kk]["limit"] = $a_delete_conf["limit"];
-            }
-
-        }
-    }
-    return $a_list;
-}
-
