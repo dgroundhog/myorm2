@@ -179,7 +179,7 @@ abstract class ModelBase implements CcBase
      * @param MyModel $model
      * @return mixed
      */
-    abstract function ccBean($model);
+    abstract function ccBean(MyModel $model);
 
     /**
      * 创建模型层

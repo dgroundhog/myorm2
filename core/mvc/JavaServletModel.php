@@ -81,19 +81,23 @@ class JavaServletModel extends ModelBase
      * @param MyModel $model
      * @return mixed
      */
-    function ccBean($model)
+    function ccBean(MyModel $model)
     {
-        $uc_table = ucfirst($model->name);
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        SeasLog::info("创建JAVA数据结构--{$model_name}");
+        $_target = $this->odir_beans . DS . "{$uc_model_name}Bean.java";
+        ob_start();
+
 
         echo "package  {$this->final_package}.beans;\n\n";
-
         echo "import java.util.HashMap;\n";
         echo "import java.util.Map;\n";
         echo "import java.util.Vector;\n";
         echo "import java.io.Serializable;\n";
 
         _java_comment("数据bean-{$model->title}-{$model->name}");
-        echo "public class {$uc_table}Bean implements Serializable {\n";
+        echo "public class {$uc_model_name}Bean implements Serializable {\n";
 
         foreach ($model->field_list as $field) {
             /* @var MyField $field */
@@ -119,7 +123,29 @@ class JavaServletModel extends ModelBase
                     break;
             }
         }
+        _java_comment("获取bean2String", 1);
+        echo _tab(1) . "public String toString() {\n";
+        echo _tab(2) . "return \"{$uc_model_name}Bean [\"\n";
+        $ii=0;
+        foreach ($model->field_list as $field) {
+            /* @var MyField $field */
+            $key = $field->name;
+            if($ii==0){
+                echo _tab(5)."+ \"{$key} = \" +  {$key}\n";
+            }
+            else{
+                echo _tab(5)."+ \", {$key} = \" +  {$key}\n";
+            }
+             $ii++;
+        }
+        echo _tab(4) . "+ \"]\";\n";
+
+
+        echo _tab(1) . "}\n";
         echo "}";
+        $cc_data = ob_get_contents();
+        ob_end_clean();
+        file_put_contents($_target, $cc_data);
     }
 
 }

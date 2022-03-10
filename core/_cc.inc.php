@@ -98,6 +98,62 @@ function _java_comment_footer()
 }
 
 
+
+function _php_header()
+{
+    echo "<?php";
+    echo "\n//auto gen via orm2php";
+    echo "\n";
+}
+
+/**
+ *  添加评论
+ * @param $msg
+ * @param int $i_tab
+ */
+function _php_comment($msg, $i_tab = 0)
+{
+    echo "\n";
+    echo _tab($i_tab) . "/**\n";
+    if (is_array($msg)) {
+        foreach ($msg as $v) {
+            echo _tab($i_tab) . " * {$v}\n";
+        }
+    } else {
+        echo _tab($i_tab) . " * {$msg}\n";
+    }
+    echo _tab($i_tab) . " */\n";
+}
+
+/**
+ * 渲染评论头
+ * @param mixed $msg
+ * @param int $i_tab
+ */
+function _php_comment_header($msg, $i_tab = 0)
+{
+    echo "\n";
+    echo "\n";
+    echo _tab($i_tab) . "/**\n";
+    if (is_array($msg)) {
+        foreach ($msg as $v) {
+            echo _tab($i_tab) . " * {$v}\n";
+        }
+    } else {
+        echo _tab($i_tab) . " * {$msg}\n";
+    }
+    echo _tab($i_tab) . " * \n";
+}
+
+/**
+ * 渲染评论尾巴
+ * @param int $i_tab
+ */
+function _php_comment_footer($i_tab = 0)
+{
+    echo _tab($i_tab) . " */\n";
+}
+
 /**
  * 获取基本过滤器
  */

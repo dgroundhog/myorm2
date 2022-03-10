@@ -4,6 +4,7 @@ if (!defined("MVC_ROOT")) {
 }
 
 include_once(MVC_ROOT . "/ModelBase.php");
+
 class PhpPhalconModel extends ModelBase
 {
 
@@ -27,7 +28,7 @@ class PhpPhalconModel extends ModelBase
         // TODO: Implement cFetch() method.
     }
 
-    function cList(MyModel $model, MyFun $fun,$count_only)
+    function cList(MyModel $model, MyFun $fun, $count_only)
     {
         // TODO: Implement cList() method.
     }
@@ -67,7 +68,8 @@ class PhpPhalconModel extends ModelBase
      * @param MyModel $model
      * @return mixed
      */
-    function ccDb($model)    {
+    function ccDb($model)
+    {
         // TODO: Implement ccDoc() method.
     }
 
@@ -76,7 +78,71 @@ class PhpPhalconModel extends ModelBase
      * @param MyModel $model
      * @return mixed
      */
-    function ccBean($model)    {
-        // TODO: Implement ccDoc() method.
+    function ccBean(MyModel $model)
+    {
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        SeasLog::info("创建PHP数据结构--{$model_name}");
+        $_target = $this->odir_beans . DS . "{$uc_model_name}Bean.php";
+        ob_start();
+
+        _php_header();
+
+
+        if ($this->final_package != "") {
+            echo "namespace {$this->final_package};";
+        }
+
+
+        _php_comment("数据bean-{$model_name}[{$model->title}]");
+        echo "class {$uc_model_name}Bean\n{\n";
+
+        foreach ($model->field_list as $field) {
+            /* @var MyField $field */
+
+            $key = $field->name;
+            _php_comment_header("{$field->title}", 1);
+            switch ($field->type) {
+                //bool
+                case Constant::DB_FIELD_TYPE_BOOL :
+                    echo _tab(1) . " * @var bool\n";
+                    _php_comment_footer(1);
+                    echo _tab(1) . "public \${$key} = false;\n";
+                    break;
+                //整型
+                case Constant::DB_FIELD_TYPE_INT:
+                case Constant::DB_FIELD_TYPE_LONGINT:
+                    echo _tab(1) . " * @var int\n";
+                    _php_comment_footer(1);
+                    echo _tab(1) . "public \${$key} = 0;\n";
+                    break;
+                //blob
+                case  Constant::DB_FIELD_TYPE_BLOB:
+                case Constant::DB_FIELD_TYPE_LONGBLOB:
+                    echo _tab(1) . " * @var string|object\n";
+                    _php_comment_footer(1);
+                    echo _tab(1) . "public \${$key} = null;\n";
+                    break;
+
+                default:
+                    echo _tab(1) . " * @var string\n";
+                    _php_comment_footer(1);
+                    echo _tab(1) . "public \${$key} = \"\";\n";
+                    break;
+            }
+        }
+
+        _php_comment_header("TO_STRING", 1);
+        echo _tab(1) . " * @return string\n";
+        _php_comment_footer(1);
+        echo _tab(1) . "public function toString(){ \n";
+        echo _tab(2) . "return var_export(this,true);\n";
+        echo _tab(1) . "}\n\n";
+
+        echo "}";
+
+        $cc_data = ob_get_contents();
+        ob_end_clean();
+        file_put_contents($_target, $cc_data);
     }
 }
