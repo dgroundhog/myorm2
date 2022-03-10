@@ -46,9 +46,8 @@
                         <table class="table table-striped table-sm ">
                             <thead>
                             <tr>
-                                <th>创建时间</th>
-                                <th>全局</th>
                                 <th>排序</th>
+                                <th>全局</th>
                                 <th>字段</th>
                                 <th>字段名</th>
                                 <th>类型</th>
@@ -69,10 +68,10 @@
                             <tr class="field_row" title="{$field.uuid}">
                                 <td style="cursor: move;">
                                     <i class="fa fa-sort"></i>
-                                    {$field.ctime}
+                                    {$field.position}
                                 </td>
                                 <td>{if $field.is_global==1}全局{else}私有{/if}</td>
-                                <td>{$field.position}</td>
+
                                 <td>{$field.name}</td>
                                 <td>{$field.title}</td>
                                 <td>{$field.type}</td>
@@ -123,7 +122,7 @@
                         <table class="table table-striped table-sm ">
                             <thead>
                             <tr>
-                                <th>创建时间</th>
+                                <th>序</th>
                                 <th>类型</th>
                                 <th>名称</th>
                                 <th>字段列表</th>
@@ -131,11 +130,14 @@
                                 <th>操作</th>
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="m_sort_index_list" title="{$model.uuid}">
                             {foreach $model.idx_list as $i => $idx}
 
-                            <tr>
-                                <td>{$idx.ctime}</td>
+                            <tr class="idx_row" title="{$idx.uuid}">
+                                <td style="cursor: move;">
+                                    <i class="fa fa-sort"></i>
+                                    {$idx.position}
+                                </td>
                                 <td>{$idx.type}</td>
                                 <td>{$idx.name}</td>
                                 <td>
@@ -180,6 +182,7 @@
                         <table class="table table-striped table-sm ">
                             <thead>
                             <tr>
+                                <th>序号</th>
                                 <th>类型</th>
                                 <th>名称</th>
                                 <th>操作字段</th>
@@ -194,12 +197,15 @@
                                 <th>操作</th>
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="m_sort_fun_list" title="{$model.uuid}">
                             {assign var="model_field_list" value=$model.field_list}
                             {foreach $model.fun_list as $i => $fun}
 
-                            <tr>
-
+                            <tr class="fun_row" title="{$fun.uuid}">
+                                <td style="cursor: move;">
+                                    <i class="fa fa-sort"></i>
+                                    {$fun.position}
+                                </td>
                                 <td>{$fun.type}</td>
                                 <td>{$fun.name}</td>
 
@@ -251,13 +257,18 @@
                                     <div class="card">
                                         <div class="card-header">
                                             <span>-
-                                                {if $where0.type eq 'OR'} 或 {else} 与 {/if} 组合
+                                                {if $where0.type eq 'OR'}
+                                                <img src="img/or-gate.png" style="height: 24px;width: 24px"/> 或
+                                                {else}
+                                                <img src="img/and-gate.png" style="height: 24px;width: 24px"/> 与
+                                                {/if}
+                                                组合
                                              {$where0.cond_list|count}
                                             </span>
                                         </div>
                                         <!-- /.card-header -->
                                         <div class="card-body p-0">
-                                            <div class="card">
+                                            <div class="card" style="margin-bottom:0px">
                                                 <div class="card-body p-1">
                                                     <table class="table table-striped table-sm">
                                                         {foreach $where0.cond_list as $i => $cond}
@@ -282,10 +293,14 @@
                                                         {foreach $where0.where_list as $i => $where1}
                                                         <tr>
                                                             <td class="p-1" colspan="6">
-                                                                <div class="card">
+                                                                <div class="card" style="margin-bottom:0px">
                                                                     <div class="card-header">
                                                                         <span>- -
-                                                                            {if $where1.type eq 'AND'} 与 {else} 或 {/if}
+                                                                            {if $where1.type eq 'AND'}
+                                                                            <img src="img/and-gate.png" style="height: 24px;width: 24px"/> 与
+                                                                            {else}
+                                                                            <img src="img/or-gate.png" style="height: 24px;width: 24px"/>或
+                                                                            {/if}
                                                                             子嵌套组合 {$where1.cond_list|count}
                                                                         </span>
 
@@ -293,7 +308,7 @@
                                                                     </div>
                                                                     <!-- /.card-header -->
                                                                     <div class="card-body p-1">
-                                                                        <div class="card">
+                                                                        <div class="card" style="margin-bottom:0px">
                                                                             <div class="card-body p-1">
                                                                                 <table class="table table-striped table-sm">
                                                                                     {assign var="sub_cond_list" value=$where1.cond_list}

@@ -25,7 +25,7 @@
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>创建时间</th>
+                                <th>序</th>
                                 <th>模型名</th>
                                 <th>模型标题</th>
                                 <th>表格名</th>

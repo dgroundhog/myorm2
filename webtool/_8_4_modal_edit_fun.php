@@ -166,11 +166,15 @@
                                 <div class="card-tools">
                                     <button class="btn btn-tool" type="button"
                                             onclick="javascript:App.dt.project.modelFunWhereAdd('','AND');">
-                                        <i class="fas fa-plus-circle"></i> 与条件组合
+                                        <i class="fas fa-plus-circle"></i>
+                                        <img src="img/and-gate.png" style="height: 24px;width: 24px"/>
+                                        与条件组合
                                     </button>
                                     <button class="btn btn-tool" type="button"
                                             onclick="javascript:App.dt.project.modelFunWhereAdd('','OR');">
-                                        <i class="fas fa-plus-circle"></i> 或条件组合
+                                        <i class="fas fa-plus-circle"></i>
+                                        <img src="img/or-gate.png" style="height: 24px;width: 24px"/>
+                                        或条件组合
                                     </button>
                                 </div>
                             </div>

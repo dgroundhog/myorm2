@@ -1,8 +1,11 @@
 <?php echo '<script id="tpl_model_list" type="text/x-jsmart-tmpl">' ?>
     {foreach $model_list as $i => $model}
 
-    <tr>
-        <td>{$model.ctime}</td>
+    <tr class="model_row" title="{$model.uuid}">
+        <td style="cursor: move;">
+            <i class="fa fa-sort"></i>
+            {$model.position}
+        </td>
         <td>{$model.name}</td>
         <td>{$model.title}</td>
         <td>{$model.table_name}</td>

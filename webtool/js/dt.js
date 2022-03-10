@@ -1576,7 +1576,7 @@ App.dt.project.buildCC = function () {
 
     var _sel_mvc = $("#sel_build_mvc").val();
     var _sel_db = $("#sel_build_db").val();
-    if ("" == _sel_mvc || "" ==  _sel_db) {
+    if ("" == _sel_mvc || "" == _sel_db) {
         self.fail("未选中应用框架配置和数据库配置");
         return;
     }
@@ -1868,19 +1868,19 @@ App.dt.project.reloadBuild = function (_app) {
     $("#sel_build_mvc").empty();
     $("#sel_build_db").empty();
 
-    for(var ii in _app.arch_list ){
+    for (var ii in _app.arch_list) {
         var _obj = _app.arch_list[ii];
         var _name = _obj.name;
         var _uuid = _obj.uuid;
-        var _sel = '<option value="'+_uuid+'" >'+_name+'</option>';
+        var _sel = '<option value="' + _uuid + '" >' + _name + '</option>';
         $("#sel_build_mvc").append(_sel);
     }
 
-    for(var ii in _app.db_list ){
+    for (var ii in _app.db_list) {
         var _obj = _app.db_list[ii];
         var _name = _obj.name;
         var _uuid = _obj.uuid;
-        var _sel = '<option value="'+_uuid+'" >'+_name+'</option>';
+        var _sel = '<option value="' + _uuid + '" >' + _name + '</option>';
         $("#sel_build_db").append(_sel);
     }
 
@@ -2752,6 +2752,8 @@ App.dt.project.modelLoad = function () {
     var tpl3 = new jSmart(self.getTpl('tpl_model_menu'));
     var res3 = tpl3.fetch(_curr_app);
     $("#block_model_menu").html(res3);
+
+    //字段排序
     $(".m_sort_field_list").each(function () {
         var _mm = $(this);
         var _model_id = _mm.attr("title");
@@ -2787,6 +2789,109 @@ App.dt.project.modelLoad = function () {
             }
         }).disableSelection();
     });
+
+    //索引排序
+    $(".m_sort_index_list").each(function () {
+        var _mm = $(this);
+        var _model_id = _mm.attr("title");
+        var _model = self.project.getCurrModel(_model_id);
+        if (_model == null) {
+            return;
+        }
+        var _old_list = _model.idx_list;
+        _mm.sortable({
+            stop: function () {
+                var _new_list = {};
+                var iii = 0
+                _mm.find(".idx_row").each(function () {
+                    var _me = $(this);
+                    var _uuid = _me.attr("title");
+                    if (undefined != _old_list[_uuid]) {
+                        iii++;
+                        var _idx = _old_list[_uuid];
+                        _idx.position = iii;
+                        _new_list[_uuid] = _idx;
+                    }
+                });
+                //console.log(_new_list);
+                _model.idx_list = _new_list;
+                _curr_app.model_list[_model_id] = _model;
+                if (self.project.setCurrApp(_curr_app)) {
+                    //console.log(self.project.getCurrApp());
+                    self.succ("更新index成功");
+                    self.project.modelLoad();
+                } else {
+                    self.fail("更新index失败");
+                }
+            }
+        }).disableSelection();
+    });
+
+    //方法
+    $(".m_sort_fun_list").each(function () {
+        var _mm = $(this);
+        var _model_id = _mm.attr("title");
+        var _model = self.project.getCurrModel(_model_id);
+        if (_model == null) {
+            return;
+        }
+        var _old_list = _model.fun_list;
+        _mm.sortable({
+            stop: function () {
+                var _new_list = {};
+                var iii = 0
+                _mm.find(".fun_row").each(function () {
+                    var _me = $(this);
+                    var _uuid = _me.attr("title");
+                    if (undefined != _old_list[_uuid]) {
+                        iii++;
+                        var _fun = _old_list[_uuid];
+                        _fun.position = iii;
+                        _new_list[_uuid] = _fun;
+                    }
+                });
+                //console.log(_new_list);
+                _model.fun_list = _new_list;
+                _curr_app.model_list[_model_id] = _model;
+                if (self.project.setCurrApp(_curr_app)) {
+                    //console.log(self.project.getCurrApp());
+                    self.succ("更新fun成功");
+                    self.project.modelLoad();
+                } else {
+                    self.fail("更新fun失败");
+                }
+            }
+        }).disableSelection();
+    });
+
+    //模型排序
+    var _sort_model_list = $("#table_model_list");
+    _sort_model_list.sortable({
+        stop: function () {
+            var _new_list = {};
+            var iii = 0
+            _sort_model_list.find(".model_row").each(function () {
+                var _me = $(this);
+                var _uuid = _me.attr("title");
+                if (undefined != _curr_app.model_list[_uuid]) {
+                    iii++;
+                    var _field = _curr_app.model_list[_uuid];
+                    _field.position = iii;
+                    _new_list[_uuid] = _field;
+                }
+            });
+
+            _curr_app.model_list = _new_list;
+            if (self.project.setCurrApp(_curr_app)) {
+                //console.log(self.project.getCurrApp());
+                self.succ("更新成功");
+                self.project.modelLoad();
+            } else {
+                self.fail("更新失败");
+            }
+        }
+    }).disableSelection();
+
 }
 
 /**
@@ -2896,7 +3001,6 @@ App.dt.project.modelDrop = function (_uuid) {
         });
     }
 }
-
 
 
 /**
@@ -3362,7 +3466,6 @@ App.dt.project.modelFunSave = function () {
     o_fun.group_having = self.project.curr_having;
 
 
-
     console.log("过滤可用于操作的的字段")
 
     o_fun.field_list = {};
@@ -3686,7 +3789,7 @@ App.dt.project.modelFunCondDrop = function (_where_id, _cond_id) {
         return;
     }
     self.fail("没有条件--空的--modelFunCondDrop");
-    return;
+
 }
 
 /**
@@ -3749,7 +3852,6 @@ App.dt.project.modelFunHavingSave = function () {
         console.log("保存新配置");
         _currCond = new MyCond();
         _currCond.uuid = App.su.maths.uuid.create();
-        ;
         _currCond.ctime = _now;
     } else {
         console.log("保存旧配置");

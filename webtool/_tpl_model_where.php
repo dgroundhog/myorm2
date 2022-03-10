@@ -3,24 +3,32 @@
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">
-                <i class="fa fa-tree"></i>
-                {if $where0.type eq 'AND'} 与 {else} 或 {/if} 组合</h3>
+                {if $where0.type eq 'AND'}
+                <img src="img/and-gate.png" style="height: 24px;width: 24px"/>
+                与 {else}
+                <img src="img/or-gate.png" style="height: 24px;width: 24px"/>
+                或 {/if}
+                组合</h3>
             <div class="card-tools">
 
                 <button type="button" class="btn btn-tool "
                         onclick="javascript:App.dt.project.modelFunCondEdit('{$where0.uuid}','');"
                 >
-                    <i class="fas fa-plus-circle"></i> 普通条件
+                    <i class="fas fa-plus-circle"></i> 条件
                 </button>
                 <button type="button" class="btn btn-tool "
                         onclick="javascript:App.dt.project.modelFunWhereAdd('{$where0.uuid}','AND');"
                 >
-                    <i class="fas fa-plus-circle"></i> [与]子嵌套
+                    <i class="fas fa-plus-circle"></i>
+                    <img src="img/and-gate.png" style="height: 24px;width: 24px"/>
+                    [与]子嵌套
                 </button>
                 <button type="button" class="btn btn-tool "
                         onclick="javascript:App.dt.project.modelFunWhereAdd('{$where0.uuid}','OR');"
                 >
-                    <i class="fas fa-plus-circle"></i> [或]子嵌套
+                    <i class="fas fa-plus-circle"></i>
+                    <img src="img/or-gate.png" style="height: 24px;width: 24px"/>
+                    [或]子嵌套
                 </button>
 
                 <button type="button" class="btn btn-tool "
@@ -62,9 +70,9 @@
                                             <i class="fas fa-trash"></i> 删
                                         </button>
                                         <div class="dropdown-menu" style="">
-                                            <a class="dropdown-item" href="#">-</a>
-                                            <a class="dropdown-item" href="#">--</a>
-                                            <a class="dropdown-item" href="#">---</a>
+                                            <a class="dropdown-item" href="###">-</a>
+                                            <a class="dropdown-item" href="###">--</a>
+                                            <a class="dropdown-item" href="###">---</a>
                                             <a class="dropdown-item"
                                                onclick="javascript:App.dt.project.modelFunCondDrop('{$where0.uuid}','{$cond.uuid}');"
                                                href="####">确认删除</a>
@@ -80,14 +88,18 @@
                                 <div class="card">
                                     <div class="card-header">
                                         <h3 class="card-title">
-                                            <i class="fa fa-tree"></i>
 
-                                            {if $where1.type eq 'AND'} 与 {else} 或 {/if} 子嵌套组合</h3>
+
+                                            {if $where1.type eq 'AND'}
+                                            <img src="img/and-gate.png" style="height: 24px;width: 24px"/>
+                                            与 {else}
+                                            <img src="img/or-gate.png" style="height: 24px;width: 24px"/>
+                                            或 {/if} 子嵌套组合</h3>
                                         <div class="card-tools">
                                             <button type="button" class="btn btn-tool "
                                                     onclick="javascript:App.dt.project.modelFunCondEdit('{$where1.uuid}','');"
                                             >
-                                                <i class="fas fa-plus-circle"></i> 普通条件
+                                                <i class="fas fa-plus-circle"></i> 条件
                                             </button>
 
 
@@ -132,9 +144,9 @@
                                                                         <i class="fas fa-trash"></i> 删
                                                                     </button>
                                                                     <div class="dropdown-menu" style="">
-                                                                        <a class="dropdown-item" href="#">-</a>
-                                                                        <a class="dropdown-item" href="#">--</a>
-                                                                        <a class="dropdown-item" href="#">---</a>
+                                                                        <a class="dropdown-item" href="###">-</a>
+                                                                        <a class="dropdown-item" href="###">--</a>
+                                                                        <a class="dropdown-item" href="###">---</a>
                                                                         <a class="dropdown-item"
                                                                            onclick="javascript:App.dt.project.modelFunCondDrop('{$where1.uuid}','{$cond.uuid}');"
                                                                            href="####">确认删除</a>

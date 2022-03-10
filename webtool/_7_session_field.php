@@ -26,7 +26,7 @@
                         <table class="table table-striped table-sm ">
                             <thead>
                             <tr>
-                                <th>创建时间</th>
+
                                 <th>排序</th>
                                 <th>字段</th>
                                 <th>字段名</th>

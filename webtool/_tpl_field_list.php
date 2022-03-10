@@ -3,9 +3,9 @@
     <tr class="field_row" title="{$field.uuid}">
         <td style="cursor: move;">
             <i class="fa fa-sort" ></i>
-            {$field.ctime}
+            {$field.position}
         </td>
-        <td>{$field.position}</td>
+
         <td>{$field.name}</td>
         <td>{$field.title}</td>
         <td>{$field.type}</td>
