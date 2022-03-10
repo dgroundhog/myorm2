@@ -31,8 +31,7 @@ abstract class ModelBase implements CcBase
     public $odir_beans = "";//数据结构
     public $odir_config = "";//配置
     public $odir_controllers = "";//控制器
-    public $odir_db = "";//数据驱动
-    public $odir_models = "";//模型
+    public $odir_models = "";//模型驱动
     public $odir_views = "";//视图或者UI
     //
 
@@ -65,7 +64,6 @@ abstract class ModelBase implements CcBase
             //..../main/
             //......../java   主目录
             //............/__PACKAGE__  自定义包名
-            //................/db
             //................/enums
             //................/helper
             //................/res
@@ -94,8 +92,7 @@ abstract class ModelBase implements CcBase
             $this->odir_beans = $this->odir_package. DS . "beans";//数据结构
             $this->odir_config = $this->odir_package. DS . "config";//配置
             $this->odir_controllers = $this->odir_package. DS . "controllers";//控制器
-            $this->odir_db = $this->odir_package. DS . "db";//数据驱动
-            $this->odir_models = $this->odir_package. DS . "models";//模型
+            $this->odir_models = $this->odir_package. DS . "models";//模型驱动
             $this->odir_views = $this->odir_webapp. DS . "WEB-INF".DS . "templates";//视图或者UI
 
         }
@@ -122,18 +119,16 @@ abstract class ModelBase implements CcBase
             //资源目录
             $this->odir_resource = $output_main . DS . "resource";//php 不用这个目录
             $this->odir_webapp = $output_main . DS . "public";//
-            $this->odir_db = $this->odir_package. DS . "db";//数据驱动
             $this->odir_beans = $this->odir_package. DS . "beans";//数据结构
             $this->odir_config = $this->odir_package. DS . "config";//配置
             $this->odir_controllers = $this->odir_package. DS . "controllers";//控制器
-            $this->odir_models = $this->odir_package. DS . "models";//模型
+            $this->odir_models = $this->odir_package. DS . "models";//模型驱动
             $this->odir_views = $this->odir_package. DS . "views";//视图或者UI
         }
 
         dir_create($this->odir_package);
         dir_create($this->odir_resource);
         dir_create($this->odir_webapp);
-        dir_create($this->odir_db);
         dir_create($this->odir_beans);
         dir_create($this->odir_config);
         dir_create($this->odir_controllers);
@@ -167,12 +162,6 @@ abstract class ModelBase implements CcBase
         return $mm;
     }
 
-    /**
-     * 创建模型层
-     * @param MyModel $model
-     * @return mixed
-     */
-    abstract function ccDb($model);
 
     /**
      * 创建模型层

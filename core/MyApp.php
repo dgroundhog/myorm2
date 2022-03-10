@@ -442,6 +442,7 @@ class MyApp extends MyStruct
             /* @var MyModel $o_model */
 
             $mm->ccBean($o_model);
+            $mm->ccModel($o_model);
 
         }
 
