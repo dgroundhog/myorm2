@@ -18,6 +18,7 @@ abstract class ModelBase implements CcBase
      */
     public $arch_conf = null;
 
+    public $final_package = "";//最终包名字
     /**
      * 包含应用层和前端
      * 输出目录
@@ -77,8 +78,12 @@ abstract class ModelBase implements CcBase
 
             $output_main = $output_root . DS . "src". DS . "main";
 
-            $s_package_dirs = str_replace(".",DS,$app->package);
-            $s_package_dirs = str_replace("\\",DS,$s_package_dirs);
+            $this->final_package  = str_replace("\\",".",$app->package);
+
+            $s_package_dirs = str_replace(".",DS,$this->final_package );
+
+
+
 
             //包主目录
             $this->odir_package  = $output_main . DS . "java". DS . $s_package_dirs;
@@ -107,7 +112,10 @@ abstract class ModelBase implements CcBase
             //......../img
             //......../js
 
-            $app->package = str_replace(".","\\",$app->package);
+            $this->final_package = str_replace(".","\\",$app->package);
+
+
+
             $output_main = $output_root . DS . "src";
             //包主目录
             $this->odir_package  = $output_main . DS . "app";
@@ -138,7 +146,7 @@ abstract class ModelBase implements CcBase
     /**
      * 找到当前的构建机器
      * @param MyApp $app
-     * @return DbBase
+     * @return ModelBase
      */
     public static function findCc(MyApp $app)
     {
@@ -158,6 +166,20 @@ abstract class ModelBase implements CcBase
 
         return $mm;
     }
+
+    /**
+     * 创建模型层
+     * @param MyModel $model
+     * @return mixed
+     */
+    abstract function ccDb($model);
+
+    /**
+     * 创建模型层
+     * @param MyModel $model
+     * @return mixed
+     */
+    abstract function ccBean($model);
 
     /**
      * 创建模型层

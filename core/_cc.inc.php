@@ -62,6 +62,43 @@ function _db_comment($msg, $with_head = false)
 
 
 /**
+ *  添加评论
+ * @param $msg
+ * @param int $i_tab
+ */
+function _java_comment($msg, $i_tab = 0)
+{
+    echo "\n";
+    echo _tab($i_tab) . "/**\n";
+    if (is_array($msg)) {
+        foreach ($msg as $v) {
+            echo _tab($i_tab) . " * {$v}\n";
+        }
+    } else {
+        echo _tab($i_tab) . " * {$msg}\n";
+    }
+    echo _tab($i_tab) . " */\n";
+}
+
+function _java_comment_header($msg)
+{
+    echo "\n/**\n";
+    if (is_array($msg)) {
+        foreach ($msg as $v) {
+            echo "* {$v}\n";
+        }
+    } else {
+        echo "* {$msg}\n";
+    }
+}
+
+function _java_comment_footer()
+{
+    echo " */\n";
+}
+
+
+/**
  * 获取基本过滤器
  */
  function _app_get_default_filter()

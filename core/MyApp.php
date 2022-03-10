@@ -438,7 +438,17 @@ class MyApp extends MyStruct
         }
         //TODO 全局资源的
         foreach ($this->model_list as $o_model) {
-            //TODO 个别模型的
+            //创建bean
+            /* @var MyModel $o_model */
+            $model_name = $o_model->name;
+            $uc_model_name = ucfirst($model_name);
+            SeasLog::info("创建数据结构--{$model_name}");
+            $_target = $mm->odir_beans . DS . "{$uc_model_name}Bean.java";
+            ob_start();
+            $mm->ccBean($o_model);
+            $cc_data = ob_get_contents();
+            ob_end_clean();
+            file_put_contents($_target, $cc_data);
         }
 
     }

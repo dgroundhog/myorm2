@@ -61,4 +61,22 @@ class PhpPhalconModel extends ModelBase
     {
         // TODO: Implement ccDoc() method.
     }
+
+    /**
+     * 创建模型层
+     * @param MyModel $model
+     * @return mixed
+     */
+    function ccDb($model)    {
+        // TODO: Implement ccDoc() method.
+    }
+
+    /**
+     * 创建模型层
+     * @param MyModel $model
+     * @return mixed
+     */
+    function ccBean($model)    {
+        // TODO: Implement ccDoc() method.
+    }
 }
