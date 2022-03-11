@@ -35,6 +35,12 @@ class MyModel extends MyStruct
 
 
     /**
+     * 是否包含UI，没有时只包含数据库和模型
+     * @var int
+     */
+    public $has_ui = 0;
+
+    /**
      * 图标
      * @var string
      */
@@ -78,6 +84,7 @@ class MyModel extends MyStruct
 
     public $basic_keys = array(
         "primary_key",
+        "has_ui",
         "fa_icon",
         "table_name",
     );

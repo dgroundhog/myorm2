@@ -410,6 +410,7 @@ App.dt.data.ccModel_Group = function () {
     _modelGroup.primary_key = "group_id";
     _modelGroup.table_name = "group";
     _modelGroup.fa_icon = "users";
+    _modelGroup.has_ui = 1;
     _modelGroup.field_list = {};
     _modelGroup.idx_list = {};
     _modelGroup.fun_list = {};
@@ -696,6 +697,7 @@ App.dt.data.ccModel_User = function () {
     _modelUser.primary_key = "user_id";
     _modelUser.table_name = "user";
     _modelUser.fa_icon = "user";
+    _modelUser.has_ui = 1;
     _modelUser.field_list = {};
     _modelUser.idx_list = {};
     _modelUser.fun_list = {};
@@ -1089,6 +1091,7 @@ App.dt.data.ccModel_Admin = function () {
     _modelAdmin.primary_key = "admin_id";
     _modelAdmin.table_name = "admin";
     _modelAdmin.fa_icon = "address-card";
+    _modelAdmin.fa_icon = 1;
     _modelAdmin.field_list = {};
     _modelAdmin.idx_list = {};
     _modelAdmin.fun_list = {};
@@ -2925,7 +2928,7 @@ App.dt.project.modelSave = function () {
     _model.table_name = $("#txt_table_name").val();
     _model.primary_key = $("#txt_primary_key").val();
     _model.fa_icon = $("#txt_model_icon").val();
-
+    _model.has_ui = self.editor.getBootSwitchVal("#txt_model_has_ui");
     console.log(_model);
 
     _curr_app.model_list[_uuid] = _model;
@@ -2963,6 +2966,7 @@ App.dt.project.modelEdit = function (_uuid) {
         $("#txt_table_name").val(_model.table_name);
         $("#txt_primary_key").val(_model.primary_key);
         $("#txt_model_icon").val(_model.fa_icon);
+        self.editor.setBootSwitchVal("#txt_model_has_ui", _model.has_ui);
     }
 
     $("#modal_edit_model").modal('show');

@@ -31,6 +31,7 @@
                         <div class="col-sm-10">
                             <input type="text" class="form-control form-control-sm" id="txt_table_name"
                                    placeholder="数据库表名"/>
+                            <div class="form-control-static">数据库表名一般和模型名字一致，也可以加入前缀后缀</div>
                         </div>
                     </div>
 
@@ -45,6 +46,14 @@
                     </div>
 
                     <div class="form-group row">
+                        <label for="txt_model_has_ui" class="col-sm-2 col-form-label">包含UI</label>
+                        <div class="col-sm-10">
+                            <input type="checkbox" id="txt_model_has_ui" checked data-bootstrap-switch
+                                   data-off-color="danger" data-on-color="success"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
                         <label for="txt_model_icon" class="col-sm-2 col-form-label">FA图标</label>
                         <div class="col-sm-10">
                             <input type="text" class="form-control form-control-sm" id="txt_model_icon"
@@ -53,6 +62,8 @@
                             <div class="form-control-static">参考FontAwesome</div>
                         </div>
                     </div>
+
+
 
                     <div class="form-group row">
                         <label for="txt_model_memo" class="col-sm-2 col-form-label">备注</label>

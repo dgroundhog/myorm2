@@ -279,6 +279,7 @@ function MyModel() {
     MyStruct.call(this);
     this.scope = "MODEL";
     this.primary_key = "id";
+    this.has_ui = "1";
     this.fa_icon = "apple";
     this.table_name = "newtabel";
 
@@ -300,6 +301,7 @@ MyModel.prototype.parse = function (json_one) {
     //解析一个单体
     this.parseBasic(json_one);
     this.primary_key = json_one.primary_key;
+    this.has_ui = json_one.has_ui;
     this.fa_icon = json_one.fa_icon;
     this.table_name = json_one.table_name;
 

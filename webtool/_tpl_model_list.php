@@ -10,6 +10,7 @@
         <td>{$model.title}</td>
         <td>{$model.table_name}</td>
         <td>{$model.primary_key}</td>
+        <td>{$model.has_ui}</td>
         <td>{$model.fa_icon} ｜ <i class="fa fa-{$model.fa_icon}"></i></td>
         <td>{$model.field_list|count}</td>
         <td>{$model.idx_list|count}</td>
