@@ -1252,9 +1252,14 @@ class DbMysql extends DbBase
         $ii = 0;
         $a_temp = array();
 
+        $a_field_update = $o_fun->field_list;
+        if ($o_fun->all_field == 1) {
+            $a_field_update = $model->field_list;
+        }
+
         //需要更新的字段
         $update_key_by_input = array();
-        foreach ($o_fun->field_list as $field) {
+        foreach ($a_field_update as $field) {
             /* @var MyField $field */
             $key = $field->name;
             if (!isset($a_all_fields[$key])) {

@@ -334,8 +334,13 @@ class MyApp extends MyStruct
         //
         SeasLog::info("生成基本目录");
         $new_build_id = date("YmdHis", time());
-        $this->path_output = $this->build_root . DS . $new_build_id;
-        //
+        if (!defined("MEM_DISK_SPEED_UP")) {
+            $this->path_output = $this->build_root . DS . $new_build_id;
+        }
+        else{
+            $this->path_output = MEM_DISK_SPEED_UP .DS."build" . DS . $new_build_id;
+        }
+
         SeasLog::debug("build app--({$this->name})--mkdir--{$this->path_output}");
         @mkdir($this->path_output);
 

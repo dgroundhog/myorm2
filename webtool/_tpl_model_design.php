@@ -27,7 +27,8 @@
                         </div>
                     </div>
                     <div class="card-header">
-                        <h3 class="card-title">模型字段配置 <small></small></h3>
+                        <h3 class="card-title">1、模型字段配置 <small>{$model.name}
+                                - {$model.title}</small></h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-tool"
                                     onclick="javascript:App.dt.project.modelImportGlobalField('{$model.uuid}');"
@@ -108,7 +109,8 @@
                     <hr class="mb-2">
 
                     <div class="card-header">
-                        <h3 class="card-title">索引列表 <small></small></h3>
+                        <h3 class="card-title">2-索引列表 <small>{$model.name}
+                                - {$model.title}</small></h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-tool "
                                     onclick="javascript:App.dt.project.modelIndexEdit('{$model.uuid}','');"
@@ -168,7 +170,8 @@
                     <hr class="mb-2">
 
                     <div class="card-header">
-                        <h3 class="card-title">CURD列表 <small></small></h3>
+                        <h3 class="card-title">3-CURD列表 <small>{$model.name}
+                                - {$model.title}</small></h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-tool "
                                     onclick="javascript:App.dt.project.modelFunEdit('{$model.uuid}','');"
