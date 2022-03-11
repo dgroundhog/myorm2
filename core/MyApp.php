@@ -438,11 +438,10 @@ class MyApp extends MyStruct
         }
         //TODO 全局资源的
         foreach ($this->model_list as $o_model) {
-            //创建bean
-            /* @var MyModel $o_model */
 
-            $mm->ccBean($o_model);
-            $mm->ccModel($o_model);
+            /* @var MyModel $o_model */
+            $mm->ccBean($o_model);//创建bean 文件
+            $mm->ccModel($o_model);//创建bean 文件
 
         }
 
