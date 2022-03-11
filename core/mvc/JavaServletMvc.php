@@ -71,7 +71,11 @@ class JavaServletMvc extends MvcBase
             echo _tab(1) . "public Map<String, String> mPlainRowMap = new HashMap<String, String>() {{\n";
             foreach ($model->field_list as $field) {
                 /* @var MyField $field */
-
+                if($field->type==Constant::DB_FIELD_TYPE_BLOB
+                || $field->type==Constant::DB_FIELD_TYPE_LONGBLOB
+                ){
+                    continue;
+                }
                 $key = $field->name;
                 echo _tab(2) . "put(\"{$key}\", \"{$key}\");//{$field->title}\n";
             }
@@ -211,7 +215,8 @@ class JavaServletMvc extends MvcBase
         if ($return_new_id) {
             $i_param++;
         }
-        _java_comment_header("插入数据vars--{$fun->title}", 1);
+        _java_comment_header("插入数据vars-", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         foreach ($a_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
@@ -257,6 +262,7 @@ class JavaServletMvc extends MvcBase
 
 
         _java_comment_header("插入数据--通过bean", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         echo _tab(1) . " * @param v_{$uc_model_name}Bean\n";
         echo _tab(1) . " * @return int\n";
@@ -497,7 +503,8 @@ class JavaServletMvc extends MvcBase
         list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
         $i_param = count($a_param_comment);
 
-        _java_comment_header("删除数据vars--{$fun->title}", 1);
+        _java_comment_header("删除数据vars", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         foreach ($a_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
@@ -579,7 +586,8 @@ class JavaServletMvc extends MvcBase
         list($a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_field) = $this->_procWhereCond($model, $fun);
         $i_w_param = count($a_w_param_comment);
 
-        _java_comment_header("更新数据vars--{$fun->title}", 1);
+        _java_comment_header("更新数据vars", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         foreach ($a_u_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
@@ -630,6 +638,7 @@ class JavaServletMvc extends MvcBase
         echo _tab(1) . "}";
 
         _java_comment_header("更新数据--通过bean", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         echo _tab(1) . " * @param v_{$uc_model_name}Bean\n";
         foreach ($a_w_param_comment as $param) {
@@ -664,8 +673,148 @@ class JavaServletMvc extends MvcBase
 
     function cFetch(MyModel $model, MyFun $fun)
     {
-        // TODO: Implement cFetch() method.
+        $this->_funHeader($model, $fun);
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $fun_name = $fun->name;
+        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "fetch");//存储过曾的名字
+        $fun_name1 = _db_find_model_fun_name($fun_name, "fetch");//散列参数添加
+        $fun_name2 = _db_find_model_fun_name($fun_name, "fetch",true);//散列参数添加返回bean
+
+        $a_all_fields = $model->field_list_kv;
+
+        $i_param = 0;
+        $a_param_comment = array();//用于注释
+        $a_param_define = array();//用于定义
+        $a_param_use = array();//用于使用
+        $a_param_field = array();//用于定位原来的field的值
+        list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
+        $i_param = count($a_param_comment);
+        //var_dump($fun->field_list);
+
+        _java_comment_header("通过条件获取一个数据，返回值是hash", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return HashMap\n";
+        _java_comment_footer(1);
+        echo _tab(1) . "public HashMap {$fun_name1}(";
+        $ii = 0;
+        foreach ($a_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_param);
+        echo _tab(2) . "//question_marks = {$i_param}\n";
+        echo _tab(2) . "HashMap<String, String> mRet = new HashMap<>();\n";
+        $this->_dbQueryHeader();
+        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(4) . "st = conn.prepareCall(sql);\n";
+
+        $ii = 0;
+        foreach ($a_param_use as $param) {
+            $o_field = $a_param_field[$ii];
+            echo $this->_setStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+            $ii++;
+        }
+        echo "\n";
+        echo _tab(4) . "rs = st.executeQuery();\n";
+        echo _tab(4) . "while (rs.next()) {\n";
+        echo _tab(5) . "for (Map.Entry<String, String> entry : mPlainRowMap.entrySet()) {\n";
+        echo _tab(6) . "mRet.put(entry.getKey(), rs.getString(entry.getValue())); \n";
+        echo _tab(5) . "}\n";
+        echo _tab(5) . "break;\n";
+        echo _tab(4) . "}\n";
+
+        echo _tab(4) . "logger.debug(\"call {$proc_name} done\");\n";
+        $this->_dbQueryFooter();
+        echo _tab(2) . "return mRet;\n";
+        echo _tab(1) . "}";
+
+        _java_comment_header("通过条件获取一个数据，返回值是bean", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return {$uc_model_name}Bean\n";
+        _java_comment_footer(1);
+        echo _tab(1) . "public {$uc_model_name}Bean {$fun_name2}(";
+        $ii = 0;
+        foreach ($a_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_param + 1);
+        echo _tab(2) . "//question_marks = {$i_param} + 1 \n";
+        echo _tab(2) . "{$uc_model_name}Bean mBean = new {$uc_model_name}Bean();\n";
+        $this->_dbQueryHeader();
+        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(4) . "st = conn.prepareCall(sql);\n";
+
+        $ii = 0;
+        foreach ($a_param_use as $param) {
+            $o_field = $a_param_field[$ii];
+            echo $this->_setStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+            $ii++;
+        }
+        echo "\n";
+        echo _tab(4) . "rs = st.executeQuery();\n";
+        echo _tab(4) . "while (rs.next()) {\n";
+        foreach ($model->field_list as $key => $o_field) {
+            echo $this->_procResultBean($o_field->name, $o_field->type, 5);
+        }
+        echo _tab(5) . "break;\n";
+        echo _tab(4) . "}\n";
+
+        echo _tab(4) . "logger.debug(\"call {$proc_name} done\");\n";
+        $this->_dbQueryFooter();
+        echo _tab(2) . "return mBean;\n";
+        echo _tab(1) . "}";
+        $this->_funFooter($model, $fun);
     }
+
+    function _procResultBean($key, $field_type,$tab_idx)
+    {
+
+        switch ($field_type) {
+            case Constant::DB_FIELD_TYPE_BOOL :
+                echo _tab($tab_idx) . "mBean.{$key} = rs.getInt(\"{$key}\");\n";
+                break;
+            //整型
+            case Constant::DB_FIELD_TYPE_INT:
+                echo _tab($tab_idx) . "mBean.{$key} = rs.getInt(\"{$key}\");\n";
+                break;//
+
+            case Constant::DB_FIELD_TYPE_LONGINT:
+                echo _tab($tab_idx) . "mBean.{$key} = rs.getLong(\"{$key}\");\n";
+                break;
+                //
+            case Constant::DB_FIELD_TYPE_BLOB :
+            case Constant::DB_FIELD_TYPE_LONGBLOB :
+                echo _tab($tab_idx) ."is = rs.getBinaryStream(\"{$key}\");\n";
+                echo _tab($tab_idx) . "if (is != null) {\n";
+                echo _tab(1+$tab_idx) . "buf = new byte[is.available()];\n";
+                echo _tab(1+$tab_idx) . "is.read(buf);\n";
+                echo _tab(1+$tab_idx) . "mBean.{$key} = buf ;\n";
+                echo _tab($tab_idx) . "}\n";
+            break;
+
+            //字符
+            default:
+                echo _tab($tab_idx) . "mBean.{$key} = rs.getString(\"{$key}\");\n";
+                break;
+        }
+
+
+    }
+
 
     function cCount(MyModel $model, MyFun $fun)
     {

@@ -202,31 +202,6 @@ function _java_statement_param_bean($key, $p_type, $ii, $bean)
     }
 }
 
-function _java_result_bean($key, $p_type, $bean)
-{
-
-    switch ($p_type) {
-        case "blob":
-        case "longblob":
-            echo "is = rs.getBinaryStream(\"{$key}\");\n";
-            echo _tab(5) . "if (is != null) {\n";
-            echo _tab(6) . "buf = new byte[is.available()];\n";
-            echo _tab(6) . "is.read(buf);\n";
-            echo _tab(6) . "{$bean}Bean.{$key} = buf ;\n";
-            echo _tab(5) . "}\n";
-            break;
-
-        case "int":
-            echo "{$bean}Bean.{$key} = rs.getInt(\"{$key}\");\n";
-            break;
-
-        case "varchar":
-        default:
-            echo "{$bean}Bean.{$key} = rs.getString(\"{$key}\");\n";
-            break;
-    }
-}
-
 
 
 
