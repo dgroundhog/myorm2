@@ -300,9 +300,13 @@ class DbMysql extends DbBase
     {
         $proc_name = $this->_procHeader($model, $fun->name, $fun->title, "add");
         $a_all_fields = $model->field_list_kv;
-        $ii = 0;
-        $a_temp = array();
-        $add_key_by_input = array();
+
+        $i_param = 0;
+        $a_param_define = array();//用于定义
+        $a_param_use = array();//用于使用
+        $a_param_field = array();//
+
+
         $a_field_add = $fun->field_list;
         if ($fun->all_field == 1) {
             $a_field_add = $model->field_list;
@@ -320,19 +324,24 @@ class DbMysql extends DbBase
                 $return_new_id = true;
                 continue;
             }
-            $ii++;
-            $add_key_by_input[] = $key;
-            list($param_key, $param_key2) = $this->_procParam($field, $ii);
-            $a_temp[] = $param_key2;
+            $i_param++;
+            list($param_key, $param_key_define) = $this->_procParam($field, $i_param);
+            $a_param_define[] = $param_key_define;
+            $a_param_use[$key] = $param_key;
+            $a_param_field[$key] = $field;
+
         }
         if ($return_new_id) {
-            $ii++;
-            $a_temp[] = "INOUT `v_new_id` INT";
+            $i_param++;
+            $a_param_define[] = "INOUT `v_new_id` INT";
         }
-        $this->_procBegin($a_temp);
-        echo "DECLARE m_new_id INT;\n";
-        echo "INSERT INTO `t_{$model->table_name}` \n(\n";
-
+        $this->_procBegin($a_param_define);
+        _db_comment("vars={$i_param}");
+        if ($return_new_id) {
+            echo "DECLARE m_new_id INT;\n";
+        }
+        //注意这里除去inc外的是全部字段
+        echo "INSERT INTO `t_{$model->table_name}` (\n";
         $ii = 0;
         $a_temp = array();
         foreach ($a_all_fields as $key => $field) {
@@ -344,7 +353,7 @@ class DbMysql extends DbBase
         }
         echo _tab(1);
         echo implode(",\n" . _tab(1), $a_temp);
-        echo "\n) \nVALUES\n(\n";
+        echo "\n) VALUES (\n";
 
         $ii = 0;
         $a_temp = array();
@@ -352,10 +361,10 @@ class DbMysql extends DbBase
             if ($key == "id" && $field->auto_increment = 1) {
                 continue;
             }
-
+            //查询不是输入的部分
             /* @var MyField $field */
-            if (!in_array($key, $add_key_by_input)) {
-                //部分预置值
+            if (!isset($a_param_use[$key])) {
+                //部分预置默认值
                 switch ($key) {
                     case "flag":
                         $a_temp[] = "'N'";
@@ -395,9 +404,7 @@ class DbMysql extends DbBase
                         break;
                 }
             } else {
-                $ii++;
-                list($param_key, $param_key2) = $this->_procParam($field, $ii);
-                $a_temp[] = "`{$param_key}`";
+                $a_temp[] = "`{$a_param_use[$key]}`";
             }
         }
         echo _tab(1);
@@ -448,17 +455,17 @@ class DbMysql extends DbBase
 
     /**
      * 处理参数
-     * XXX 不考虑小数,如果是金钱，用分做单位
+     * 不考虑小数,如果是金钱，用分做单位
+     * 第一个是参数名，第二个是定义
      *
      * @param MyField $o_field
      * @param string $idx_append 避免重复的计数器
      * @param string $append u/w  update or where
-     *
-     * @return string
+     * @param bool $for_hash 是否一堆数据组合输入
+     * @return string[]
      */
     function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false)
     {
-
         $charset = $this->db_conf->charset;
         if ("" == $charset) {
             $charset = "utf8mb4";
@@ -469,7 +476,8 @@ class DbMysql extends DbBase
         //c_w_2_from_key
         //s_w_3_to_key
         if (!$for_hash) {
-            $prefix = _get_field_param_prefix($type);
+            //这是正常参数
+            $prefix = $this->getFieldParamPrefix($type);
             if ($append != "") {
                 $prefix = "{$prefix}_{$append}";
             }
@@ -563,25 +571,15 @@ class DbMysql extends DbBase
      */
     function _procBegin($a_param)
     {
-        if (is_array($a_param)) {
-            if (count($a_param) > 1) {
-                echo "\n";
-                echo _tab(1);
-                echo implode(",\n" . _tab(1), $a_param);
-                echo "\n";
-            }
-            if (count($a_param) == 1) {
-                echo $a_param[0];
-            }
-        } else {
-            if ($a_param != "") {
-                echo "\n";
-                echo _tab(1);
-                echo $a_param;
-                echo "\n";
-            }
+        if (count($a_param) > 1) {
+            echo "\n";
+            echo _tab(1);
+            echo implode(",\n" . _tab(1), $a_param);
+            echo "\n";
         }
-
+        if (count($a_param) == 1) {
+            echo $a_param[0];
+        }
         echo ")\n";
         echo "BEGIN\n";
     }

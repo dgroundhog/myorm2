@@ -206,4 +206,100 @@ abstract class CcBase
         return array($has_pager, $is_pager_size_input, $pager_size);
     }
 
+
+    /**
+     * 获取参数的前缀
+     *
+     * @param string $field_type
+     * @return string
+     */
+    function getFieldParamPrefix($field_type)
+    {
+
+        switch ($field_type) {
+            //bool
+            case Constant::DB_FIELD_TYPE_BOOL :
+                return "b";
+
+            //整型
+            case Constant::DB_FIELD_TYPE_INT:
+            case Constant::DB_FIELD_TYPE_LONGINT:
+                return "i";
+
+            case Constant::DB_FIELD_TYPE_BLOB :
+            case Constant::DB_FIELD_TYPE_LONGBLOB :
+                return "lb";
+
+            //日期时间
+            case Constant::DB_FIELD_TYPE_DATE :
+            case Constant::DB_FIELD_TYPE_TIME :
+            case Constant::DB_FIELD_TYPE_DATETIME :
+                return "dt";
+
+            //字符串
+            case Constant::DB_FIELD_TYPE_CHAR:
+            case Constant::DB_FIELD_TYPE_VARCHAR:
+            case Constant::DB_FIELD_TYPE_TEXT :
+            case Constant::DB_FIELD_TYPE_LONGTEXT :
+            default :
+                return "s";
+        }
+
+    }
+
+
+
+    /**
+     * 获取存储过程的名字
+     * @param $table_name
+     * @param $fun_name
+     * @param $base_fun
+     * @return string
+     */
+    function findProcName($table_name,$fun_name,$base_fun){
+        switch ($fun_name) {
+            case $base_fun:
+            case "default":
+            case "":
+                $fun = $base_fun;
+                break;
+            case "default_c":
+                $fun = "{$base_fun}_c";
+                break;
+            default:
+                $fun = "{$base_fun}_{$fun_name}";
+                break;
+        }
+
+        return "p_{$table_name}__{$fun}";
+    }
+
+
+    /**
+     * 获取模型中函数的名字
+     * @param string $fun_name
+     * @param string $base_fun
+     * @param string $return_bean 针对基本查询，返回bean
+     * @return string
+     */
+    function makeModelFunName($fun_name, $base_fun, $return_bean = false)
+    {
+        switch ($fun_name) {
+            case $base_fun:
+            case "default":
+            case "":
+                $fun = $base_fun;
+                break;
+            default:
+                $fun = "{$base_fun}_{$fun_name}";
+                break;
+        }
+
+        $real_fun = "{$fun}";
+        if ($return_bean) {
+            $real_fun = "{$fun}_vBean";
+        }
+        return $real_fun;
+    }
+
 }

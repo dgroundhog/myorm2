@@ -26,7 +26,6 @@ class JavaServletMvc extends MvcBase
         ob_start();
 
         echo "package  {$this->final_package}.models;\n";
-
         echo "import {$this->final_package}.beans.{$uc_model_name}Bean;\n";
         echo "import {$this->final_package}.model.MvcBase;\n";
 
@@ -48,10 +47,10 @@ class JavaServletMvc extends MvcBase
         echo "import java.util.Vector;\n";
 
 
-        _java_comment("操作模型类--{$model->title}");
+        _fun_comment("操作模型类--{$model->title}");
         echo "public class {$uc_model_name}Model extends ModelBase {\n";
 
-        _java_comment("私有日志类", 1);
+        _fun_comment("私有日志类", 1);
         echo _tab(1) . "private  static Logger logger = LoggerFactory.getLogger({$uc_model_name}Model.class);\n\n";
 
         $a_all_fields = array();
@@ -67,7 +66,7 @@ class JavaServletMvc extends MvcBase
 
             $model->field_list_kv = $a_all_fields;
 
-            _java_comment("基本数据字段映射,模型中的字段和数据库的字段的对英关系", 1);
+            _fun_comment("基本数据字段映射,模型中的字段和数据库的字段的对英关系", 1);
             echo _tab(1) . "public Map<String, String> mPlainRowMap = new HashMap<String, String>() {{\n";
             foreach ($model->field_list as $field) {
                 /* @var MyField $field */
@@ -79,15 +78,15 @@ class JavaServletMvc extends MvcBase
             }
             echo _tab(1) . "}};\n";
 
-            _java_comment("数据类型", 1);
+            _fun_comment("数据类型", 1);
             echo _tab(1) . "{$uc_model_name}Bean bean;\n";
 
-            _java_comment("获取bean", 1);
+            _fun_comment("获取bean", 1);
             echo _tab(1) . "public {$uc_model_name}Bean getBean() {\n";
             echo _tab(2) . "return bean;\n";
             echo _tab(1) . "}\n";
 
-            _java_comment("设置bean", 1);
+            _fun_comment("设置bean", 1);
             echo _tab(1) . "public void setBean({$uc_model_name}Bean bean0) {\n";
             echo _tab(2) . "this.bean = bean0;\n";
             echo _tab(1) . "}\n";
@@ -97,7 +96,7 @@ class JavaServletMvc extends MvcBase
                 if ($field->input_hash != "") {
                     $key = $field->name;
                     $uc_key = ucfirst($key);
-                    _java_comment("基础字典-{$field->title}", 1);
+                    _fun_comment("基础字典-{$field->title}", 1);
                     echo _tab(1) . "public static HashMap<String,String> get{$uc_key}_KV(){\n";
                     echo _tab(2) . "HashMap<String,String> mList = new HashMap<String,String>();\n";
                     $a_hash = explode(";", $field->input_hash);
@@ -159,7 +158,7 @@ class JavaServletMvc extends MvcBase
         ob_start();
 
         echo "package  {$this->final_package}.models;\n";
-        _java_comment("自定义的操作模型类--{$model->title}");
+        _fun_comment("自定义的操作模型类--{$model->title}");
         echo "public class {$uc_model_name}ModelX extends {$uc_model_name}Model {\n";
         echo "}";
 
@@ -174,9 +173,9 @@ class JavaServletMvc extends MvcBase
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "add");//存储过曾的名字
-        $fun_name1 = _db_find_model_fun_name($fun_name, "add");//散列参数添加
-        $fun_name2 = _db_find_model_fun_name($fun_name, "add", true);//通过bean添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "add");//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, "add");//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, "add", true);//通过bean添加
 
         $a_all_fields = $model->field_list_kv;
         $i_param = 0;
@@ -213,14 +212,14 @@ class JavaServletMvc extends MvcBase
         if ($return_new_id) {
             $i_param++;
         }
-        _java_comment_header("插入数据vars-", 1);
+        _fun_comment_header("插入数据vars-", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         foreach ($a_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return int\n";
-        _java_comment_footer(1);
+        _fun_comment_footer(1);
 
 
         echo _tab(1) . "public int {$fun_name1}(";
@@ -259,12 +258,12 @@ class JavaServletMvc extends MvcBase
         echo _tab(1) . "}";
 
 
-        _java_comment_header("插入数据--通过bean", 1);
+        _fun_comment_header("插入数据--通过bean", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         echo _tab(1) . " * @param v_{$uc_model_name}Bean\n";
         echo _tab(1) . " * @return int\n";
-        _java_comment_footer(1);
+        _fun_comment_footer(1);
         echo _tab(1) . "public int {$fun_name2}({$uc_model_name}Bean v_{$uc_model_name}Bean) \n";
         echo _tab(1) . "{\n";
         echo _tab(2) . "int iRet = {$fun_name1}(";
@@ -306,7 +305,7 @@ class JavaServletMvc extends MvcBase
         //c_w_2_from_key
         //s_w_3_to_key
 
-        $prefix = _get_field_param_prefix($type);
+        $prefix = $this->getFieldParamPrefix($type);
         if ($append != "") {
             $prefix = "{$prefix}_{$append}";
         }
@@ -471,22 +470,22 @@ class JavaServletMvc extends MvcBase
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "delete");//存储过曾的名字
-        $fun_name1 = _db_find_model_fun_name($fun_name, "delete");//散列参数添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "delete");//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, "delete");//散列参数添加
 
 
         $i_param = 0;
         list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
         $i_param = count($a_param_comment);
 
-        _java_comment_header("删除数据vars", 1);
+        _fun_comment_header("删除数据vars", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         foreach ($a_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return int\n";
-        _java_comment_footer(1);
+        _fun_comment_footer(1);
 
         echo _tab(1) . "public int {$fun_name1}(";
         $ii = 0;
@@ -651,9 +650,9 @@ class JavaServletMvc extends MvcBase
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "update");//存储过曾的名字
-        $fun_name1 = _db_find_model_fun_name($fun_name, "update");//散列参数添加
-        $fun_name2 = _db_find_model_fun_name($fun_name, "update", true);//散列参数添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "update");//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, "update");//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, "update", true);//散列参数添加
 
         $a_all_fields = $model->field_list_kv;
         //需要更新的字段
@@ -685,7 +684,7 @@ class JavaServletMvc extends MvcBase
         list($a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_field) = $this->_procWhereCond($model, $fun);
         $i_w_param = count($a_w_param_comment);
 
-        _java_comment_header("更新数据vars", 1);
+        _fun_comment_header("更新数据vars", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         foreach ($a_u_param_comment as $param) {
@@ -695,7 +694,7 @@ class JavaServletMvc extends MvcBase
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return int\n";
-        _java_comment_footer(1);
+        _fun_comment_footer(1);
 
         echo _tab(1) . "public int {$fun_name1}(";
         $ii = 0;
@@ -736,7 +735,7 @@ class JavaServletMvc extends MvcBase
         echo _tab(2) . "return iRet;\n";
         echo _tab(1) . "}";
 
-        _java_comment_header("更新数据--通过bean", 1);
+        _fun_comment_header("更新数据--通过bean", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         echo _tab(1) . " * @param v_{$uc_model_name}Bean\n";
@@ -744,7 +743,7 @@ class JavaServletMvc extends MvcBase
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return int\n";
-        _java_comment_footer(1);
+        _fun_comment_footer(1);
         echo _tab(1) . "public int {$fun_name2}({$uc_model_name}Bean v_{$uc_model_name}Bean";
         $ii = 1;
         foreach ($a_w_param_define as $param) {
@@ -776,9 +775,9 @@ class JavaServletMvc extends MvcBase
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "fetch");//存储过曾的名字
-        $fun_name1 = _db_find_model_fun_name($fun_name, "fetch");//散列参数添加
-        $fun_name2 = _db_find_model_fun_name($fun_name, "fetch", true);//散列参数添加返回bean
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "fetch");//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, "fetch");//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, "fetch", true);//散列参数添加返回bean
 
         $a_all_fields = $model->field_list_kv;
 
@@ -791,14 +790,14 @@ class JavaServletMvc extends MvcBase
         $i_param = count($a_param_comment);
         //var_dump($fun->field_list);
 
-        _java_comment_header("通过条件获取一个数据，返回值是hash", 1);
+        _fun_comment_header("通过条件获取一个数据，返回值是hash", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         foreach ($a_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return HashMap\n";
-        _java_comment_footer(1);
+        _fun_comment_footer(1);
         echo _tab(1) . "public HashMap {$fun_name1}(";
         $ii = 0;
         foreach ($a_param_define as $param) {
@@ -834,14 +833,14 @@ class JavaServletMvc extends MvcBase
         echo _tab(2) . "return mRet;\n";
         echo _tab(1) . "}";
 
-        _java_comment_header("通过条件获取一个数据，返回值是bean", 1);
+        _fun_comment_header("通过条件获取一个数据，返回值是bean", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         foreach ($a_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return {$uc_model_name}Bean\n";
-        _java_comment_footer(1);
+        _fun_comment_footer(1);
         echo _tab(1) . "public {$uc_model_name}Bean {$fun_name2}(";
         $ii = 0;
         foreach ($a_param_define as $param) {
@@ -924,8 +923,8 @@ class JavaServletMvc extends MvcBase
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "count");//存储过曾的名字
-        $fun_name1 = _db_find_model_fun_name($fun_name, "count");//散列参数添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "count");//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, "count");//散列参数添加
 
         $a_all_fields = $model->field_list_kv;
         $i_param = 0;
@@ -937,14 +936,14 @@ class JavaServletMvc extends MvcBase
         $i_param = count($a_param_comment);
         //var_dump($fun->field_list);
 
-        _java_comment_header("普通统计数据", 1);
+        _fun_comment_header("普通统计数据", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
         foreach ($a_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return int\n";
-        _java_comment_footer(1);
+        _fun_comment_footer(1);
         echo _tab(1) . "public int {$fun_name1}(";
         $ii = 0;
         foreach ($a_param_define as $param) {
@@ -987,9 +986,9 @@ class JavaServletMvc extends MvcBase
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "list");//存储过曾的名字
-        $fun_name1 = _db_find_model_fun_name($fun_name, "list");//散列参数添加
-        $fun_name2 = _db_find_model_fun_name($fun_name, "list", true);//散列参数添加返回bean
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "list");//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, "list");//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, "list", true);//散列参数添加返回bean
 
         $a_all_fields = $model->field_list_kv;//通过主键访问的字段
 
@@ -1026,7 +1025,7 @@ class JavaServletMvc extends MvcBase
         //6666 分页
         list($has_pager, $is_pager_size_input, $pager_size) = $this->parsePager($model, $fun);
         //var_dump($fun->field_list);
-        _java_comment_header("通过条件列表，返回值是Vector", 1);
+        _fun_comment_header("通过条件列表，返回值是Vector", 1);
         echo _tab(1) . " * {$fun->type}--{$fun->name}--{$fun->title}\n";
         echo _tab(1) . " *\n";
         //11111
@@ -1058,7 +1057,7 @@ class JavaServletMvc extends MvcBase
         }
         echo _tab(1) . " *\n";
         echo _tab(1) . " * @return Vector<HashMap>\n";
-        _java_comment_footer(1);
+        _fun_comment_footer(1);
         echo _tab(1) . "public Vector<HashMap> {$fun_name1}(";
         $ii = 0;
         foreach ($a_param_define as $param) {
@@ -1146,7 +1145,7 @@ class JavaServletMvc extends MvcBase
         //选中分页的才分页/////////////////////////////////////////////////////////////////////////////////
         if ($has_return_bean) {
             //非聚合的才有bean
-            _java_comment_header("通过条件获取列表，返回值是bean", 1);
+            _fun_comment_header("通过条件获取列表，返回值是bean", 1);
             echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
             echo _tab(1) . " *\n";
             foreach ($a_param_comment as $param) {
@@ -1170,7 +1169,7 @@ class JavaServletMvc extends MvcBase
             }
 
             echo _tab(1) . " * @return  Vector<{$uc_model_name}Bean\n";
-            _java_comment_footer(1);
+            _fun_comment_footer(1);
             echo _tab(1) . "public Vector<{$uc_model_name}Bean> {$fun_name2}(";
             $ii = 0;
             foreach ($a_param_define as $param) {
@@ -1252,14 +1251,14 @@ class JavaServletMvc extends MvcBase
         }
         //分页时包含对应的计数/////////////////////////////////////////////////////////////////////////////////
         if ($has_pager) {
-            _java_comment_header("获取分页对应的记录总数", 1);
+            _fun_comment_header("获取分页对应的记录总数", 1);
             echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
             echo _tab(1) . " *\n";
             foreach ($a_param_comment as $param) {
                 echo _tab(1) . "{$param}\n";
             }
             echo _tab(1) . " * @return  int\n";
-            _java_comment_footer(1);
+            _fun_comment_footer(1);
             echo _tab(1) . "public int {$fun_name1}_Count(";
             $ii = 0;
             foreach ($a_param_define as $param) {
@@ -1338,12 +1337,12 @@ class JavaServletMvc extends MvcBase
         echo "import java.util.Vector;\n";
         echo "import java.io.Serializable;\n";
 
-        _java_comment("数据bean-{$model->title}-{$model->name}");
+        _fun_comment("数据bean-{$model->title}-{$model->name}");
         echo "public class {$uc_model_name}Bean implements Serializable {\n";
 
         foreach ($model->field_list as $field) {
             /* @var MyField $field */
-            _java_comment("{$field->title}", 1);
+            _fun_comment("{$field->title}", 1);
             $key = $field->name;
             switch ($field->type) {
                 //bool
@@ -1365,7 +1364,7 @@ class JavaServletMvc extends MvcBase
                     break;
             }
         }
-        _java_comment("获取bean2String", 1);
+        _fun_comment("获取bean2String", 1);
         echo _tab(1) . "public String toString() {\n";
         echo _tab(2) . "return \"{$uc_model_name}Bean [\"\n";
         $ii = 0;

@@ -94,47 +94,47 @@ class PhpPhalconMvc extends MvcBase
         }
 
 
-        _php_comment("数据bean-{$model_name}[{$model->title}]");
+        _fun_comment("数据bean-{$model_name}[{$model->title}]",1);
         echo "class {$uc_model_name}Bean\n{\n";
 
         foreach ($model->field_list as $field) {
             /* @var MyField $field */
 
             $key = $field->name;
-            _php_comment_header("{$field->title}", 1);
+            _fun_comment_header("{$field->title}", 1);
             switch ($field->type) {
                 //bool
                 case Constant::DB_FIELD_TYPE_BOOL :
                     echo _tab(1) . " * @var bool\n";
-                    _php_comment_footer(1);
+                    _fun_comment_footer(1);
                     echo _tab(1) . "public \${$key} = false;\n";
                     break;
                 //整型
                 case Constant::DB_FIELD_TYPE_INT:
                 case Constant::DB_FIELD_TYPE_LONGINT:
                     echo _tab(1) . " * @var int\n";
-                    _php_comment_footer(1);
+                    _fun_comment_footer(1);
                     echo _tab(1) . "public \${$key} = 0;\n";
                     break;
                 //blob
                 case  Constant::DB_FIELD_TYPE_BLOB:
                 case Constant::DB_FIELD_TYPE_LONGBLOB:
                     echo _tab(1) . " * @var string|object\n";
-                    _php_comment_footer(1);
+                    _fun_comment_footer(1);
                     echo _tab(1) . "public \${$key} = null;\n";
                     break;
 
                 default:
                     echo _tab(1) . " * @var string\n";
-                    _php_comment_footer(1);
+                    _fun_comment_footer(1);
                     echo _tab(1) . "public \${$key} = \"\";\n";
                     break;
             }
         }
 
-        _php_comment_header("TO_STRING", 1);
+        _fun_comment_header("TO_STRING", 1);
         echo _tab(1) . " * @return string\n";
-        _php_comment_footer(1);
+        _fun_comment_footer(1);
         echo _tab(1) . "public function toString(){ \n";
         echo _tab(2) . "return var_export(this,true);\n";
         echo _tab(1) . "}\n\n";
