@@ -49,7 +49,7 @@ class JavaServletMvc extends MvcBase
 
 
         _java_comment("操作模型类--{$model->title}");
-        echo "public class {$uc_model_name}Model extends MvcBase {\n";
+        echo "public class {$uc_model_name}Model extends ModelBase {\n";
 
         _java_comment("私有日志类", 1);
         echo _tab(1) . "private  static Logger logger = LoggerFactory.getLogger({$uc_model_name}Model.class);\n\n";
@@ -71,9 +71,7 @@ class JavaServletMvc extends MvcBase
             echo _tab(1) . "public Map<String, String> mPlainRowMap = new HashMap<String, String>() {{\n";
             foreach ($model->field_list as $field) {
                 /* @var MyField $field */
-                if($field->type==Constant::DB_FIELD_TYPE_BLOB
-                || $field->type==Constant::DB_FIELD_TYPE_LONGBLOB
-                ){
+                if ($field->type == Constant::DB_FIELD_TYPE_BLOB || $field->type == Constant::DB_FIELD_TYPE_LONGBLOB) {
                     continue;
                 }
                 $key = $field->name;
@@ -236,7 +234,7 @@ class JavaServletMvc extends MvcBase
 
         $s_qm = _db_question_marks($i_param);
         echo _tab(2) . "//question_marks = {$i_param} \n";
-        echo _tab(2) . "int rRet = 0;\n";
+        echo _tab(2) . "int iRet = 0;\n";
         $this->_dbQueryHeader();
         echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
         echo _tab(4) . "st = conn.prepareCall(sql);\n";
@@ -244,20 +242,20 @@ class JavaServletMvc extends MvcBase
         $ii = 0;
         foreach ($a_param_use as $param) {
             $field = $a_param_field[$ii];
-            echo $this->_setStatementParam($field->name, $field->type, $param, $ii, 4);
+            echo $this->_procStatementParam($field->name, $field->type, $param, $ii, 4);
             $ii++;
         }
         if ($return_new_id) {
             echo "\n";
             echo _tab(4) . "st.registerOutParameter({$ii}, Types.INTEGER);\n";
             echo _tab(4) . "rs = st.executeQuery();\n";
-            echo _tab(4) . "rRet = st.getInt({$ii});\n";
-            echo _tab(4) . "logger.debug(\"call {$proc_name} -- \" + rRet);\n";
+            echo _tab(4) . "iRet = st.getInt({$ii});\n";
+            echo _tab(4) . "logger.debug(\"call {$proc_name} -- \" + iRet);\n";
         } else {
-            echo _tab(4) . "rRet = 1;\n";
+            echo _tab(4) . "iRet = 1;\n";
         }
         $this->_dbQueryFooter();
-        echo _tab(2) . "return rRet;\n";
+        echo _tab(2) . "return iRet;\n";
         echo _tab(1) . "}";
 
 
@@ -283,16 +281,6 @@ class JavaServletMvc extends MvcBase
 
     }
 
-    function _funHeader(MyModel $model, MyFun $fun)
-    {
-
-        echo "\n\n";
-        echo "//----------------------------\n";
-        echo "//BEGIN define {$model->name} -- {$fun->name} \n";
-        echo "//----------------------------\n";
-
-        return true;
-    }
 
     /**
      * 处理参数
@@ -402,7 +390,7 @@ class JavaServletMvc extends MvcBase
      * @param $tab_idx
      * @return void
      */
-    function _setStatementParam($field_key, $field_type, $pv_use, $ii, $tab_idx)
+    function _procStatementParam($field_key, $field_type, $pv_use, $ii, $tab_idx)
     {
 
         switch ($field_type) {
@@ -470,14 +458,6 @@ class JavaServletMvc extends MvcBase
         echo _tab(2) . "}\n";
     }
 
-    function _funFooter(MyModel $model, MyFun $fun)
-    {
-
-        echo "\n";
-        echo "//----------------------------\n";
-        echo "//END define {$model->name} -- {$fun->name} \n";
-        echo "//----------------------------\n";
-    }
 
     /**
      *  需要删除的UI
@@ -496,10 +476,6 @@ class JavaServletMvc extends MvcBase
 
 
         $i_param = 0;
-        $a_param_comment = array();//用于注释
-        $a_param_define = array();//用于定义
-        $a_param_use = array();//用于使用
-        $a_param_field = array();//用于定位原来的field的值
         list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
         $i_param = count($a_param_comment);
 
@@ -522,7 +498,7 @@ class JavaServletMvc extends MvcBase
         echo _tab(1) . "{\n";
         $s_qm = _db_question_marks($i_param + 1);
         echo _tab(2) . "//question_marks = {$i_param} + 1 \n";
-        echo _tab(2) . "int rRet = 0;\n";
+        echo _tab(2) . "int iRet = 0;\n";
         $this->_dbQueryHeader();
         echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
         echo _tab(4) . "st = conn.prepareCall(sql);\n";
@@ -530,333 +506,30 @@ class JavaServletMvc extends MvcBase
         $ii = 0;
         foreach ($a_param_use as $param) {
             $o_field = $a_param_field[$ii];
-            echo $this->_setStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+            echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
             $ii++;
         }
         echo "\n";
         echo _tab(4) . "st.registerOutParameter({$ii}, Types.INTEGER);\n";
         echo _tab(4) . "rs = st.executeQuery();\n";
-        echo _tab(4) . "rRet = st.getInt({$ii});\n";
-        echo _tab(4) . "logger.debug(\"call {$proc_name} -- \" + rRet);\n";
+        echo _tab(4) . "iRet = st.getInt({$ii});\n";
+        echo _tab(4) . "logger.debug(\"call {$proc_name} -- \" + iRet);\n";
         $this->_dbQueryFooter();
         echo _tab(2) . "return iRet;\n";
         echo _tab(1) . "}";
 
         $this->_funFooter($model, $fun);
-    }
-
-    function cUpdate(MyModel $model, MyFun $fun)
-    {
-        $this->_funHeader($model, $fun);
-
-        $model_name = $model->name;
-        $uc_model_name = ucfirst($model_name);
-        $fun_name = $fun->name;
-        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "update");//存储过曾的名字
-        $fun_name1 = _db_find_model_fun_name($fun_name, "update");//散列参数添加
-        $fun_name2 = _db_find_model_fun_name($fun_name, "update",true);//散列参数添加
-
-        $a_all_fields = $model->field_list_kv;
-        //需要更新的字段
-        $i_u_param = 0;
-        $a_u_param_comment = array();//用于注释
-        $a_u_param_define = array();//用于定义
-        $a_u_param_use = array();//用于使用
-        $a_u_param_field = array();//用于定位原来的field的值
-        $a_field_update = $fun->field_list;
-        if ($fun->all_field == 1) {
-            $a_field_update = $model->field_list;
-        }
-        foreach ($a_field_update as $field) {
-            /* @var MyField $field */
-            $field_name = $field->name;
-            //存在于fun, 但不存在于model的字段，不处理
-            if (!isset($a_all_fields[$field_name])) {
-                continue;
-            }
-            $i_u_param++;
-            list($param1, $param2, $param3) = $this->_procParam($field, $i_u_param,"u");
-            $a_u_param_comment[] = $param1;
-            $a_u_param_define[] = $param2;
-            $a_u_param_use[] = $param3;
-            $a_u_param_field[] = $field;
-        }
-
-        //更新条件
-        list($a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_field) = $this->_procWhereCond($model, $fun);
-        $i_w_param = count($a_w_param_comment);
-
-        _java_comment_header("更新数据vars", 1);
-        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
-        echo _tab(1) . " *\n";
-        foreach ($a_u_param_comment as $param) {
-            echo _tab(1) . "{$param}\n";
-        }
-        foreach ($a_w_param_comment as $param) {
-            echo _tab(1) . "{$param}\n";
-        }
-        echo _tab(1) . " * @return int\n";
-        _java_comment_footer(1);
-
-        echo _tab(1) . "public int {$fun_name1}(";
-        $ii = 0;
-        foreach ($a_u_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        foreach ($a_w_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
-        echo _tab(1) . "{\n";
-        $s_qm = _db_question_marks($i_u_param + $i_w_param + 1);
-        echo _tab(2) . "//question_marks = u {$i_u_param} + w {$i_w_param} + r 1 \n";
-        echo _tab(2) . "int rRet = 0;\n";
-        $this->_dbQueryHeader();
-        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
-        echo _tab(4) . "st = conn.prepareCall(sql);\n";
-
-        $ii = 0;
-        foreach ($a_u_param_use as $param) {
-            $o_field = $a_u_param_field[$ii];
-            echo $this->_setStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
-            $ii++;
-        }
-        foreach ($a_w_param_use as $param) {
-            $o_field = $a_w_param_field[$ii];
-            echo $this->_setStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
-            $ii++;
-        }
-        echo "\n";
-        echo _tab(4) . "st.registerOutParameter({$ii}, Types.INTEGER);\n";
-        echo _tab(4) . "rs = st.executeQuery();\n";
-        echo _tab(4) . "rRet = st.getInt({$ii});\n";
-        echo _tab(4) . "logger.debug(\"call {$proc_name} -- \" + rRet);\n";
-        $this->_dbQueryFooter();
-        echo _tab(2) . "return iRet;\n";
-        echo _tab(1) . "}";
-
-        _java_comment_header("更新数据--通过bean", 1);
-        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
-        echo _tab(1) . " *\n";
-        echo _tab(1) . " * @param v_{$uc_model_name}Bean\n";
-        foreach ($a_w_param_comment as $param) {
-            echo _tab(1) . "{$param}\n";
-        }
-        echo _tab(1) . " * @return int\n";
-        _java_comment_footer(1);
-        echo _tab(1) . "public int {$fun_name2}({$uc_model_name}Bean v_{$uc_model_name}Bean";
-        $ii = 1;
-        foreach ($a_w_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
-        echo _tab(1) . "{\n";
-        echo _tab(2) . "int iRet = {$fun_name1}(";
-        $ii = 0;
-        foreach ($a_u_param_field as $field) {
-            echo _warp2join($ii) . _tab(5) . "v_{$uc_model_name}Bean->{$field->name}";
-            $ii++;
-        }
-        foreach ($a_w_param_use as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(2) . ");\n";
-        echo _tab(2) . "return iRet;\n";
-        echo _tab(1) . "}";
-
-        $this->_funFooter($model, $fun);
-    }
-
-    function cFetch(MyModel $model, MyFun $fun)
-    {
-        $this->_funHeader($model, $fun);
-        $model_name = $model->name;
-        $uc_model_name = ucfirst($model_name);
-        $fun_name = $fun->name;
-        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "fetch");//存储过曾的名字
-        $fun_name1 = _db_find_model_fun_name($fun_name, "fetch");//散列参数添加
-        $fun_name2 = _db_find_model_fun_name($fun_name, "fetch",true);//散列参数添加返回bean
-
-        $a_all_fields = $model->field_list_kv;
-
-        $i_param = 0;
-        $a_param_comment = array();//用于注释
-        $a_param_define = array();//用于定义
-        $a_param_use = array();//用于使用
-        $a_param_field = array();//用于定位原来的field的值
-        list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
-        $i_param = count($a_param_comment);
-        //var_dump($fun->field_list);
-
-        _java_comment_header("通过条件获取一个数据，返回值是hash", 1);
-        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
-        echo _tab(1) . " *\n";
-        foreach ($a_param_comment as $param) {
-            echo _tab(1) . "{$param}\n";
-        }
-        echo _tab(1) . " * @return HashMap\n";
-        _java_comment_footer(1);
-        echo _tab(1) . "public HashMap {$fun_name1}(";
-        $ii = 0;
-        foreach ($a_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
-        echo _tab(1) . "{\n";
-        $s_qm = _db_question_marks($i_param);
-        echo _tab(2) . "//question_marks = {$i_param}\n";
-        echo _tab(2) . "HashMap<String, String> mRet = new HashMap<>();\n";
-        $this->_dbQueryHeader();
-        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
-        echo _tab(4) . "st = conn.prepareCall(sql);\n";
-
-        $ii = 0;
-        foreach ($a_param_use as $param) {
-            $o_field = $a_param_field[$ii];
-            echo $this->_setStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
-            $ii++;
-        }
-        echo "\n";
-        echo _tab(4) . "rs = st.executeQuery();\n";
-        echo _tab(4) . "while (rs.next()) {\n";
-        echo _tab(5) . "for (Map.Entry<String, String> entry : mPlainRowMap.entrySet()) {\n";
-        echo _tab(6) . "mRet.put(entry.getKey(), rs.getString(entry.getValue())); \n";
-        echo _tab(5) . "}\n";
-        echo _tab(5) . "break;\n";
-        echo _tab(4) . "}\n";
-
-        echo _tab(4) . "logger.debug(\"call {$proc_name} done\");\n";
-        $this->_dbQueryFooter();
-        echo _tab(2) . "return mRet;\n";
-        echo _tab(1) . "}";
-
-        _java_comment_header("通过条件获取一个数据，返回值是bean", 1);
-        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
-        echo _tab(1) . " *\n";
-        foreach ($a_param_comment as $param) {
-            echo _tab(1) . "{$param}\n";
-        }
-        echo _tab(1) . " * @return {$uc_model_name}Bean\n";
-        _java_comment_footer(1);
-        echo _tab(1) . "public {$uc_model_name}Bean {$fun_name2}(";
-        $ii = 0;
-        foreach ($a_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
-        echo _tab(1) . "{\n";
-        $s_qm = _db_question_marks($i_param + 1);
-        echo _tab(2) . "//question_marks = {$i_param} + 1 \n";
-        echo _tab(2) . "{$uc_model_name}Bean mBean = new {$uc_model_name}Bean();\n";
-        $this->_dbQueryHeader();
-        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
-        echo _tab(4) . "st = conn.prepareCall(sql);\n";
-
-        $ii = 0;
-        foreach ($a_param_use as $param) {
-            $o_field = $a_param_field[$ii];
-            echo $this->_setStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
-            $ii++;
-        }
-        echo "\n";
-        echo _tab(4) . "rs = st.executeQuery();\n";
-        echo _tab(4) . "while (rs.next()) {\n";
-        foreach ($model->field_list as $key => $o_field) {
-            echo $this->_procResultBean($o_field->name, $o_field->type, 5);
-        }
-        echo _tab(5) . "break;\n";
-        echo _tab(4) . "}\n";
-
-        echo _tab(4) . "logger.debug(\"call {$proc_name} done\");\n";
-        $this->_dbQueryFooter();
-        echo _tab(2) . "return mBean;\n";
-        echo _tab(1) . "}";
-        $this->_funFooter($model, $fun);
-    }
-
-    function _procResultBean($key, $field_type,$tab_idx)
-    {
-
-        switch ($field_type) {
-            case Constant::DB_FIELD_TYPE_BOOL :
-                echo _tab($tab_idx) . "mBean.{$key} = rs.getInt(\"{$key}\");\n";
-                break;
-            //整型
-            case Constant::DB_FIELD_TYPE_INT:
-                echo _tab($tab_idx) . "mBean.{$key} = rs.getInt(\"{$key}\");\n";
-                break;//
-
-            case Constant::DB_FIELD_TYPE_LONGINT:
-                echo _tab($tab_idx) . "mBean.{$key} = rs.getLong(\"{$key}\");\n";
-                break;
-                //
-            case Constant::DB_FIELD_TYPE_BLOB :
-            case Constant::DB_FIELD_TYPE_LONGBLOB :
-                echo _tab($tab_idx) ."is = rs.getBinaryStream(\"{$key}\");\n";
-                echo _tab($tab_idx) . "if (is != null) {\n";
-                echo _tab(1+$tab_idx) . "buf = new byte[is.available()];\n";
-                echo _tab(1+$tab_idx) . "is.read(buf);\n";
-                echo _tab(1+$tab_idx) . "mBean.{$key} = buf ;\n";
-                echo _tab($tab_idx) . "}\n";
-            break;
-
-            //字符
-            default:
-                echo _tab($tab_idx) . "mBean.{$key} = rs.getString(\"{$key}\");\n";
-                break;
-        }
-
-
-    }
-
-
-    function cCount(MyModel $model, MyFun $fun)
-    {
-        // TODO: Implement cCount() method.
-    }
-
-    function cList(MyModel $model, MyFun $fun, $count_only)
-    {
-        // TODO: Implement cList() method.
-    }
-
-    function findDbType()
-    {
-
-
-        //TODO 可能不需要
-
-
-    }
-
-    function ccTmpl($model)
-    {
-        // TODO: Implement ccTmpl() method.
-    }
-
-    function ccWeb($model)
-    {
-        // TODO: Implement ccWeb() method.
-    }
-
-    function ccApi($model)
-    {
-        // TODO: Implement ccApi() method.
-    }
-
-    function ccDoc($model)
-    {
-        // TODO: Implement ccDoc() method.
     }
 
     /**
      * 条件的输入参数
+     *
+     * 返回值说民
+     * $a_param_comment = array();//用于注释
+     * $a_param_define = array();//用于定义
+     * $a_param_use = array();//用于使用
+     * $a_param_field = array();//用于定位原来的field的值
+     *
      * @param MyModel $model
      * @param MyFun $o_fun
      * @return array[]
@@ -971,6 +644,679 @@ class JavaServletMvc extends MvcBase
         return array($a_param_comment, $a_param_define, $a_param_use, $a_param_field);
     }
 
+    function cUpdate(MyModel $model, MyFun $fun)
+    {
+        $this->_funHeader($model, $fun);
+
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $fun_name = $fun->name;
+        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "update");//存储过曾的名字
+        $fun_name1 = _db_find_model_fun_name($fun_name, "update");//散列参数添加
+        $fun_name2 = _db_find_model_fun_name($fun_name, "update", true);//散列参数添加
+
+        $a_all_fields = $model->field_list_kv;
+        //需要更新的字段
+        $i_u_param = 0;
+        $a_u_param_comment = array();//用于注释
+        $a_u_param_define = array();//用于定义
+        $a_u_param_use = array();//用于使用
+        $a_u_param_field = array();//用于定位原来的field的值
+        $a_field_update = $fun->field_list;
+        if ($fun->all_field == 1) {
+            $a_field_update = $model->field_list;
+        }
+        foreach ($a_field_update as $field) {
+            /* @var MyField $field */
+            $field_name = $field->name;
+            //存在于fun, 但不存在于model的字段，不处理
+            if (!isset($a_all_fields[$field_name])) {
+                continue;
+            }
+            $i_u_param++;
+            list($param1, $param2, $param3) = $this->_procParam($field, $i_u_param, "u");
+            $a_u_param_comment[] = $param1;
+            $a_u_param_define[] = $param2;
+            $a_u_param_use[] = $param3;
+            $a_u_param_field[] = $field;
+        }
+
+        //更新条件
+        list($a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_field) = $this->_procWhereCond($model, $fun);
+        $i_w_param = count($a_w_param_comment);
+
+        _java_comment_header("更新数据vars", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_u_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        foreach ($a_w_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return int\n";
+        _java_comment_footer(1);
+
+        echo _tab(1) . "public int {$fun_name1}(";
+        $ii = 0;
+        foreach ($a_u_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        foreach ($a_w_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_u_param + $i_w_param + 1);
+        echo _tab(2) . "//question_marks = u {$i_u_param} + w {$i_w_param} + r 1 \n";
+        echo _tab(2) . "int iRet = 0;\n";
+        $this->_dbQueryHeader();
+        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(4) . "st = conn.prepareCall(sql);\n";
+
+        $ii = 0;
+        foreach ($a_u_param_use as $param) {
+            $o_field = $a_u_param_field[$ii];
+            echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+            $ii++;
+        }
+        foreach ($a_w_param_use as $param) {
+            $o_field = $a_w_param_field[$ii];
+            echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+            $ii++;
+        }
+        echo "\n";
+        echo _tab(4) . "st.registerOutParameter({$ii}, Types.INTEGER);\n";
+        echo _tab(4) . "rs = st.executeQuery();\n";
+        echo _tab(4) . "iRet = st.getInt({$ii});\n";
+        echo _tab(4) . "logger.debug(\"call {$proc_name} -- \" + iRet);\n";
+        $this->_dbQueryFooter();
+        echo _tab(2) . "return iRet;\n";
+        echo _tab(1) . "}";
+
+        _java_comment_header("更新数据--通过bean", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        echo _tab(1) . " * @param v_{$uc_model_name}Bean\n";
+        foreach ($a_w_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return int\n";
+        _java_comment_footer(1);
+        echo _tab(1) . "public int {$fun_name2}({$uc_model_name}Bean v_{$uc_model_name}Bean";
+        $ii = 1;
+        foreach ($a_w_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        echo _tab(2) . "int iRet = {$fun_name1}(";
+        $ii = 0;
+        foreach ($a_u_param_field as $field) {
+            echo _warp2join($ii) . _tab(5) . "v_{$uc_model_name}Bean->{$field->name}";
+            $ii++;
+        }
+        foreach ($a_w_param_use as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(2) . ");\n";
+        echo _tab(2) . "return iRet;\n";
+        echo _tab(1) . "}";
+
+        $this->_funFooter($model, $fun);
+    }
+
+    function cFetch(MyModel $model, MyFun $fun)
+    {
+        $this->_funHeader($model, $fun);
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $fun_name = $fun->name;
+        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "fetch");//存储过曾的名字
+        $fun_name1 = _db_find_model_fun_name($fun_name, "fetch");//散列参数添加
+        $fun_name2 = _db_find_model_fun_name($fun_name, "fetch", true);//散列参数添加返回bean
+
+        $a_all_fields = $model->field_list_kv;
+
+        $i_param = 0;
+        $a_param_comment = array();//用于注释
+        $a_param_define = array();//用于定义
+        $a_param_use = array();//用于使用
+        $a_param_field = array();//用于定位原来的field的值
+        list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
+        $i_param = count($a_param_comment);
+        //var_dump($fun->field_list);
+
+        _java_comment_header("通过条件获取一个数据，返回值是hash", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return HashMap\n";
+        _java_comment_footer(1);
+        echo _tab(1) . "public HashMap {$fun_name1}(";
+        $ii = 0;
+        foreach ($a_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_param);
+        echo _tab(2) . "//question_marks = {$i_param}\n";
+        echo _tab(2) . "HashMap<String, String> mRet = new HashMap<>();\n";
+        $this->_dbQueryHeader("read");
+        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(4) . "st = conn.prepareCall(sql);\n";
+
+        $ii = 0;
+        foreach ($a_param_use as $param) {
+            $o_field = $a_param_field[$ii];
+            echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+            $ii++;
+        }
+        echo "\n";
+        echo _tab(4) . "rs = st.executeQuery();\n";
+        echo _tab(4) . "while (rs.next()) {\n";
+        echo _tab(5) . "for (Map.Entry<String, String> entry : mPlainRowMap.entrySet()) {\n";
+        echo _tab(6) . "mRet.put(entry.getKey(), rs.getString(entry.getValue())); \n";
+        echo _tab(5) . "}\n";
+        echo _tab(5) . "break;\n";
+        echo _tab(4) . "}\n";
+
+        echo _tab(4) . "logger.debug(\"call {$proc_name} done\");\n";
+        $this->_dbQueryFooter();
+        echo _tab(2) . "return mRet;\n";
+        echo _tab(1) . "}";
+
+        _java_comment_header("通过条件获取一个数据，返回值是bean", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return {$uc_model_name}Bean\n";
+        _java_comment_footer(1);
+        echo _tab(1) . "public {$uc_model_name}Bean {$fun_name2}(";
+        $ii = 0;
+        foreach ($a_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_param + 1);
+        echo _tab(2) . "//question_marks = {$i_param} + 1 \n";
+        echo _tab(2) . "{$uc_model_name}Bean mBean = new {$uc_model_name}Bean();\n";
+        $this->_dbQueryHeader("read");
+        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(4) . "st = conn.prepareCall(sql);\n";
+        $ii = 0;
+        foreach ($a_param_use as $param) {
+            $o_field = $a_param_field[$ii];
+            echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+            $ii++;
+        }
+        echo "\n";
+        echo _tab(4) . "rs = st.executeQuery();\n";
+        echo _tab(4) . "while (rs.next()) {\n";
+        foreach ($model->field_list as $key => $o_field) {
+            echo $this->_procResultBean($o_field->name, $o_field->type, 5);
+        }
+        echo _tab(5) . "break;\n";
+        echo _tab(4) . "}\n";
+
+        echo _tab(4) . "logger.debug(\"call {$proc_name} done\");\n";
+        $this->_dbQueryFooter();
+        echo _tab(2) . "return mBean;\n";
+        echo _tab(1) . "}";
+        $this->_funFooter($model, $fun);
+    }
+
+    function _procResultBean($key, $field_type, $tab_idx)
+    {
+
+        switch ($field_type) {
+            case Constant::DB_FIELD_TYPE_BOOL :
+                echo _tab($tab_idx) . "mBean.{$key} = rs.getInt(\"{$key}\");\n";
+                break;
+            //整型
+            case Constant::DB_FIELD_TYPE_INT:
+                echo _tab($tab_idx) . "mBean.{$key} = rs.getInt(\"{$key}\");\n";
+                break;//
+
+            case Constant::DB_FIELD_TYPE_LONGINT:
+                echo _tab($tab_idx) . "mBean.{$key} = rs.getLong(\"{$key}\");\n";
+                break;
+            //
+            case Constant::DB_FIELD_TYPE_BLOB :
+            case Constant::DB_FIELD_TYPE_LONGBLOB :
+                echo _tab($tab_idx) . "is = rs.getBinaryStream(\"{$key}\");\n";
+                echo _tab($tab_idx) . "if (is != null) {\n";
+                echo _tab(1 + $tab_idx) . "buf = new byte[is.available()];\n";
+                echo _tab(1 + $tab_idx) . "is.read(buf);\n";
+                echo _tab(1 + $tab_idx) . "mBean.{$key} = buf ;\n";
+                echo _tab($tab_idx) . "}\n";
+                break;
+
+            //字符
+            default:
+                echo _tab($tab_idx) . "mBean.{$key} = rs.getString(\"{$key}\");\n";
+                break;
+        }
+
+    }
+
+    /**
+     * 单纯的统计，
+     * @param MyModel $model
+     * @param MyFun $fun
+     * @return mixed|void
+     */
+    function cCount(MyModel $model, MyFun $fun)
+    {
+        $this->_funHeader($model, $fun);
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $fun_name = $fun->name;
+        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "count");//存储过曾的名字
+        $fun_name1 = _db_find_model_fun_name($fun_name, "count");//散列参数添加
+
+        $a_all_fields = $model->field_list_kv;
+        $i_param = 0;
+        $a_param_comment = array();//用于注释
+        $a_param_define = array();//用于定义
+        $a_param_use = array();//用于使用
+        $a_param_field = array();//用于定位原来的field的值
+        list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
+        $i_param = count($a_param_comment);
+        //var_dump($fun->field_list);
+
+        _java_comment_header("普通统计数据", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return int\n";
+        _java_comment_footer(1);
+        echo _tab(1) . "public int {$fun_name1}(";
+        $ii = 0;
+        foreach ($a_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_param);
+        echo _tab(2) . "//question_marks = {$i_param}\n";
+        echo _tab(2) . "int iRet = 0;\n";
+        $this->_dbQueryHeader("read");
+        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(4) . "st = conn.prepareCall(sql);\n";
+
+        $ii = 0;
+        foreach ($a_param_use as $param) {
+            $o_field = $a_param_field[$ii];
+            echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+            $ii++;
+        }
+        echo "\n";
+        echo _tab(4) . "rs = st.executeQuery();\n";
+        echo _tab(4) . "while (rs.next()) {\n";
+        echo _tab(5) . "iRet = rs.getInt(\"i_count\");\n";
+        echo _tab(5) . "break;\n";
+        echo _tab(4) . "}\n";
+
+        echo _tab(4) . "logger.debug(\"call {$proc_name} done --\" + iRet);\n";
+        $this->_dbQueryFooter();
+        echo _tab(2) . "return iRet;\n";
+        echo _tab(1) . "}";
+
+        $this->_funFooter($model, $fun);
+    }
+
+    function cList(MyModel $model, MyFun $fun)
+    {
+        $this->_funHeader($model, $fun);
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $fun_name = $fun->name;
+        $proc_name = _db_find_proc_name($model->table_name, $fun_name, "list");//存储过曾的名字
+        $fun_name1 = _db_find_model_fun_name($fun_name, "list");//散列参数添加
+        $fun_name2 = _db_find_model_fun_name($fun_name, "list", true);//散列参数添加返回bean
+
+        $a_all_fields = $model->field_list_kv;//通过主键访问的字段
+
+        $fun_type = $fun->type;
+        $has_return_bean = false;
+        if ($fun_type == Constant::FUN_TYPE_LIST) {
+            $has_return_bean = true;
+        }
+        //1111基本条件
+        $i_param = 0;//基本参数格式
+        $a_param_comment = array();//用于注释
+        $a_param_define = array();//用于定义
+        $a_param_use = array();//用于使用
+        $a_param_field = array();//用于定位原来的field的值
+
+        list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
+        $i_param = count($a_param_comment);
+        $i_param_list = $i_param;
+
+        //22222被聚合键 TODO 放到父级函数里处理
+        $fun_type = $fun->type;
+        list($has_group_field, $group_field, $o_group_field, $group_field_final) = $this->parseGroup_field($model, $fun);
+        //3333分组键
+        list($has_group_by, $group_by) = $this->parseGroup_by($model, $fun);
+
+        //4444先处理having
+        //预先处理hading的条件
+        $o_having = $fun->group_having;
+        $has_having = $this->parseGroup_field($model, $fun, $has_group_field, $has_group_by);
+
+        //5555排序键
+        list($has_order, $is_order_by_input, $s_order_by, $is_order_dir_input, $s_order_dir) = $this->parseOrder_by($model, $fun);
+
+        //6666 分页
+        list($has_pager, $is_pager_size_input, $pager_size) = $this->parsePager($model, $fun);
+        //var_dump($fun->field_list);
+        _java_comment_header("通过条件列表，返回值是Vector", 1);
+        echo _tab(1) . " * {$fun->type}--{$fun->name}--{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        //11111
+        foreach ($a_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        //2222
+        //3333
+        //4444
+        //5555
+        if ($has_order) {
+            if ($is_order_by_input) {
+                echo _tab(1) . " * @param v_order_by 排序字段\n";
+                $i_param_list++;
+            }
+            if ($is_order_by_input) {
+                echo _tab(1) . " * @param v_order_dir 排序方式\n";
+                $i_param_list++;
+            }
+        }
+        //6666
+        if ($has_pager) {
+            echo _tab(1) . " * @param v_page 页码\n";
+            $i_param_list++;
+            if ($is_pager_size_input) {
+                echo _tab(1) . " * @param v_page_size 分页大小\n";
+                $i_param_list++;
+            }
+        }
+        echo _tab(1) . " *\n";
+        echo _tab(1) . " * @return Vector<HashMap>\n";
+        _java_comment_footer(1);
+        echo _tab(1) . "public Vector<HashMap> {$fun_name1}(";
+        $ii = 0;
+        foreach ($a_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        //5555
+        if ($has_order) {
+            if ($is_order_by_input) {
+                echo _warp2join($ii) . _tab(5) . "String v_order_by";
+                $ii++;
+            }
+            if ($is_order_by_input) {
+                echo _warp2join($ii) . _tab(5) . "String v_order_dir";
+                $ii++;
+            }
+        }
+        //6666
+        if ($has_pager) {
+            echo _warp2join($ii) . _tab(5) . "int v_page";
+            $ii++;
+            if ($is_pager_size_input) {
+                echo _warp2join($ii) . _tab(5) . "int v_page_size";
+                $ii++;
+            }
+        }
+
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_param_list);
+        echo _tab(2) . "//question_marks = {$i_param_list}\n";
+        echo _tab(2) . "Vector<HashMap> vList = new Vector<>();\n";
+        $this->_dbQueryHeader("read");
+        echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(4) . "st = conn.prepareCall(sql);\n";
+
+        $ii = 0;
+        foreach ($a_param_use as $param) {
+            $o_field = $a_param_field[$ii];
+            echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+            $ii++;
+        }
+        //5555
+        if ($has_order) {
+            if ($is_order_by_input) {
+                echo _tab(4) . "st.setString({$ii}, {v_order_by}); \n";
+                $ii++;
+            }
+            if ($is_order_by_input) {
+                echo _tab(4) . "st.setString({$ii}, {v_order_dir}); \n";
+                $ii++;
+            }
+        }
+        //6666
+        if ($has_pager) {
+            echo _tab(4) . "st.setInt({$ii}, {v_page}); \n";
+            $ii++;
+            if ($is_pager_size_input) {
+
+                echo _tab(4) . "st.setInt({$ii}, {v_page_size}); \n";
+                $ii++;
+            }
+        }
+
+        echo "\n";
+        echo _tab(4) . "rs = st.executeQuery();\n";
+        echo _tab(4) . "while (rs.next()) {\n";
+        echo _tab(2) . "HashMap<String, String> mRet = new HashMap<>();\n";
+        echo _tab(5) . "for (Map.Entry<String, String> entry : mPlainRowMap.entrySet()) {\n";
+        echo _tab(6) . "mRet.put(entry.getKey(), rs.getString(entry.getValue())); \n";
+        echo _tab(5) . "}\n";
+        //TODO 去掉不需要的
+        if (!$has_return_bean) {
+            //聚合的结果
+            echo _tab(5) . "mRet.put({$group_field_final}, rs.getInt({$group_field_final})); \n";
+        }
+        echo _tab(5) . "vList.add(mRet);\n";
+        echo _tab(4) . "}\n";
+
+        echo _tab(4) . "logger.debug(\"call {$proc_name} done\");\n";
+        $this->_dbQueryFooter();
+        echo _tab(2) . "return vList;\n";
+        echo _tab(1) . "}";
+
+        //选中分页的才分页/////////////////////////////////////////////////////////////////////////////////
+        if ($has_return_bean) {
+            //非聚合的才有bean
+            _java_comment_header("通过条件获取列表，返回值是bean", 1);
+            echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+            echo _tab(1) . " *\n";
+            foreach ($a_param_comment as $param) {
+                echo _tab(1) . "{$param}\n";
+            }
+            //5555
+            if ($has_order) {
+                if ($is_order_by_input) {
+                    echo _tab(1) . " * @param v_order_by 排序字段\n";
+                }
+                if ($is_order_by_input) {
+                    echo _tab(1) . " * @param v_order_dir 排序方式\n";
+                }
+            }
+            //6666
+            if ($has_pager) {
+                echo _tab(1) . " * @param v_page 页码\n";
+                if ($is_pager_size_input) {
+                    echo _tab(1) . " * @param v_page_size 分页大小\n";
+                }
+            }
+
+            echo _tab(1) . " * @return  Vector<{$uc_model_name}Bean\n";
+            _java_comment_footer(1);
+            echo _tab(1) . "public Vector<{$uc_model_name}Bean> {$fun_name2}(";
+            $ii = 0;
+            foreach ($a_param_define as $param) {
+                echo _warp2join($ii) . _tab(5) . "{$param}";
+                $ii++;
+            }
+            //5555
+            if ($has_order) {
+                if ($is_order_by_input) {
+                    echo _warp2join($ii) . _tab(5) . "String v_order_by";
+                    $ii++;
+                }
+                if ($is_order_by_input) {
+                    echo _warp2join($ii) . _tab(5) . "String v_order_dir";
+                    $ii++;
+                }
+            }
+            //6666
+            if ($has_pager) {
+                echo _warp2join($ii) . _tab(5) . "int v_page";
+                $ii++;
+                if ($is_pager_size_input) {
+                    echo _warp2join($ii) . _tab(5) . "int v_page_size";
+                    $ii++;
+                }
+            }
+            echo _tab(1) . "\n" . _tab(1) . ")\n";
+            echo _tab(1) . "{\n";
+            $s_qm = _db_question_marks($i_param_list);
+            echo _tab(2) . "//question_marks = {$i_param_list} \n";
+            echo _tab(2) . "Vector<{$uc_model_name}Bean> vList = new Vector<>();\n";
+            $this->_dbQueryHeader("read");
+            echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+            echo _tab(4) . "st = conn.prepareCall(sql);\n";
+
+            $ii = 0;
+            foreach ($a_param_use as $param) {
+                $o_field = $a_param_field[$ii];
+                echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+                $ii++;
+            }
+
+            //5555
+            if ($has_order) {
+                if ($is_order_by_input) {
+                    echo _tab(4) . "st.setString({$ii}, {v_order_by}); \n";
+                    $ii++;
+                }
+                if ($is_order_by_input) {
+                    echo _tab(4) . "st.setString({$ii}, {v_order_dir}); \n";
+                    $ii++;
+                }
+            }
+            //6666
+            if ($has_pager) {
+                echo _tab(4) . "st.setInt({$ii}, {v_page}); \n";
+                $ii++;
+                if ($is_pager_size_input) {
+
+                    echo _tab(4) . "st.setInt({$ii}, {v_page_size}); \n";
+                    $ii++;
+                }
+            }
+
+            echo "\n";
+            echo _tab(4) . "rs = st.executeQuery();\n";
+            echo _tab(4) . "while (rs.next()) {\n";
+            echo _tab(2) . "{$uc_model_name}Bean mBean = new {$uc_model_name}Bean();\n";
+            foreach ($model->field_list as $key => $o_field) {
+                echo $this->_procResultBean($o_field->name, $o_field->type, 5);
+            }
+            echo _tab(5) . "vList.add({$uc_model_name}Bean);\n";
+            echo _tab(4) . "}\n";
+
+            echo _tab(4) . "logger.debug(\"call {$proc_name} done\");\n";
+            $this->_dbQueryFooter();
+            echo _tab(2) . "return vList;\n";
+            echo _tab(1) . "}";
+        }
+        //分页时包含对应的计数/////////////////////////////////////////////////////////////////////////////////
+        if ($has_pager) {
+            _java_comment_header("获取分页对应的记录总数", 1);
+            echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+            echo _tab(1) . " *\n";
+            foreach ($a_param_comment as $param) {
+                echo _tab(1) . "{$param}\n";
+            }
+            echo _tab(1) . " * @return  int\n";
+            _java_comment_footer(1);
+            echo _tab(1) . "public int {$fun_name1}_Count(";
+            $ii = 0;
+            foreach ($a_param_define as $param) {
+                echo _warp2join($ii) . _tab(5) . "{$param}";
+                $ii++;
+            }
+            echo _tab(1) . "\n" . _tab(1) . ")\n";
+            echo _tab(1) . "{\n";
+            $s_qm = _db_question_marks($i_param);
+            echo _tab(2) . "//question_marks = {$i_param} \n";
+            echo _tab(2) . "int iRet = 0;\n";
+            $this->_dbQueryHeader("read");
+            echo _tab(4) . "String sql = \"{CALL `{$proc_name}_c`({$s_qm})}\";\n";
+            echo _tab(4) . "st = conn.prepareCall(sql);\n";
+            $ii = 0;
+            foreach ($a_param_use as $param) {
+                $o_field = $a_param_field[$ii];
+                echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
+                $ii++;
+            }
+            echo "\n";
+            echo _tab(4) . "rs = st.executeQuery();\n";
+            echo _tab(4) . "while (rs.next()) {\n";
+            echo _tab(5) . "iRet = rs.getInt(\"i_count\");\n";
+            echo _tab(5) . "break;\n";
+            echo _tab(4) . "}\n";
+
+            echo _tab(4) . "logger.debug(\"call {$proc_name}_c done\");\n";
+            $this->_dbQueryFooter();
+            echo _tab(2) . "return iRet;\n";
+            echo _tab(1) . "}";
+
+        }
+
+
+        $this->_funFooter($model, $fun);
+    }
+
+    function ccTmpl($model)
+    {
+        // TODO: Implement ccTmpl() method.
+    }
+
+    function ccWeb($model)
+    {
+        // TODO: Implement ccWeb() method.
+    }
+
+    function ccApi($model)
+    {
+        // TODO: Implement ccApi() method.
+    }
+
+    function ccDoc($model)
+    {
+        // TODO: Implement ccDoc() method.
+    }
 
     /**
      * 创建数据结构

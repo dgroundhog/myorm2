@@ -4,19 +4,9 @@
  * 创建模型的基本操作
  * Class DbBase
  */
-abstract class MvcBase implements CcBase
+abstract class MvcBase extends CcBase implements  CcImpl
 {
-    /**
-     * 应用配置
-     * @var MyApp
-     */
-    public $curr_app = null;
 
-    /**
-     * 应用配置
-     * @var MyArch
-     */
-    public $arch_conf = null;
 
     public $final_package = "";//最终包名字
     /**
@@ -41,8 +31,9 @@ abstract class MvcBase implements CcBase
      */
     public function __construct(MyApp $app)
     {
-        $output_root = $app->path_output;
         $this->curr_app = $app;
+        $output_root = $app->path_output;
+
         $this->arch_conf = $app->getCurrArch();
         
         if (!file_exists($output_root)) {
@@ -145,6 +136,7 @@ abstract class MvcBase implements CcBase
      */
     public static function findCc(MyApp $app)
     {
+
         $o_curr_arch = $app->getCurrArch();
         $mm = null;
         switch ($o_curr_arch->mvc) {

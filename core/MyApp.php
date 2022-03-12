@@ -4,6 +4,7 @@ if (!defined("CC_ROOT")) {
 }
 include_once(CC_ROOT . "/_util.inc.php");
 include_once(CC_ROOT . "/_cc.inc.php");
+include_once(CC_ROOT . "/CcImpl.php");
 include_once(CC_ROOT . "/CcBase.php");
 include_once(CC_ROOT . "/MyStruct.php");
 include_once(CC_ROOT . "/MyArch.php");
@@ -121,7 +122,6 @@ class MyApp extends MyStruct
                 return $this->db_list[$this->curr_db];
             }
         }
-
 
         /* @var MyDb $first_db */
         $first_db = null;
@@ -437,7 +437,9 @@ class MyApp extends MyStruct
      */
     public function buildModel()
     {
+       // var_dump($this);
         $mm = MvcBase::findCc($this);
+        //var_dump($mm);
         if ($mm == null) {
             return;
         }

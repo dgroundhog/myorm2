@@ -4,19 +4,9 @@
  * 构建数据库的基类
  * Class DbBase
  */
-abstract class DbBase implements CcBase
+abstract class DbBase extends CcBase implements  CcImpl
 {
-    /**
-     * 应用配置
-     * @var MyApp
-     */
-    public $curr_app = null;
 
-    /**
-     * 数据库配置
-     * @var MyDb
-     */
-    public $db_conf = null;
 
     /**
      * 输出目录

@@ -274,7 +274,7 @@
 
                             <hr/>
                             <div class="card-header">
-                                <h3 class="card-title">HAVING聚合后过滤（模糊过滤无效）</h3>
+                                <h3 class="card-title">HAVING聚合后过滤（参数为聚合新键）</h3>
                                 <div class="card-tools">
                                     <button class="btn btn-tool" type="button"
                                             onclick="javascript:App.dt.project.modelFunHavingEdit();">

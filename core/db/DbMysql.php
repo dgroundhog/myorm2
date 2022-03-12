@@ -283,10 +283,6 @@ class DbMysql extends DbBase
                 case Constant::FUN_TYPE_LIST:
                 default:
                     $this->cList($model, $o_fun);
-                    if ($o_fun->pager_enable) {
-                        //和查询配套的统计数字
-                        $this->cList($model, $o_fun, true);
-                    }
                     break;
             }
         }

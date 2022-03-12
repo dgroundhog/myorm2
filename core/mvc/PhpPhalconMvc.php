@@ -28,7 +28,7 @@ class PhpPhalconMvc extends MvcBase
         // TODO: Implement cFetch() method.
     }
 
-    function cList(MyModel $model, MyFun $fun, $count_only)
+    function cList(MyModel $model, MyFun $fun)
     {
         // TODO: Implement cList() method.
     }
