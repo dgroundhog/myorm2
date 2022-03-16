@@ -513,7 +513,334 @@ class PhpPhalconMvc extends MvcBase
 
     function cList(MyModel $model, MyFun $fun)
     {
-        // TODO: Implement cList() method.
+        $this->_funHeader($model, $fun);
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $fun_name = $fun->name;
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "list");//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, "list");//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, "list", true);//散列参数添加返回bean
+
+        $a_all_fields = $model->field_list_kv;//通过主键访问的字段
+
+        $fun_type = $fun->type;
+        $has_return_bean = false;
+        if ($fun_type == Constant::FUN_TYPE_LIST) {
+            $has_return_bean = true;
+        }
+        //1111基本条件
+        list($i_w_param,
+            $a_w_param_comment,
+            $a_w_param_define,
+            $a_w_param_use,
+            $a_w_param_type,
+            $a_w_param_field) = $this->_procWhereCond($model, $fun);
+        $i_param_list = $i_w_param;
+
+        //22222被聚合键 TODO 放到父级函数里处理
+        $fun_type = $fun->type;
+        list($has_group_field, $group_field, $o_group_field, $group_field_final) = $this->parseGroup_field($model, $fun);
+        //3333分组键
+        list($has_group_by, $group_by) = $this->parseGroup_by($model, $fun);
+
+        //4444先处理having
+        //预先处理hading的条件
+        $o_having = $fun->group_having;
+        $has_having = $this->parseGroup_field($model, $fun, $has_group_field, $has_group_by);
+
+        //5555排序键
+        list($has_order, $is_order_by_input, $s_order_by, $is_order_dir_input, $s_order_dir) = $this->parseOrder_by($model, $fun);
+
+        //6666 分页
+        list($has_pager, $is_pager_size_input, $pager_size) = $this->parsePager($model, $fun);
+        //var_dump($fun->field_list);
+        _fun_comment_header("通过条件列表，返回值是Vector", 1);
+        echo _tab(1) . " * {$fun->type}--{$fun->name}--{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        //11111
+        foreach ($a_w_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        //2222
+        //3333
+        //4444
+        //5555
+        if ($has_order) {
+            if ($is_order_by_input) {
+                echo _tab(1) . " * @param string \$v_order_by 排序字段\n";
+                $i_param_list++;
+            }
+            if ($is_order_by_input) {
+                echo _tab(1) . " * @param string \$v_order_dir 排序方式\n";
+                $i_param_list++;
+            }
+        }
+        //6666
+        if ($has_pager) {
+            echo _tab(1) . " * @param int \$v_page 页码\n";
+            $i_param_list++;
+            if ($is_pager_size_input) {
+                echo _tab(1) . " * @param int \$v_page_size 分页大小\n";
+                $i_param_list++;
+            }
+        }
+        echo _tab(1) . " *\n";
+        echo _tab(1) . " * @return array [Vector<HashMap>]\n";
+        _fun_comment_footer(1);
+        echo _tab(1) . "public function {$fun_name1}(";
+        $ii = 0;
+        foreach ($a_w_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        //5555
+        if ($has_order) {
+            if ($is_order_by_input) {
+                echo _warp2join($ii) . _tab(5) . "\$v_order_by";
+                $ii++;
+            }
+            if ($is_order_by_input) {
+                echo _warp2join($ii) . _tab(5) . "\$v_order_dir";
+                $ii++;
+            }
+        }
+        //6666
+        if ($has_pager) {
+            echo _warp2join($ii) . _tab(5) . "\$v_page";
+            $ii++;
+            if ($is_pager_size_input) {
+                echo _warp2join($ii) . _tab(5) . "\$v_page_size";
+                $ii++;
+            }
+        }
+
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_param_list);
+        echo _tab(2) . "//question_marks = {$i_param_list}\n";
+        echo _tab(2) . "\$a_list = array();\n";
+        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+
+        $tab4 = ",\n" . _tab(4);
+        $this->_beforeQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_use);
+        //5555
+        $inc=$i_w_param;
+        if ($has_order) {
+            if ($is_order_by_input) {
+                echo (($inc>0)? $tab4 : "")."\$v_order_by";
+                $inc++;
+            }
+            if ($is_order_by_input) {
+                echo (($inc>0)? $tab4 : "")."\$v_order_dir";
+                $inc++;
+            }
+        }
+        //6666
+        if ($has_pager) {
+            echo (($inc>0)? $tab4 : "")."\$v_page";
+            $inc++;
+            if ($is_pager_size_input) {
+                echo $tab4 ."\$v_page_size";
+                $inc++;
+            }
+        }
+        echo "\n";
+        $this->_onQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_type);
+        //5555
+        $inc=$i_w_param;
+        if ($has_order) {
+            if ($is_order_by_input) {
+                echo (($inc>0)? $tab4 : "")."Db\\Column::BIND_PARAM_STR";
+                $inc++;
+            }
+            if ($is_order_by_input) {
+                echo (($inc>0)? $tab4 : "")."Db\\Column::BIND_PARAM_STR";
+                $inc++;
+            }
+        }
+        //6666
+        if ($has_pager) {
+            echo (($inc>0)? $tab4 : "")."Db\\Column::BIND_PARAM_INT";
+            $inc++;
+            if ($is_pager_size_input) {
+                echo $tab4 ."Db\\Column::BIND_PARAM_INT";
+                $inc++;
+            }
+        }
+        echo "\n";
+        $this->_afterQuery();
+        echo _tab(2) . "\$b_found = false;\n";
+        $this->_beforeResultLoop();
+        echo _tab(4) . "\$a_row_info = array();\n";
+        echo _tab(4) . "foreach (\$a_ret as \$kk => \$vv) {\n";
+        echo _tab(5) . "if(isset(self::\$m_row_map[\$kk])){\n";
+        echo _tab(6) . "\$a_row_info[\$kk] = \$vv;\n";
+        echo _tab(5) . "}\n";
+        echo _tab(4) . "}\n";
+        echo _tab(4) . "\$a_list[] = \$a_row_info;\n";
+        $this->_afterResultLoop();
+
+        //TODO 去掉不需要的
+        if (!$has_return_bean) {
+            //聚合的结果 TODO
+            echo _tab(5) . "mRet.put({$group_field_final}, rs.getInt({$group_field_final})); \n";
+        }
+
+        echo _tab(2) . "SeasLog::debug(\"call {$proc_name} return {\$b_found}\");\n";
+        echo _tab(2) . "return \$a_list;\n";
+        echo _tab(1) . "}";
+
+        //选中分页的才分页/////////////////////////////////////////////////////////////////////////////////
+        if ($has_return_bean) {
+            //非聚合的才有bean
+            _fun_comment_header("通过条件获取列表，返回值是bean", 1);
+            echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+            echo _tab(1) . " *\n";
+            foreach ($a_w_param_comment as $param) {
+                echo _tab(1) . "{$param}\n";
+            }
+            //2222
+            //3333
+            //4444
+            //5555
+            if ($has_order) {
+                if ($is_order_by_input) {
+                    echo _tab(1) . " * @param string \$v_order_by 排序字段\n";
+                    $i_param_list++;
+                }
+                if ($is_order_by_input) {
+                    echo _tab(1) . " * @param string \$v_order_dir 排序方式\n";
+                    $i_param_list++;
+                }
+            }
+            //6666
+            if ($has_pager) {
+                echo _tab(1) . " * @param int \$v_page 页码\n";
+                $i_param_list++;
+                if ($is_pager_size_input) {
+                    echo _tab(1) . " * @param int \$v_page_size 分页大小\n";
+                    $i_param_list++;
+                }
+            }
+
+            echo _tab(1) . " * @return array [Vector<{$uc_model_name}Bean>]\n";
+            _fun_comment_footer(1);
+            echo _tab(1) . "public function {$fun_name2}(";
+            $ii = 0;
+            foreach ($a_w_param_define as $param) {
+                echo _warp2join($ii) . _tab(5) . "{$param}";
+                $ii++;
+            }
+            //5555
+            if ($has_order) {
+                if ($is_order_by_input) {
+                    echo _warp2join($ii) . _tab(5) . "\$v_order_by";
+                    $ii++;
+                }
+                if ($is_order_by_input) {
+                    echo _warp2join($ii) . _tab(5) . "\$v_order_dir";
+                    $ii++;
+                }
+            }
+            //6666
+            if ($has_pager) {
+                echo _warp2join($ii) . _tab(5) . "\$v_page";
+                $ii++;
+                if ($is_pager_size_input) {
+                    echo _warp2join($ii) . _tab(5) . "\$v_page_size";
+                    $ii++;
+                }
+            }
+            echo _tab(1) . "\n" . _tab(1) . ")\n";
+            echo _tab(1) . "{\n";
+            echo _tab(2) . "\$a_bean_list = array();\n";
+            echo _tab(2) . "\$a_map_list = \$this->{$fun_name1}(\n";
+            $ii = 0;
+            foreach ($a_w_param_define as $param) {
+                echo _warp2join($ii) . _tab(5) . "{$param}";
+                $ii++;
+            }
+            //5555
+            if ($has_order) {
+                if ($is_order_by_input) {
+                    echo _warp2join($ii) . _tab(5) . "\$v_order_by";
+                    $ii++;
+                }
+                if ($is_order_by_input) {
+                    echo _warp2join($ii) . _tab(5) . "\$v_order_dir";
+                    $ii++;
+                }
+            }
+            //6666
+            if ($has_pager) {
+                echo _warp2join($ii) . _tab(5) . "\$v_page";
+                $ii++;
+                if ($is_pager_size_input) {
+                    echo _warp2join($ii) . _tab(5) . "\$v_page_size";
+                    $ii++;
+                }
+            }
+            echo   "\n" . _tab(5) . ");\n";
+            echo _tab(2) . "foreach (\$a_map_list as \$a_row) {\n";
+            echo _tab(3) . "\$o_bean = new {$uc_model_name}Bean();\n";
+            echo _tab(3) . "foreach (\$a_row as \$kk => \$vv) {\n";
+            echo _tab(4) . "if(isset(self::\$m_row_map[\$kk])){\n";
+            echo _tab(5) . "\$o_bean->\$kk = \$vv;\n";
+            echo _tab(4) . "}\n";
+            echo _tab(3) . "}\n";
+            echo _tab(3) . "\$a_bean_list[] = \$o_bean;\n";
+            echo _tab(2) . "}\n";
+            echo _tab(2) . "return a_bean_list;\n";
+            echo _tab(1) . "}";
+        }
+        //分页时包含对应的计数/////////////////////////////////////////////////////////////////////////////////
+        if ($has_pager) {
+            _fun_comment_header("获取分页对应的记录总数", 1);
+            echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+            echo _tab(1) . " *\n";
+            foreach ($a_w_param_comment as $param) {
+                echo _tab(1) . "{$param}\n";
+            }
+            echo _tab(1) . " * @return  int\n";
+            _fun_comment_footer(1);
+            echo _tab(1) . "public function {$fun_name1}_Count(";
+            $ii = 0;
+            foreach ($a_w_param_define as $param) {
+                echo _warp2join($ii) . _tab(5) . "{$param}";
+                $ii++;
+            }
+            echo _tab(1) . "\n" . _tab(1) . ")\n";
+            echo _tab(1) . "{\n";
+            $s_qm = _db_question_marks($i_w_param);
+            echo _tab(2) . "//question_marks = {$i_w_param} \n";
+            echo _tab(2) . "\$iCount = 0;\n";
+            echo _tab(2) . "\$sql = \"{CALL `{$proc_name}_c`({$s_qm})}\";\n";
+            $this->_beforeQuery();
+            echo _tab(4);
+            echo implode(",\n" . _tab(4), $a_w_param_use);
+            echo "\n";
+            $this->_onQuery();
+            echo _tab(4);
+            echo implode(",\n" . _tab(4), $a_w_param_type);
+            echo "\n";
+            $this->_afterQuery();
+            $this->_beforeResultLoop();
+            echo _tab(4) . "\$iCount = \$a_ret['i_count'];\n";
+            echo _tab(4) . "break;\n";
+            $this->_afterResultLoop();
+
+            echo _tab(2) . "SeasLog::debug(\"call {$proc_name}_c return {\$iCount}\");\n";
+            echo _tab(2) . "return \$iCount;\n";
+            echo _tab(1) . "}";
+
+        }
+
+
+        $this->_funFooter($model, $fun);
     }
 
     function cCount(MyModel $model, MyFun $fun)
@@ -727,15 +1054,6 @@ class PhpPhalconMvc extends MvcBase
         // TODO: Implement ccDoc() method.
     }
 
-    /**
-     * 创建模型层
-     * @param MyModel $model
-     * @return mixed
-     */
-    function ccDb($model)
-    {
-        // TODO: Implement ccDoc() method.
-    }
 
     /**
      * 创建模型层
