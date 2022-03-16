@@ -302,19 +302,20 @@ class DbMysql extends DbBase
      */
     function cAdd(MyModel $model, MyFun $fun)
     {
-        $proc_name = $this->_procHeader($model, $fun->name, $fun->title, "add");
+
 
         $a_all_fields = $model->field_list_kv;
 
-        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
+        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
 
         if ($is_return_new_id) {
             $i_param++;
             $a_param_define[] = "INOUT `v_new_id` INT";
         }
 
+        $proc_name = $this->_procHeader($model, $fun->name, $fun->title, "add", $i_param);
         $this->_procBegin($a_param_define);
-        _db_comment("vars={$i_param}");
+
         echo "DECLARE m_new_id INT;\n";
         //注意这里除去inc外的是全部字段
         echo "INSERT INTO `t_{$model->table_name}` (\n";
@@ -409,7 +410,7 @@ class DbMysql extends DbBase
      * @param string $base_fun
      * @return string
      */
-    function _procHeader($model, $fun_name, $fun_title, $base_fun)
+    function _procHeader($model, $fun_name, $fun_title, $base_fun, $i_param_count = 0)
     {
 
         $real_fun = $this->findProcName($model->table_name, $fun_name, $base_fun);
@@ -417,6 +418,7 @@ class DbMysql extends DbBase
         _db_comment_begin();
         _db_comment("Procedure structure for {$real_fun}");
         _db_comment("Desc : {$fun_title}");
+        _db_comment("Param : {$i_param_count}");
         _db_comment_end();
 
         $user = $this->db_conf->user;
@@ -475,18 +477,12 @@ class DbMysql extends DbBase
         // $a_all_fields = $model->field_list_kv;
         $limit = $o_fun->limit;//更新限制
 
-        list($_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
-        if ($_param != "") {
-            $_param = $_param . ",\n" . _tab(1) . "INOUT `v_affected_rows` INT";
-        } else {
-            $_param = "INOUT `v_affected_rows` INT";
-        }
-        self::_procBegin($_param);
-
-
+        list($a_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
+        $a_param[] = "INOUT `v_affected_rows` INT";
+        self::_procBegin($a_param);
         echo "DECLARE m_affected_rows INT;\n";
-        echo "DECLARE s_affected_rows VARCHAR(12);\n";
-        echo "DELETE FROM `t_{$model->table_name}` WHERE ";
+        echo "DECLARE s_affected_rows VARCHAR(255);\n";
+        echo "DELETE FROM `t_{$model->table_name}` \n WHERE ";
         echo $_sql1;
         if ($limit > 0) {
             echo "\n";
@@ -512,13 +508,13 @@ class DbMysql extends DbBase
     function _procWhereCond($model, $o_fun)
     {
 
-        $s_param = "";
+        $a_param = array();//
         $s_sql1 = "";
         $s_sql2 = "";
 
         $jj = 0;
         if ($o_fun->where != null) {
-            $a_param = array();//
+
             $where_joiner = $o_fun->where->type;
             $cond_list = $o_fun->where->cond_list;
             $where_list = $o_fun->where->where_list;
@@ -531,8 +527,8 @@ class DbMysql extends DbBase
             }
             foreach ($cond_list as $cond) {
                 $jj++;
-                list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(0, $jj, $model, $cond, $where_joiner);
-                if ($_param != "") {
+                list($_params, $_sql1, $_sql2) = $this->_procWhereOneCond(0, $jj, $model, $cond, $where_joiner);
+                foreach ($_params as $_param) {
                     $a_param[] = $_param;
                 }
                 if ($_sql1 != "") {
@@ -541,7 +537,6 @@ class DbMysql extends DbBase
                 if ($_sql2 != "") {
                     $s_sql2 = $s_sql2 . "\n" . $_sql2;
                 }
-                //TODO
             }
             foreach ($where_list as $where2) {
 
@@ -566,8 +561,8 @@ class DbMysql extends DbBase
                     foreach ($cond_list2 as $cond) {
 
                         $jj++;
-                        list($_param, $_sql1, $_sql2) = $this->_procWhereOneCond(1, $jj, $model, $cond, $where_joiner2);
-                        if ($_param != "") {
+                        list($_params, $_sql1, $_sql2) = $this->_procWhereOneCond(1, $jj, $model, $cond, $where_joiner2);
+                        foreach ($_params as $_param) {
                             $a_param[] = $_param;
                         }
                         if ($_sql1 != "") {
@@ -582,14 +577,14 @@ class DbMysql extends DbBase
                     $s_sql2 = $s_sql2 . "\n" . "SET @s_sql = CONCAT( @s_sql, ')');\n\n";
                 }
             }
-            $s_param = implode(",\n" . _tab(1), $a_param);
+            //$s_param = implode(",\n" . _tab(1), $a_param);
         }
-        return array($s_param, $s_sql1, $s_sql2);
+        return array($a_param, $s_sql1, $s_sql2);
     }
 
     /**
      * 解析一个返回3个字符串
-     * - 参数结构
+     * - 参数结构 array
      * - 直接的sql语句
      * - 拼接的sql语句
      *
@@ -605,6 +600,10 @@ class DbMysql extends DbBase
 
         $field = $model->field_list[$cond->field];
         $field_type = $field->type;
+        if ($field_type == Constant::DB_FIELD_TYPE_BLOB || $field_type == Constant::DB_FIELD_TYPE_LONGBLOB) {
+            //blob字段不参与条件运算
+            return array(array(), "", "");
+        }
         $key = $field->name;
         $cond_type = $cond->type;
         $v1_type = $cond->v1_type;
@@ -634,10 +633,14 @@ class DbMysql extends DbBase
                 return $this->_procWhere_V_range($tab_idx, $inc, $WHERE_JOIN, $field, $cond_type, $v1_type, $v1);
 
             case Constant::COND_TYPE_KW:// = "KW";//关键字模糊匹配
+                if ($this->isIntType($field_type)) {
+                    //int字段不参与like运算
+                    return array(array(), "", "");
+                }
                 return $this->_procWhere_V_like($tab_idx, $inc, $WHERE_JOIN, $field, $cond_type, $v1_type, $v1);
                 break;
             default:
-                return array("", "", "");
+                return array(array(), "", "");
                 break;
         }
     }
@@ -650,7 +653,7 @@ class DbMysql extends DbBase
      * - 拼接的sql语句
      *
      * @param $tab_idx
-     * @param $inc
+     * @param $param_inc 防止重复的输入参数自增值，外部生成
      * @param $WHERE_JOIN
      * @param $o_field
      * @param $v_cond
@@ -658,16 +661,16 @@ class DbMysql extends DbBase
      * @param $val
      * @return string|string[]
      */
-    function _procWhere_V1($tab_idx, $inc, $WHERE_JOIN, $o_field, $v_cond, $v_type, $val)
+    function _procWhere_V1($tab_idx, $param_inc, $WHERE_JOIN, $o_field, $v_cond, $v_type, $val)
     {
         if (!isset(Constant::$a_cond_type_on_sql_1[$v_cond])) {
             SeasLog::error("known cond_type1 to proc");
-            return;
+            return array(array(), "", "");
         }
         $s_cond = Constant::$a_cond_type_on_sql_1[$v_cond];
 
         $s_param1 = "";
-        $s_param2 = "";
+        $a_param1 = array();
         $s_sql1 = "";
         $s_sql2 = "";
 
@@ -676,10 +679,9 @@ class DbMysql extends DbBase
         $has_if = false;
 
         switch ($v_type) {
-
-            //固定值
+            //固定值，理论上不能时blob的数据
             case Constant::COND_VAl_TYPE_FIXED:
-                if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                if ($this->isIntType($f_type)) {
                     $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$val}";
                     $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$val}'";
                 } else {
@@ -691,43 +693,40 @@ class DbMysql extends DbBase
             //函数
             case   Constant::COND_VAl_TYPE_FUN:
                 if ($val == "") {
-                    SeasLog::error("DB FUN is Empty");
-                    return array("", "", "");
+                    SeasLog::error("DB FUN v1 is Empty");
+                    return array(array(), "", "");
                     break;
                 }
+                //自行确保无参数函数已经存在
                 $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$val}()";
                 $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$val}()'";
                 break;
             //输入值
             case Constant::COND_VAl_TYPE_INPUT:
             default:
-                list($param_key, $param_key2) = $this->_procParam($o_field, $inc, "w");
-                $s_param1 = $param_key;
-                $s_param2 = $param_key2;
+                list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_field, $param_inc, "w");
+                $s_param1 = $param_use;
+                $a_param1[] = $param_define;
                 $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$s_param1}";
                 $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$s_param1}'";
                 $has_if = true;
                 break;
         }
-
         $s_sql1 = _tab($tab_idx) . $s_sql1;
 
         if ($has_if) {
-            if ($f_type != Constant::DB_FIELD_TYPE_INT && $f_type != Constant::DB_FIELD_TYPE_LONGINT) {
-                $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' THEN\n";
-                $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
-                $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
-            } else {
+            if ($this->isIntType($f_type)) {
                 $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != -1 THEN\n";
-                $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
-                $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
+            } else {
+                $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' THEN\n";
             }
+            $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
+            $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
             $s_sql2 = $s_sql3;
         } else {
             $s_sql2 = _tab($tab_idx) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
         }
-
-        return array($s_param2, $s_sql1, $s_sql2);
+        return array($a_param1, $s_sql1, $s_sql2);
     }
 
     /**
@@ -735,6 +734,16 @@ class DbMysql extends DbBase
      * 创建存储过程-查询多个、聚合、统计
      * @param MyModel $model
      */
+
+    /**
+     * 是否数字的类型
+     * @param $field_type
+     * @return bool
+     */
+    function isIntType($field_type)
+    {
+        return ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT);
+    }
 
     /**
      * 处理参数
@@ -750,6 +759,8 @@ class DbMysql extends DbBase
     function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false)
     {
         $param_comment = "";//sql 里不需要参数注释
+        $param_define = "";//sql  for input
+        $param_use = "";//sql
         $charset = $this->db_conf->charset;
         if ("" == $charset) {
             $charset = "utf8";
@@ -765,7 +776,7 @@ class DbMysql extends DbBase
             if ($append != "") {
                 $prefix = "{$prefix}_{$append}";
             }
-            $param_key = "v_{$idx_append}_{$prefix}_{$key}";
+            $param_use = "v_{$idx_append}_{$prefix}_{$key}";
             $has_charset = true;
             $size = $o_field->size;
             $type_size = "VARCHAR(255)";
@@ -844,15 +855,15 @@ class DbMysql extends DbBase
         } else {
             //离散函数
             $has_charset = true;
-            $param_key = "v_{$idx_append}_s_{$key}";
+            $param_use = "v_{$idx_append}_s_{$key}";
             $type_size = "VARCHAR(9999)";
         }
         if ($has_charset) {
-            $param_use = "IN `{$param_key}` {$type_size} CHARSET {$charset}";
+            $param_define = "IN `{$param_use}` {$type_size} CHARSET {$charset}";
         } else {
-            $param_use = "IN `{$param_key}` {$type_size}";
+            $param_define = "IN `{$param_use}` {$type_size}";
         }
-        return array($param_comment, $param_key, $param_use, $type_size);
+        return array($param_comment, $param_define, $param_use, $type_size);
     }
 
     /**
@@ -874,25 +885,19 @@ class DbMysql extends DbBase
      * @param $val2
      * @return string
      */
-    function _procWhere_V2($tab_idx, $inc, $WHERE_JOIN, $o_field, $v_cond, $v1_type, $val1, $v2_type, $val2)
+    function _procWhere_V2($tab_idx, $param_inc, $WHERE_JOIN, $o_field, $v_cond, $v1_type, $val1, $v2_type, $val2)
     {
-
-        //SeasLog::info("_procWhere_V2");
         if (!isset(Constant::$a_cond_type_on_sql_2[$v_cond])) {
             SeasLog::error("unknown cond_type2 to proc");
-            return;
+            return array(array(), "", "");
         }
         $s_cond = Constant::$a_cond_type_on_sql_2[$v_cond];
         $f_type = $o_field->type;
         $key = $o_field->name;
 
-        //SeasLog::debug($key."---".$f_type."---".$v1_type."---".$v2_type);
-
         $s_param = "";
-        $s_param_key1_join = "";
-        $s_param_key1_input = "";
-        $s_param_key2_join = "";
-        $s_param_key2_input = "";
+        $s_param1_use = "";
+        $s_param2_use = "";
 
         $s_sql1 = " {$WHERE_JOIN} (`{$key}` {$s_cond} ";
         $s_sql2 = "' {$WHERE_JOIN} (`{$key}` {$s_cond} ";
@@ -902,10 +907,9 @@ class DbMysql extends DbBase
         switch ($v1_type) {
             //v1固定值
             case Constant::COND_VAl_TYPE_FIXED:
-                if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                if ($this->isIntType($f_type)) {
                     $s_sql1 = $s_sql1 . " {$val1} AND";
                     $s_sql2 = $s_sql2 . " {$val1} AND";
-
                 } else {
                     $s_sql1 = $s_sql1 . " \'{$val1}\' AND";
                     $s_sql2 = $s_sql2 . " \'{$val1}\' AND";
@@ -914,7 +918,7 @@ class DbMysql extends DbBase
                 switch ($v2_type) {
                     //v2固定值
                     case Constant::COND_VAl_TYPE_FIXED:
-                        if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                        if ($this->isIntType($f_type)) {
                             $s_sql1 = $s_sql1 . " {$val2} ";
                             $s_sql2 = $s_sql2 . " {$val2} ";
                         } else {
@@ -925,6 +929,10 @@ class DbMysql extends DbBase
 
                     //v2函数
                     case Constant::COND_VAl_TYPE_FUN:
+                        if ($val2 == "") {
+                            SeasLog::error("DB FUN v20 is Empty");
+                            return array(array(), "", "");
+                        }
                         $s_sql1 = $s_sql1 . " {$val2}() ";
                         $s_sql2 = $s_sql2 . " {$val2}() ";
                         break;
@@ -932,25 +940,31 @@ class DbMysql extends DbBase
                     //v2输入值
                     case Constant::COND_VAl_TYPE_INPUT:
                     default:
-                        list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
-                        $s_param_key2_join = $param_key_join;
-                        $s_param_key2_input = $param_key_input;
-                        $s_param = "{$s_param_key2_input}";
 
-                        $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
-                        $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
+                        list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_field, $param_inc, "to");
+
+                        $s_param2_use = $param_use;
+                        $a_param[] = $param_define;
+
+                        $s_sql1 = $s_sql1 . " {$s_param2_use} ";
+                        $s_sql2 = $s_sql2 . " {$s_param2_use} ";
                         break;
                 }
                 break;
             //v1函数
             case Constant::COND_VAl_TYPE_FUN:
-                $s_sql1 = $s_sql1 . " {$val2}() AND";
-                $s_sql2 = $s_sql2 . " {$val2}() AND";
+
+                if ($val1 == "") {
+                    SeasLog::error("DB FUN v21 is Empty");
+                    return array(array(), "", "");
+                }
+                $s_sql1 = $s_sql1 . " {$val1}() AND";
+                $s_sql2 = $s_sql2 . " {$val1}() AND";
 
                 switch ($v2_type) {
                     //v2固定值
                     case Constant::COND_VAl_TYPE_FIXED:
-                        if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                        if ($this->isIntType($f_type)) {
                             $s_sql1 = $s_sql1 . " {$val2} ";
                             $s_sql2 = $s_sql2 . " {$val2} ";
 
@@ -961,6 +975,10 @@ class DbMysql extends DbBase
                         break;
                     //v2函数
                     case Constant::COND_VAl_TYPE_FUN:
+                        if ($val2 == "") {
+                            SeasLog::error("DB FUN v22 is Empty");
+                            return array(array(), "", "");
+                        }
                         $s_sql1 = $s_sql1 . " {$val2}() ";
                         $s_sql2 = $s_sql2 . " {$val2}() ";
                         break;
@@ -968,32 +986,33 @@ class DbMysql extends DbBase
                     //v2输入值
                     case Constant::COND_VAl_TYPE_INPUT:
                     default:
-                        list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
+                        list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_field, $param_inc, "to");
 
-                        $s_param_key2_join = $param_key_join;
-                        $s_param_key2_input = $param_key_input;
-                        $s_param = "{$s_param_key2_input}";
+                        $s_param2_use = $param_use;
+                        $a_param[] = $param_define;
 
-                        $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
-                        $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
+                        $s_sql1 = $s_sql1 . " {$s_param2_use} ";
+                        $s_sql2 = $s_sql2 . " {$s_param2_use} ";
                         break;
                 }
                 break;
             //v1输入值
             case  Constant::COND_VAl_TYPE_INPUT:
             default:
-                list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "from");
-                $s_param_key1_join = $param_key_join;
-                $s_param_key1_input = $param_key_input;
 
-                $s_sql1 = $s_sql1 . " {$s_param_key1_join} AND ";
-                $s_sql2 = $s_sql2 . " {$s_param_key1_join} AND ";
+                list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_field, $param_inc, "from");
+
+                $s_param1_use = $param_use;
+                $a_param[] = $param_define;
+
+
+                $s_sql1 = $s_sql1 . " {$s_param1_use} AND ";
+                $s_sql2 = $s_sql2 . " {$s_param1_use} AND ";
 
                 switch ($v2_type) {
                     //v2固定值
                     case Constant::COND_VAl_TYPE_FIXED:
-                        $s_param = "{$s_param_key1_input}";
-                        if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+                        if ($this->isIntType($f_type)) {
                             $s_sql1 = $s_sql1 . " {$val2} ";
                             $s_sql2 = $s_sql2 . " {$val2} ";
 
@@ -1005,21 +1024,24 @@ class DbMysql extends DbBase
 
                     //v2函数
                     case Constant::COND_VAl_TYPE_FUN:
-                        $s_param = "{$s_param_key1_input}";
+                        if ($val2 == "") {
+                            SeasLog::error("DB FUN v23 is Empty");
+                            return array(array(), "", "");
+                        }
                         $s_sql1 = $s_sql1 . " {$val2}() ";
                         $s_sql2 = $s_sql2 . " {$val2}() ";
                         break;
 
                     case  Constant::COND_VAl_TYPE_INPUT:
                     default:
-                        list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "to");
+                        list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_field, $param_inc, "to");
 
-                        $s_param_key2_join = $param_key_join;
-                        $s_param_key2_input = $param_key_input;
+                        $s_param2_use = $param_use;
+                        $a_param[] = $param_define;
 
-                        $s_param = "{$s_param_key1_input},\n" . _tab($tab_idx) . "{$s_param_key2_input}";
-                        $s_sql1 = $s_sql1 . " {$s_param_key2_join} ";
-                        $s_sql2 = $s_sql2 . " {$s_param_key2_join} ";
+                        $s_sql1 = $s_sql1 . " {$s_param2_use} ";
+                        $s_sql2 = $s_sql2 . " {$s_param2_use} ";
+                        //不完整的支持，当2个都是输入时，才允许用if判断是否为空
                         $has_if = true;
                         break;
                 }
@@ -1027,28 +1049,21 @@ class DbMysql extends DbBase
                 $s_sql1 = $s_sql1 . " )";
                 $s_sql2 = $s_sql2 . " )' ";
 
-//        if ($s_sql1 != "") {
-//            $s_sql1 = _tab($tab_idx) . $s_sql1;
-//        }
-
                 if ($has_if) {
-                    if ($f_type != Constant::DB_FIELD_TYPE_INT && $f_type != Constant::DB_FIELD_TYPE_LONGINT) {
-                        $s_sql3 = _tab($tab_idx) . "IF {$s_param_key1_join} != '' AND {$s_param_key2_join} != '' THEN\n";
-                        $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
-                        $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
+                    if ($this->isIntType($f_type)) {
+                        $s_sql3 = _tab($tab_idx) . "IF {$s_param1_use} != -1 AND {$s_param2_use} != -1  THEN\n";
                     } else {
-                        $s_sql3 = _tab($tab_idx) . "IF {$s_param_key1_join} != -1 AND {$s_param_key2_join} != -1  THEN\n";
-                        $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
-                        $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
+                        $s_sql3 = _tab($tab_idx) . "IF {$s_param1_use} != '' AND {$s_param2_use} != '' THEN\n";
                     }
+                    $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
+                    $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
                     $s_sql2 = $s_sql3;
                 } else {
                     $s_sql2 = _tab($tab_idx) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
                 }
 
-
-                return array($s_param, $s_sql1, $s_sql2);
         }
+        return array($s_param, $s_sql1, $s_sql2);
     }
 
     /**
@@ -1071,73 +1086,83 @@ class DbMysql extends DbBase
     {
 
         if (!isset(Constant::$a_cond_type_on_sql_3[$v_cond])) {
-            SeasLog::error("unknown cond_type3 to proc");
-            return;
+            SeasLog::error("unknown cond_type3 to _procWhere_V_range");
+            return array(array(), "", "");
         }
         $s_cond = Constant::$a_cond_type_on_sql_3[$v_cond];
 
-        $s_param_join = "";
-        $s_param_input = "";
+        $s_param1 = "";
+        $a_param = array();
         $s_sql1 = "";
         $s_sql2 = "";
         $has_if = false;
+        $delay_join = false;
 
         $f_type = $o_field->type;
         $key = $o_field->name;
 
-
-        //输入值
-        if ($v_type == Constant::COND_VAl_TYPE_INPUT) {
-            $has_if = true;
-            list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "", true);
-            $s_param_join = $param_key_join;
-            $s_param_input = $param_key_input;
-            $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} ($param_key_join)";
-            $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} ($param_key_join)'";
-            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
-
-            } else {
-                //字符串类
-                //需要外部输入时，先行添加单引号来隔离字符串
-
-                //echo _tab(1) . "SET @s_sql_v = REPLACE(s_{$cond}_{$key}, '|', '\',\'');\n";
-                //echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' {$key} NOT IN(\'',@s_sql_v,'\') ');\n";
-            }
-
-        }
-        //固定值
-        if ($v_type == Constant::COND_VAl_TYPE_FIXED) {
-
-            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
-                $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} ($val)";
-                $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} ($val)'";
-            } else {
+        switch ($v_type) {
+            //固定值
+            case Constant::COND_VAl_TYPE_FIXED:
                 if ($val == "") {
-                    return array("", "", "");
+                    SeasLog::error("V_range value is Empty");
+                    return array(array(), "", "");
                 }
-                $a_temp = explode(",", $val);
+                if ($this->isIntType($f_type)) {
+                    //val should be some string like 1,3,4,5
+                    $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} ($val)";
+                    $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} ($val)'";
+                } else {
+                    //val should be some string like a,c,d,e
+                    $a_temp = explode(",", $val);
+                    $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} ('" . implode("','", $a_temp) . "')";
+                    $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} (\'" . implode("\',\'", $a_temp) . "\')'";
+                }
+                break;
+            //函数
+            case Constant::COND_VAl_TYPE_FUN:
+                if ($val == "") {
+                    SeasLog::error("DB FUN is Empty");
+                    return array(array(), "", "");
+                }
+                $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond}({$val}())";
+                $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond}({$val}())'";
+                break;
+            //输入值
+            case Constant::COND_VAl_TYPE_INPUT:
+            default:
+                $has_if = true;
+                list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_field, $inc, "", true);
+                $s_param1 = $param_use;
+                $a_param[] = $param_define;
 
-                $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} ('" . implode("','", $a_temp) . "')";
-                $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} (\'" . implode("\',\'", $a_temp) . "\')'";
-            }
-        }
-        //函数
-        if ($v_type == Constant::COND_VAl_TYPE_FUN) {
-
-            $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond}({$val}())";
-            $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond}({$val}())'";
+                $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} ($s_param1)";
+                if ($this->isIntType($f_type)) {
+                    $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} ($s_param1)'";
+                } else {
+                    //字符串类,需要外部输入时，先行添加单引号来隔离字符串
+                    $delay_join = true;
+                    //echo _tab(1) . "SET @s_sql_v = REPLACE(s_{$cond}_{$key}, '|', '\',\'');\n";
+                    //echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' {$key} NOT IN(\'',@s_sql_v,'\') ');\n";
+                }
+                break;
         }
 
         if ($has_if) {
-            $s_sql3 = _tab($tab_idx) . "IF {$s_param_join} != '' THEN\n";
-            $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
+            $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' THEN\n";
+            if ($delay_join) {
+                $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql_v = REPLACE({$s_param1}, ',', '\',\'');\n";
+                $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, ' {$WHERE_JOIN} `{$key}` {$s_cond} (\'',@s_sql_v,'\')');\n";
+            } else {
+                $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
+            }
             $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
             $s_sql2 = $s_sql3;
         } else {
             $s_sql2 = _tab($tab_idx) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
         }
 
-        return array($s_param_input, $s_sql1, $s_sql2);
+        return array($a_param, $s_sql1, $s_sql2);
     }
 
     /**
@@ -1159,8 +1184,8 @@ class DbMysql extends DbBase
     function _procWhere_V_like($tab_idx, $inc, $WHERE_JOIN, $o_field, $v_cond, $v_type, $val)
     {
 
-        $s_param_join = "";
-        $s_param_input = "";
+        $s_param1 = "";
+        $a_param = array();
         $s_sql1 = "";
         $s_sql2 = "";
         $has_if = false;
@@ -1169,47 +1194,47 @@ class DbMysql extends DbBase
         $key = $o_field->name;
         //$a_temp0[] = "\'',s_kw,'\',`{$key}`) > 0  ";
 
-        //输入值
-        if ($v_type == Constant::COND_VAl_TYPE_INPUT) {
-            $has_if = true;
-            list($param_key_join, $param_key_input) = $this->_procParam($o_field, $inc, "", true);
-            $s_param_join = $param_key_join;
-            $s_param_input = $param_key_input;
-            $s_sql1 = " {$WHERE_JOIN} LOCATE($param_key_join, `{$key}`) > 0  ";
-            $s_sql2 = "' {$WHERE_JOIN} LOCATE($param_key_join, `{$key}`) > 0'";
-            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+        switch ($v_type) {
+            //固定值
+            case Constant::COND_VAl_TYPE_FIXED:
+                if ($val == "") {
+                    SeasLog::error("FIXED value is Empty");
+                    return array(array(), "", "");
+                }
+                $s_sql1 = " {$WHERE_JOIN} LOCATE('{$val}', `{$key}`) > 0  ";
+                $s_sql2 = "' {$WHERE_JOIN} LOCATE(\'{$val}\', `{$key}`) > 0'";
+                break;
+            //函数
+            case Constant::COND_VAl_TYPE_FUN:
+                if ($val == "") {
+                    SeasLog::error("DB FUN is Empty");
+                    return array(array(), "", "");
+                }
+                $s_sql1 = " {$WHERE_JOIN} LOCATE({$val}(), `{$key}`) > 0  ";
+                $s_sql2 = "' {$WHERE_JOIN} LOCATE({$val}(), `{$key}`) > 0'";
 
-            } else {
-                //字符串类
-                //需要外部输入时，先行添加单引号来隔离字符串
-                //echo _tab(1) . "SET @s_sql_v = REPLACE(s_{$cond}_{$key}, '|', '\',\'');\n";
-                //echo _tab(1) . "SET @s_sql = CONCAT( @s_sql, ' {$key} NOT IN(\'',@s_sql_v,'\') ');\n";
-            }
-
-        }
-        //固定值
-        if ($v_type == Constant::COND_VAl_TYPE_FIXED) {
-            //$s_param = "";
-            $s_sql1 = " {$WHERE_JOIN} LOCATE('{$val}', `{$key}`) > 0  ";
-            $s_sql2 = "' {$WHERE_JOIN} LOCATE(\'{$val}\', `{$key}`) > 0'";
-        }
-        //函数
-        if ($v_type == Constant::COND_VAl_TYPE_FUN) {
-            //$s_param = "";
-            $s_sql1 = " {$WHERE_JOIN} LOCATE({$val}(), `{$key}`) > 0  ";
-            $s_sql2 = "' {$WHERE_JOIN} LOCATE({$val}(), `{$key}`) > 0'";
+                break;
+            //输入值
+            case Constant::COND_VAl_TYPE_INPUT:
+            default:
+                $has_if = true;
+                list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_field, $inc, "like");
+                $s_param1 = $param_use;
+                $a_param[] = $param_define;
+                $s_sql1 = " {$WHERE_JOIN} LOCATE($s_param1, `{$key}`) > 0  ";
+                $s_sql2 = "' {$WHERE_JOIN} LOCATE($s_param1, `{$key}`) > 0'";
+                break;
         }
 
         if ($has_if) {
-            $s_sql3 = _tab($tab_idx) . "IF {$s_param_join} != '' THEN\n";
+            $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' THEN\n";
             $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
             $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
             $s_sql2 = $s_sql3;
         } else {
             $s_sql2 = _tab($tab_idx) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
         }
-
-        return array($s_param_input, $s_sql1, $s_sql2);
+        return array($a_param, $s_sql1, $s_sql2);
     }
 
     /**
@@ -1222,62 +1247,45 @@ class DbMysql extends DbBase
     function cUpdate(MyModel $model, MyFun $o_fun)
     {
 
-        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "update");
         $a_all_fields = $model->field_list_kv;
         $limit = $o_fun->limit;//更新限制
 
         $ii = 0;
-        $a_temp = array();
-
-        $a_field_update = $o_fun->field_list;
-        if ($o_fun->all_field == 1) {
-            $a_field_update = $model->field_list;
-        }
+        $a_param_all = array();
 
         //需要更新的字段
-        $update_key_by_input = array();
-        foreach ($a_field_update as $field) {
-            /* @var MyField $field */
-            $key = $field->name;
-            if (!isset($a_all_fields[$key])) {
-                continue;
-            }
-            $ii++;
-            $update_key_by_input[] = $key;
-            list($param_key, $param_key2) = self::_procParam($field, $ii, "u");
-            $a_temp[] = $param_key2;
+        list($i_u_param, $a_u_param_comment, $a_u_param_define, $a_u_param_use, $a_u_param_type, $a_u_param_key, $a_u_param_field) = $this->_parseUpdate_field($model, $o_fun);
+        foreach ($a_u_param_define as $item) {
+            $a_param_all[] = $item;
         }
-        echo "\n";
-        echo _tab(1);
-        echo implode(",\n" . _tab(1), $a_temp);
-        echo ",\n";
-
         //查询条件的字段
-        list($_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
-        $_param = $_param . ",\n" . _tab(1) . "INOUT `v_affected_rows` INT";
-        self::_procBegin($_param);
+        list($a_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
+        $i_count_where = count($a_param);
+        foreach ($a_param as $item) {
+            $a_param_all[] = $item;
+        }
+        $a_param_all[] = "INOUT `v_affected_rows` INT";
 
-        _db_comment("input update count {$ii} ");
+
+        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "update", $i_u_param + $i_count_where);
+
+        self::_procBegin($a_param_all);
+
+        _db_comment("input update count {$i_u_param} ");
+        _db_comment("input cond count {$i_count_where} ");
 
         echo "DECLARE m_affected_rows INT;\n";
-        echo "DECLARE s_affected_rows VARCHAR(12);\n";
-        echo "UPDATE `t_{$model->table_name}` SET ";
-
+        echo "DECLARE s_affected_rows VARCHAR(255);\n";
+        echo "UPDATE `t_{$model->table_name}`\n SET ";
 
         $a_temp = array();
         $ii = 0;
-        foreach ($o_fun->field_list as $field) {
-            /* @var MyField $field */
-            $key = $field->name;
-            if (!isset($a_all_fields[$key])) {
-                continue;
-            }
+        foreach ($a_u_param_use as $u_key) {
+            $key = $a_u_param_key[$ii];
+            $a_temp[] = "`{$key}` = {$u_key}";
             $ii++;
-            list($param_key, $param_key2) = self::_procParam($field, $ii, "u");
-            $a_temp[] = "`{$key}` = {$param_key}";
         }
-
-        if (isset($a_all_fields["utime"]) && !in_array("utime", $update_key_by_input)) {
+        if (isset($a_all_fields["utime"]) && !in_array("utime", $a_u_param_key)) {
             $a_temp[] = "`utime` = NOW()";
         }
 
@@ -1285,11 +1293,11 @@ class DbMysql extends DbBase
             echo "\n";
             echo _tab(1);
             echo implode(",\n" . _tab(1), $a_temp);
+            echo "\n";
         }
         if (count($a_temp) == 1) {
             echo $a_temp[0];
         }
-
         echo "\nWHERE ";
 
         echo $_sql1;
@@ -1316,15 +1324,19 @@ class DbMysql extends DbBase
      * @inheritDoc
      * 创建存储过程-查询一个
      * @param MyModel $model
+     * @param MyFun $o_fun
+     * @return int|void
      */
     function cFetch(MyModel $model, MyFun $o_fun)
     {
-        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "fetch");
         //查询条件的字段
-        list($_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
-        self::_procBegin($_param);
+        list($a_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
+        $i_param = count($a_param);
+        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "fetch", $i_param);
 
-        echo "SELECT * FROM `t_{$model->table_name}` WHERE ";
+        self::_procBegin($a_param);
+
+        echo "SELECT * FROM `t_{$model->table_name}`\n WHERE ";
         echo $_sql1;
         echo "\n";
         echo "LIMIT 1;\n";
@@ -1842,7 +1854,7 @@ class DbMysql extends DbBase
             $s_param_input = $param_key_input;
             $s_sql1 = " {$new_group_key} {$s_cond} ($param_key_join)";
             $s_sql2 = "' {$new_group_key} {$s_cond} ($param_key_join)'";
-            if ($f_type == Constant::DB_FIELD_TYPE_INT || $f_type == Constant::DB_FIELD_TYPE_LONGINT) {
+            if ($this->isIntType($f_type)) {
 
             } else {
                 //字符串类

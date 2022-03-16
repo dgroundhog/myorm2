@@ -100,6 +100,7 @@ class PhpPhalconMvc extends MvcBase
         return array($ret1, $ret2, $ret3, $param_type_bind);
     }
 
+
     function cAdd(MyModel $model, MyFun $fun)
     {
         $this->_funHeader($model, $fun);
@@ -139,12 +140,8 @@ class PhpPhalconMvc extends MvcBase
         echo _tab(1) . " * @return int\n";
         _fun_comment_footer(1);
         echo _tab(1) . "public function {$fun_name1}(";
-        $ii = 0;
-        foreach ($a_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        $this->_echoFunParams($a_param_define);
+        echo ")\n";
         echo _tab(1) . "{\n";
 
         $s_qm = _db_question_marks($i_param);
@@ -158,7 +155,11 @@ class PhpPhalconMvc extends MvcBase
         }
         $this->_beforeQuery();
         echo _tab(4);
-        echo implode(",\n" . _tab(4), $a_param_use);
+        $a_param_use2 = array();
+        foreach ($a_param_use as $key=> $param) {
+            $a_param_use2[] =$param;
+        }
+        echo implode(",\n" . _tab(4), $a_param_use2);
         echo "\n";
         $this->_onQuery();
         echo _tab(4);
@@ -186,8 +187,8 @@ class PhpPhalconMvc extends MvcBase
         echo _tab(1) . "{\n";
         echo _tab(2) . "\$i_new_id = \$this->{$fun_name1}(";
         $ii = 0;
-        foreach ($a_param_field as $field) {
-            echo _warp2join($ii) . _tab(5) . "\$v_{$lc_model_name}Bean->{$field->name}";
+        foreach ($a_param_key as $key) {
+            echo _warp2join($ii) . _tab(5) . "\$v_{$lc_model_name}Bean->{$key}";
             $ii++;
         }
         echo  "\n";
@@ -236,17 +237,278 @@ class PhpPhalconMvc extends MvcBase
 
     function cUpdate(MyModel $model, MyFun $fun)
     {
-        // TODO: Implement cUpdate() method.
+        $this->_funHeader($model, $fun);
+
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
+        $fun_name = $fun->name;
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "update");
+        $fun_name1 = $this->makeModelFunName($fun_name, "update");
+        $fun_name2 = $this->makeModelFunName($fun_name, "update", true);
+
+        $a_all_fields = $model->field_list_kv;
+        //需要更新的字段
+        list(
+            $i_u_param,
+            $a_u_param_comment,
+            $a_u_param_define,
+            $a_u_param_use,
+            $a_u_param_type,
+            $a_u_param_key,
+            $a_u_param_field
+            ) = $this->_parseUpdate_field($model, $fun);
+
+        //更新条件
+        list($i_w_param,
+            $a_w_param_comment,
+            $a_w_param_define,
+            $a_w_param_use,
+            $a_w_param_type,
+            $a_w_param_field) = $this->_procWhereCond($model, $fun);
+
+
+        _fun_comment_header("更新数据vars", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_u_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        foreach ($a_w_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return int\n";
+        _fun_comment_footer(1);
+
+        echo _tab(1) . "public function {$fun_name1}(";
+        $this->_echoFunParams($a_u_param_define,$a_w_param_define);
+        echo ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_u_param + $i_w_param + 1);
+        echo _tab(2) . "//question_marks = u {$i_u_param} + w {$i_w_param} + r 1 \n";
+        echo _tab(2) . "\$i_affected_rows = 0;\n";
+        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm},@_affected_rows)}\";\n";
+
+        $this->_beforeQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_u_param_use);
+        echo ",\n". _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_use);
+        echo "\n";
+        $this->_onQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_u_param_type);
+        echo ",\n". _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_type);
+        echo "\n";
+        $this->_afterQuery();
+
+        $this->_beforeResultLoop();
+        echo _tab(4) . "\$i_affected_rows = \$a_ret['i_affected_rows'];\n";
+        echo _tab(4) . "break;\n";
+        $this->_afterResultLoop();
+
+        echo _tab(2) . "SeasLog::debug(\"call {$proc_name} return {\$i_affected_rows}\");\n";
+        echo _tab(2) . "return \$i_affected_rows;\n";
+        echo _tab(1) . "}";
+
+        $this->_funFooter($model, $fun);
+
+        _fun_comment_header("更新数据--通过bean", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        echo _tab(1) . " * @param {$uc_model_name}Bean \$v_{$lc_model_name}Bean\n";
+        foreach ($a_w_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return int\n";
+        _fun_comment_footer(1);
+        echo _tab(1) . "public function {$fun_name2}({$uc_model_name}Bean \$v_{$lc_model_name}Bean";
+        $ii = 1;
+        foreach ($a_w_param_define as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        echo _tab(1) . "{\n";
+        echo _tab(2) . "\$iRet = \$this->{$fun_name1}(";
+        $ii = 0;
+        foreach ($a_u_param_field as $field) {
+            echo _warp2join($ii) . _tab(5) . "\$v_{$lc_model_name}Bean->{$field->name}";
+            $ii++;
+        }
+        foreach ($a_w_param_use as $param) {
+            echo _warp2join($ii) . _tab(5) . "{$param}";
+            $ii++;
+        }
+        echo _tab(2) . ");\n";
+        echo _tab(2) . "return \$iRet;\n";
+        echo _tab(1) . "}";
+
+        $this->_funFooter($model, $fun);
     }
 
     function cDelete(MyModel $model, MyFun $fun)
     {
-        // TODO: Implement cDelete() method.
+        $this->_funHeader($model, $fun);
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
+        $fun_name = $fun->name;
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "delete");
+        $fun_name1 = $this->makeModelFunName($fun_name, "delete");
+
+
+        list(
+            $i_param,
+            $a_param_comment,
+            $a_param_define,
+            $a_param_use,
+            $a_param_type,
+            $a_param_field)= $this->_procWhereCond($model, $fun);
+
+
+        _fun_comment_header("删除数据vars", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return int\n";
+        _fun_comment_footer(1);
+
+        echo _tab(1) . "public function {$fun_name1}(";
+        $this->_echoFunParams($a_param_define);
+        echo ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_param);
+        echo _tab(2) . "//question_marks = {$i_param}  \n";
+        echo _tab(2) . "\$i_affected_rows = 0;\n";
+        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm},@_affected_rows)}\";\n";
+
+        $this->_beforeQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_param_use);
+        echo "\n";
+        $this->_onQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_param_type);
+        echo "\n";
+        $this->_afterQuery();
+
+        $this->_beforeResultLoop();
+        echo _tab(4) . "\$i_affected_rows = \$a_ret['i_affected_rows'];\n";
+        echo _tab(4) . "break;\n";
+        $this->_afterResultLoop();
+
+        echo _tab(2) . "SeasLog::debug(\"call {$proc_name} return {\$i_affected_rows}\");\n";
+        echo _tab(2) . "return \$i_affected_rows;\n";
+        echo _tab(1) . "}";
+
+        $this->_funFooter($model, $fun);
     }
 
     function cFetch(MyModel $model, MyFun $fun)
     {
-        // TODO: Implement cFetch() method.
+        $this->_funHeader($model, $fun);
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $fun_name = $fun->name;
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "fetch");//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, "fetch");//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, "fetch", true);//散列参数添加返回bean
+
+        $a_all_fields = $model->field_list_kv;
+
+        //更新条件
+        list($i_w_param,
+            $a_w_param_comment,
+            $a_w_param_define,
+            $a_w_param_use,
+            $a_w_param_type,
+            $a_w_param_field) = $this->_procWhereCond($model, $fun);
+
+        _fun_comment_header("通过条件获取一个数据，返回值是hash", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_w_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return array\n";
+        _fun_comment_footer(1);
+        echo _tab(1) . "public function {$fun_name1}(";
+        $this->_echoFunParams($a_w_param_define);
+        echo  ")\n";
+
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_w_param);
+        echo _tab(2) . "//question_marks = {$i_w_param}\n";
+        echo _tab(2) . "\$a_info = array();\n";
+        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        $this->_beforeQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_use);
+        echo "\n";
+        $this->_onQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_type);
+        echo "\n";
+        $this->_afterQuery();
+        echo _tab(2) . "\$b_found = false;\n";
+        $this->_beforeResultLoop();
+        echo _tab(4) . "foreach (\$a_ret as \$kk => \$vv) {\n";
+        echo _tab(5) . "if(isset(self::\$m_row_map[\$kk])){\n";
+        echo _tab(6) . "\$a_info[\$kk] = \$vv;\n";
+        echo _tab(5) . "}\n";
+        echo _tab(5) . "\$b_found = true;\n";
+        echo _tab(5) . "break;\n";
+        echo _tab(4) . "}\n";
+        $this->_afterResultLoop();
+
+        echo _tab(2) . "SeasLog::debug(\"call {$proc_name} return {\$b_found}\");\n";
+        echo _tab(2) . "return \$a_info;\n";
+        echo _tab(1) . "}";
+
+        _fun_comment_header("通过条件获取一个数据，返回值是bean", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_w_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return {$uc_model_name}Bean\n";
+        _fun_comment_footer(1);
+        echo _tab(1) . "public function {$fun_name2}(";
+        $this->_echoFunParams($a_w_param_define);
+        echo  ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_w_param );
+        echo _tab(2) . "//question_marks = {$i_w_param}  \n";
+        echo _tab(2) . "\$o_bean = new {$uc_model_name}Bean();\n";
+        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        $this->_beforeQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_use);
+        echo "\n";
+        $this->_onQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_type);
+        echo "\n";
+        $this->_afterQuery();
+        echo _tab(2) . "\$b_found = false;\n";
+        $this->_beforeResultLoop();
+        echo _tab(4) . "foreach (\$a_ret as \$kk => \$vv) {\n";
+        echo _tab(5) . "if(isset(self::\$m_row_map[\$kk])){\n";
+        echo _tab(6) . "\$o_bean->\$kk = \$vv;\n";
+        echo _tab(5) . "}\n";
+        echo _tab(5) . "\$b_found = true;\n";
+        echo _tab(5) . "break;\n";
+        echo _tab(4) . "}\n";
+        $this->_afterResultLoop();
+
+        echo _tab(2) . "SeasLog::debug(\"call {$proc_name} return {\$b_found}\");\n";
+        echo _tab(2) . "return \$o_bean;\n";
+        echo _tab(1) . "}";
+        $this->_funFooter($model, $fun);
     }
 
     function cList(MyModel $model, MyFun $fun)
@@ -281,7 +543,7 @@ class PhpPhalconMvc extends MvcBase
         }
         if (count($a_all_fields) > 0) {
             _fun_comment("基本数据字段映射,模型中的字段和数据库的字段的对英关系", 1);
-            echo _tab(1) . "public \$mPlainRowMap = array(\n";
+            echo _tab(1) . "public static \$m_row_map = array(\n";
             $a_temp = array();
             foreach ($model->field_list as $field) {
                 /* @var MyField $field */
@@ -333,7 +595,7 @@ class PhpPhalconMvc extends MvcBase
                         $a_kv = explode(",", $s_kv);
                         echo _tab(2) . "\$mList[\"{$a_kv[0]}\"] = \"{$a_kv[1]}\";\n";
                     }
-                    echo _tab(2) . "return mList;\n";
+                    echo _tab(2) . "return \$mList;\n";
                     echo _tab(1) . "}\n\n";
                 }
             }

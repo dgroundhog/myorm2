@@ -208,12 +208,8 @@ class JavaServletMvc extends MvcBase
 
 
         echo _tab(1) . "public int {$fun_name1}(";
-        $ii = 0;
-        foreach ($a_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        $this->_echoFunParams($a_param_define);
+        echo ")\n";
         echo _tab(1) . "{\n";
 
         $s_qm = _db_question_marks($i_param);
@@ -224,7 +220,7 @@ class JavaServletMvc extends MvcBase
         echo _tab(4) . "st = conn.prepareCall(sql);\n";
 
         $ii = 0;
-        foreach ($a_param_use as $param) {
+        foreach ($a_param_use as $key=> $param) {
             $field = $a_param_field[$ii];
             echo $this->_procStatementParam($field->name, $field->type, $param, $ii, 4);
             $ii++;
@@ -241,8 +237,6 @@ class JavaServletMvc extends MvcBase
         $this->_dbQueryFooter();
         echo _tab(2) . "return iRet;\n";
         echo _tab(1) . "}";
-
-
         _fun_comment_header("插入数据--通过bean", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
@@ -257,6 +251,7 @@ class JavaServletMvc extends MvcBase
             echo _warp2join($ii) . _tab(5) . "v_{$lc_model_name}Bean->{$field->name}";
             $ii++;
         }
+        echo  "\n";
         echo _tab(2) . ");\n";
         echo _tab(2) . "return iRet;\n";
         echo _tab(1) . "}";
@@ -384,10 +379,14 @@ class JavaServletMvc extends MvcBase
         $proc_name = $this->findProcName($model->table_name, $fun_name, "delete");//存储过曾的名字
         $fun_name1 = $this->makeModelFunName($fun_name, "delete");//散列参数添加
 
+        list(
+            $i_param,
+            $a_param_comment,
+            $a_param_define,
+            $a_param_use,
+            $a_param_type,
+            $a_param_field)= $this->_procWhereCond($model, $fun);
 
-        $i_param = 0;
-        list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
-        $i_param = count($a_param_comment);
 
         _fun_comment_header("删除数据vars", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
@@ -399,12 +398,8 @@ class JavaServletMvc extends MvcBase
         _fun_comment_footer(1);
 
         echo _tab(1) . "public int {$fun_name1}(";
-        $ii = 0;
-        foreach ($a_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        $this->_echoFunParams($a_param_define);
+        echo ")\n";
         echo _tab(1) . "{\n";
         $s_qm = _db_question_marks($i_param + 1);
         echo _tab(2) . "//question_marks = {$i_param} + 1 \n";
@@ -431,128 +426,7 @@ class JavaServletMvc extends MvcBase
         $this->_funFooter($model, $fun);
     }
 
-    /**
-     * 条件的输入参数
-     *
-     * 返回值说民
-     * $a_param_comment = array();//用于注释
-     * $a_param_define = array();//用于定义
-     * $a_param_use = array();//用于使用
-     * $a_param_field = array();//用于定位原来的field的值
-     *
-     * @param MyModel $model
-     * @param MyFun $o_fun
-     * @return array[]
-     */
-    function _procWhereCond(MyModel $model, MyFun $o_fun)
-    {
 
-        $a_param_comment = array();//用于注释
-        $a_param_define = array();//用于定义
-        $a_param_use = array();//用于使用
-        $a_param_field = array();//用于使用
-
-        //var_dump($o_fun->where);
-        $jj = 0;
-        if ($o_fun->where != null) {
-
-            $cond_list = $o_fun->where->cond_list;
-            $where_list = $o_fun->where->where_list;
-
-            //var_dump($cond_list);
-            foreach ($cond_list as $cond) {
-                /* @var MyCond $cond */
-                switch ($cond->type) {
-                    case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
-                    case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
-                    case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
-                    case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
-                    case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
-                        if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                            $o_field = $model->field_list[$cond->field];
-                            list($s_param1, $s_param2, $s_param3) = $this->_procParam($o_field, $jj, "w");
-                            $a_param_comment[] = $s_param1;
-                            $a_param_define[] = $s_param2;
-                            $a_param_use[] = $s_param3;
-                            $a_param_field[] = $o_field;
-                            $jj++;
-                        }
-                        if ($cond->v2_type == Constant::COND_VAl_TYPE_INPUT) {
-                            $o_field = $model->field_list[$cond->field];
-                            list($s_param1, $s_param2, $s_param3) = $this->_procParam($o_field, $jj, "w");
-                            $a_param_comment[] = $s_param1;
-                            $a_param_define[] = $s_param2;
-                            $a_param_use[] = $s_param3;
-                            $a_param_field[] = $o_field;
-                            $jj++;
-                        }
-                        break;
-                    default:
-                        if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                            $o_field = $model->field_list[$cond->field];
-                            list($s_param1, $s_param2, $s_param3) = $this->_procParam($o_field, $jj, "w");
-                            $a_param_comment[] = $s_param1;
-                            $a_param_define[] = $s_param2;
-                            $a_param_use[] = $s_param3;
-                            $a_param_field[] = $o_field;
-                            $jj++;
-                        }
-                }
-            }
-            foreach ($where_list as $where2) {
-                //子查询部分
-                if ($where2 != null) {
-                    $cond_list2 = $where2->cond_list;
-                    if (count($cond_list2) == 0) {
-                        continue;
-                    }
-                    foreach ($cond_list2 as $cond) {
-                        /* @var MyCond $cond */
-                        switch ($cond->type) {
-                            case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
-                            case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
-                            case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
-                            case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
-                            case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
-                                if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                                    $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3) = $this->_procParam($o_field, $jj, "w");
-                                    $a_param_comment[] = $s_param1;
-                                    $a_param_define[] = $s_param2;
-                                    $a_param_use[] = $s_param3;
-                                    $a_param_field[] = $o_field;
-                                    $jj++;
-                                }
-                                if ($cond->v2_type == Constant::COND_VAl_TYPE_INPUT) {
-                                    $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3) = $this->_procParam($o_field, $jj, "w");
-                                    $a_param_comment[] = $s_param1;
-                                    $a_param_define[] = $s_param2;
-                                    $a_param_use[] = $s_param3;
-                                    $a_param_field[] = $o_field;
-                                    $jj++;
-                                }
-                                break;
-                            default:
-                                if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                                    $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3) = $this->_procParam($o_field, $jj, "w");
-                                    $a_param_comment[] = $s_param1;
-                                    $a_param_define[] = $s_param2;
-                                    $a_param_use[] = $s_param3;
-                                    $a_param_field[] = $o_field;
-                                    $jj++;
-                                }
-                        }
-                    }
-                }
-            }
-        }
-        //用于注释
-        //用于定义
-        //用于使用
-        return array($a_param_comment, $a_param_define, $a_param_use, $a_param_field);
-    }
 
     /**
      * 处理参数
@@ -638,33 +512,23 @@ class JavaServletMvc extends MvcBase
 
         $a_all_fields = $model->field_list_kv;
         //需要更新的字段
-        $i_u_param = 0;
-        $a_u_param_comment = array();//用于注释
-        $a_u_param_define = array();//用于定义
-        $a_u_param_use = array();//用于使用
-        $a_u_param_field = array();//用于定位原来的field的值
-        $a_field_update = $fun->field_list;
-        if ($fun->all_field == 1) {
-            $a_field_update = $model->field_list;
-        }
-        foreach ($a_field_update as $field) {
-            /* @var MyField $field */
-            $field_name = $field->name;
-            //存在于fun, 但不存在于model的字段，不处理
-            if (!isset($a_all_fields[$field_name])) {
-                continue;
-            }
-            $i_u_param++;
-            list($param1, $param2, $param3) = $this->_procParam($field, $i_u_param, "u");
-            $a_u_param_comment[] = $param1;
-            $a_u_param_define[] = $param2;
-            $a_u_param_use[] = $param3;
-            $a_u_param_field[] = $field;
-        }
+        list(
+            $i_u_param,
+            $a_u_param_comment,
+            $a_u_param_define,
+            $a_u_param_use,
+            $a_u_param_type,
+            $a_u_param_key,
+            $a_u_param_field
+        ) = $this->_parseUpdate_field($model, $fun);
 
         //更新条件
-        list($a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_field) = $this->_procWhereCond($model, $fun);
-        $i_w_param = count($a_w_param_comment);
+        list($i_w_param,
+            $a_w_param_comment,
+            $a_w_param_define,
+            $a_w_param_use,
+            $a_w_param_type,
+            $a_w_param_field) = $this->_procWhereCond($model, $fun);
 
         _fun_comment_header("更新数据vars", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
@@ -679,16 +543,8 @@ class JavaServletMvc extends MvcBase
         _fun_comment_footer(1);
 
         echo _tab(1) . "public int {$fun_name1}(";
-        $ii = 0;
-        foreach ($a_u_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        foreach ($a_w_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        $this->_echoFunParams($a_u_param_define,$a_w_param_define);
+        echo ")\n";
         echo _tab(1) . "{\n";
         $s_qm = _db_question_marks($i_u_param + $i_w_param + 1);
         echo _tab(2) . "//question_marks = u {$i_u_param} + w {$i_w_param} + r 1 \n";
@@ -763,41 +619,37 @@ class JavaServletMvc extends MvcBase
 
         $a_all_fields = $model->field_list_kv;
 
-        $i_param = 0;
-        $a_param_comment = array();//用于注释
-        $a_param_define = array();//用于定义
-        $a_param_use = array();//用于使用
-        $a_param_field = array();//用于定位原来的field的值
-        list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
-        $i_param = count($a_param_comment);
-        //var_dump($fun->field_list);
+        //更新条件
+        list($i_w_param,
+            $a_w_param_comment,
+            $a_w_param_define,
+            $a_w_param_use,
+            $a_w_param_type,
+            $a_w_param_field) = $this->_procWhereCond($model, $fun);
 
         _fun_comment_header("通过条件获取一个数据，返回值是hash", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
-        foreach ($a_param_comment as $param) {
+        foreach ($a_w_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return HashMap\n";
         _fun_comment_footer(1);
         echo _tab(1) . "public HashMap {$fun_name1}(";
-        $ii = 0;
-        foreach ($a_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        $this->_echoFunParams($a_w_param_define);
+        echo  ")\n";
+
         echo _tab(1) . "{\n";
-        $s_qm = _db_question_marks($i_param);
-        echo _tab(2) . "//question_marks = {$i_param}\n";
+        $s_qm = _db_question_marks($i_w_param);
+        echo _tab(2) . "//question_marks = {$i_w_param}\n";
         echo _tab(2) . "HashMap<String, String> mRet = new HashMap<>();\n";
         $this->_dbQueryHeader("read");
         echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
         echo _tab(4) . "st = conn.prepareCall(sql);\n";
 
         $ii = 0;
-        foreach ($a_param_use as $param) {
-            $o_field = $a_param_field[$ii];
+        foreach ($a_w_param_use as $param) {
+            $o_field = $a_w_param_field[$ii];
             echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
             $ii++;
         }
@@ -818,28 +670,24 @@ class JavaServletMvc extends MvcBase
         _fun_comment_header("通过条件获取一个数据，返回值是bean", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
-        foreach ($a_param_comment as $param) {
+        foreach ($a_w_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return {$uc_model_name}Bean\n";
         _fun_comment_footer(1);
         echo _tab(1) . "public {$uc_model_name}Bean {$fun_name2}(";
-        $ii = 0;
-        foreach ($a_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        $this->_echoFunParams($a_w_param_define);
+        echo  ")\n";
         echo _tab(1) . "{\n";
-        $s_qm = _db_question_marks($i_param + 1);
-        echo _tab(2) . "//question_marks = {$i_param} + 1 \n";
+        $s_qm = _db_question_marks($i_w_param );
+        echo _tab(2) . "//question_marks = {$i_w_param}  \n";
         echo _tab(2) . "{$uc_model_name}Bean mBean = new {$uc_model_name}Bean();\n";
         $this->_dbQueryHeader("read");
         echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
         echo _tab(4) . "st = conn.prepareCall(sql);\n";
         $ii = 0;
-        foreach ($a_param_use as $param) {
-            $o_field = $a_param_field[$ii];
+        foreach ($a_w_param_use as $param) {
+            $o_field = $a_w_param_field[$ii];
             echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
             $ii++;
         }
