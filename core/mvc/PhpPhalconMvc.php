@@ -8,6 +8,17 @@ include_once(MVC_ROOT . "/MvcBase.php");
 class PhpPhalconMvc extends MvcBase
 {
 
+    function _makeHeader()
+    {
+        echo "<?php";
+        echo "\n//auto gen via myorm";
+        echo "\n";
+        if ($this->final_package != "") {
+            echo "namespace {$this->final_package};";
+            echo "\n";
+        }
+    }
+
     /**
      * 处理参数
      * 需要区分需要输入的参数和使用的参数，还有注释的参数
@@ -160,7 +171,7 @@ class PhpPhalconMvc extends MvcBase
         echo _tab(4) . "break;\n";
         $this->_afterResultLoop();
 
-        echo _tab(2) . "SeasLog::debug(\"call {\$proc_name} return {\$i_new_id}\");\n";
+        echo _tab(2) . "SeasLog::debug(\"call {$proc_name} return {\$i_new_id}\");\n";
         echo _tab(2) . "return \$i_new_id;\n";
         echo _tab(1) . "}";
 
@@ -173,14 +184,15 @@ class PhpPhalconMvc extends MvcBase
         _fun_comment_footer(1);
         echo _tab(1) . "public function {$fun_name2}({$uc_model_name}Bean \$v_{$lc_model_name}Bean) \n";
         echo _tab(1) . "{\n";
-        echo _tab(2) . "int iRet = \$this->{$fun_name1}(";
+        echo _tab(2) . "\$i_new_id = \$this->{$fun_name1}(";
         $ii = 0;
         foreach ($a_param_field as $field) {
             echo _warp2join($ii) . _tab(5) . "\$v_{$lc_model_name}Bean->{$field->name}";
             $ii++;
         }
+        echo  "\n";
         echo _tab(2) . ");\n";
-        echo _tab(2) . "return iRet;\n";
+        echo _tab(2) . "return \$i_new_id;\n";
         echo _tab(1) . "}";
 
         $this->_funFooter($model, $fun);
@@ -252,13 +264,13 @@ class PhpPhalconMvc extends MvcBase
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         SeasLog::info("创建PHP数据模型--{$model_name}");
-        $_target = $this->odir_models . DS . "{$uc_model_name}Model.java";
+        $_target = $this->odir_models . DS . "{$uc_model_name}Model.php";
         ob_start();
-        //TODO here
+        $this->_makeheader();
         echo "use Phalcon\Db as Db;\n";
 
-        _fun_comment(array("php  操作模型类", $model['table_title']));
-        echo "class {$uc_model_name} extends MvcBase {\n";
+        _fun_comment(array("php  操作模型类", $model->title));
+        echo "class {$uc_model_name}Model extends ModelBase {\n";
 
         $a_all_fields = array();
         //转换用name作为主键
@@ -269,7 +281,7 @@ class PhpPhalconMvc extends MvcBase
         }
         if (count($a_all_fields) > 0) {
             _fun_comment("基本数据字段映射,模型中的字段和数据库的字段的对英关系", 1);
-            echo _tab(1) . "public static \$mPlainRowMap = array(\n";
+            echo _tab(1) . "public \$mPlainRowMap = array(\n";
             $a_temp = array();
             foreach ($model->field_list as $field) {
                 /* @var MyField $field */
@@ -370,10 +382,10 @@ class PhpPhalconMvc extends MvcBase
         ob_end_clean();
         file_put_contents($_target, $data);
 
-        $_target2 = $this->odir_models . DS . "{$uc_model_name}ModelX.java";
+        $_target2 = $this->odir_models . DS . "{$uc_model_name}ModelX.php";
         ob_start();
-
-        echo "package  {$this->final_package}.models;\n";
+        $this->_makeheader();
+        echo "use Phalcon\Db as Db;\n";
         _fun_comment("自定义的操作模型类--{$model->title}");
         echo "public class {$uc_model_name}ModelX extends {$uc_model_name}Model {\n";
         echo "}";
@@ -426,12 +438,9 @@ class PhpPhalconMvc extends MvcBase
         $_target = $this->odir_beans . DS . "{$uc_model_name}Bean.php";
         ob_start();
 
-        _php_header();
 
+        $this->_makeheader();
 
-        if ($this->final_package != "") {
-            echo "namespace {$this->final_package};";
-        }
 
 
         _fun_comment("数据bean-{$model_name}[{$model->title}]", 1);
@@ -480,7 +489,7 @@ class PhpPhalconMvc extends MvcBase
         echo _tab(1) . " * @return string\n";
         _fun_comment_footer(1);
         echo _tab(1) . "public function toString(){ \n";
-        echo _tab(2) . "return var_export(this,true);\n";
+        echo _tab(2) . "return var_export(\$this, true);\n";
         echo _tab(1) . "}\n\n";
 
         echo "}";

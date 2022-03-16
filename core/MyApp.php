@@ -336,9 +336,8 @@ class MyApp extends MyStruct
         $new_build_id = date("YmdHis", time());
         if (!defined("MEM_DISK_SPEED_UP")) {
             $this->path_output = $this->build_root . DS . $new_build_id;
-        }
-        else{
-            $this->path_output = MEM_DISK_SPEED_UP .DS."build" . DS . $new_build_id;
+        } else {
+            $this->path_output = MEM_DISK_SPEED_UP . DS . "build" . DS . $new_build_id;
         }
 
         SeasLog::debug("build app--({$this->name})--mkdir--{$this->path_output}");
@@ -437,7 +436,7 @@ class MyApp extends MyStruct
      */
     public function buildModel()
     {
-       // var_dump($this);
+        // var_dump($this);
         $mm = MvcBase::findCc($this);
         //var_dump($mm);
         if ($mm == null) {

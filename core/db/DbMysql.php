@@ -57,10 +57,12 @@ class DbMysql extends DbBase
     function ccTable(MyModel $model)
     {
         $i_field_size = count($model->field_list);
+        $i_index_size = count($model->idx_list);
 
         _db_comment_begin();
         _db_comment("Table structure for t_{$model->table_name} [{$model->title}]");
         _db_comment("Table fields count ({$i_field_size})");
+        _db_comment("Table index count ({$i_index_size})");
         _db_comment_end();
 
         if ($i_field_size == 0) {
@@ -72,12 +74,14 @@ class DbMysql extends DbBase
 
         $ii = 0;
         $has_primary_key = false;//判断主键和ID的区别
+        $model_primary_key = "";//由model定义的PK，不一定存在
         $uq_auto_increment = "";//判断自整主键
         $a_temp = array();
         $a_field_keys = array();//用来过滤索引的有效性
 
         //过滤重复的inc主键
         $uq_inc_key = false;
+
         foreach ($model->field_list as $field) {
             /* @var MyField $field */
             if ($uq_inc_key == true && $field->auto_increment) {
@@ -85,6 +89,7 @@ class DbMysql extends DbBase
             }
             if ($field->auto_increment) {
                 $uq_inc_key = true;
+
             }
         }
 
@@ -99,6 +104,7 @@ class DbMysql extends DbBase
             //对于自增和主键，强制修改required的值
             if ($key == $model->primary_key) {
                 $has_primary_key = true;
+                $model_primary_key = $key;
             }
 
             $type = $field->type;
@@ -172,11 +178,12 @@ class DbMysql extends DbBase
             $a_temp[] = "`{$key}` {$type_size} NOT NULL {$after_null} COMMENT '{$comment}'";
         }
 
-        if ($has_primary_key) {
-            if ($uq_auto_increment != null) {
-                $a_temp[] = "PRIMARY KEY (`{$uq_auto_increment}`)";
-            } else {
-                $a_temp[] = "PRIMARY KEY (`{$model->primary_key}`)";
+
+        if ($uq_auto_increment != "") {
+            $a_temp[] = "PRIMARY KEY (`{$uq_auto_increment}`)";
+        } else {
+            if ($has_primary_key) {
+                $a_temp[] = "PRIMARY KEY (`{$model_primary_key}`)";
             }
         }
 
@@ -188,7 +195,6 @@ class DbMysql extends DbBase
             $idx_type = $o_index->type;
             $jj = 0;
             foreach ($o_index->field_list as $field) {
-                $ii++;
                 /* @var MyField $field */
                 $key = $field->name;
                 if (in_array($key, $a_field_keys)) {
@@ -406,7 +412,7 @@ class DbMysql extends DbBase
     function _procHeader($model, $fun_name, $fun_title, $base_fun)
     {
 
-        $real_fun = _db_find_proc_name($model->table_name, $fun_name, $base_fun);
+        $real_fun = $this->findProcName($model->table_name, $fun_name, $base_fun);
 
         _db_comment_begin();
         _db_comment("Procedure structure for {$real_fun}");

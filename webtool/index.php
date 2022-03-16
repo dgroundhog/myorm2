@@ -13,7 +13,7 @@ if (!defined("MEM_DISK_SPEED_UP")) {
     SeasLog::setBasePath(WT_ROOT . DS . ".." . DS . "logs");
 }
 else{
-    SeasLog::setBasePath( MEM_DISK_SPEED_UP + DS +"logs");
+    SeasLog::setBasePath( MEM_DISK_SPEED_UP . DS ."logs");
 }
 include_once(WT_ROOT . "/../core/Constant.php");
 include_once(WT_ROOT . "/../core/MyProject.php");

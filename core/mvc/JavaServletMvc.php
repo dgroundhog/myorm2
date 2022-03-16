@@ -21,6 +21,7 @@ class JavaServletMvc extends MvcBase
     {
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
         SeasLog::info("创建JAVA数据模型--{$model_name}");
         $_target = $this->odir_models . DS . "{$uc_model_name}Model.java";
         ob_start();
@@ -172,12 +173,20 @@ class JavaServletMvc extends MvcBase
         $this->_funHeader($model, $fun);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
         $fun_name = $fun->name;
         $proc_name = $this->findProcName($model->table_name, $fun_name, "add");//存储过曾的名字
         $fun_name1 = $this->makeModelFunName($fun_name, "add");//散列参数添加
         $fun_name2 = $this->makeModelFunName($fun_name, "add", true);//通过bean添加
 
-        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
+        list($is_return_new_id,
+            $i_param,
+            $a_param_comment,
+            $a_param_define,
+            $a_param_use,
+            $a_param_type,
+            $a_param_key,
+            $a_param_field) = $this->parseAdd_field($model, $fun);
 
         if ($i_param == 0) {
             //没有输入参数
@@ -237,15 +246,15 @@ class JavaServletMvc extends MvcBase
         _fun_comment_header("插入数据--通过bean", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
-        echo _tab(1) . " * @param v_{$uc_model_name}Bean\n";
+        echo _tab(1) . " * @param v_{$lc_model_name}Bean\n";
         echo _tab(1) . " * @return int\n";
         _fun_comment_footer(1);
-        echo _tab(1) . "public int {$fun_name2}({$uc_model_name}Bean v_{$uc_model_name}Bean) \n";
+        echo _tab(1) . "public int {$fun_name2}({$uc_model_name}Bean v_{$lc_model_name}Bean) \n";
         echo _tab(1) . "{\n";
         echo _tab(2) . "int iRet = {$fun_name1}(";
         $ii = 0;
         foreach ($a_param_field as $field) {
-            echo _warp2join($ii) . _tab(5) . "v_{$uc_model_name}Bean->{$field->name}";
+            echo _warp2join($ii) . _tab(5) . "v_{$lc_model_name}Bean->{$field->name}";
             $ii++;
         }
         echo _tab(2) . ");\n";

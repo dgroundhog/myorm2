@@ -145,10 +145,9 @@ abstract class MvcBase extends CcBase implements  CcImpl
                 break;
             case Constant::MVC_PHP_PHALCON:
                 $mm = new PhpPhalconMvc($app);
-            default:
                 break;
             default:
-
+                break;
         }
 
         return $mm;
