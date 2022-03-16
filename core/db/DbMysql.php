@@ -1350,28 +1350,27 @@ class DbMysql extends DbBase
         $base_fun = strtolower($o_fun->type);
         $fun_name = $o_fun->name;
         $fun_type = $o_fun->type;
+        //预先处理查询条件的
+        //查询条件的字段
+        list($a_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
 
         $proc_name = self::_procHeader($model, $fun_name, $o_fun->title, $base_fun);
         $group_field = "";
-
         $group_field_id = $o_fun->group_field;
-        if (isset($model->field_list[$group_field_id])) {
+        if ($group_field_id != "" && isset($model->field_list[$group_field_id])) {
             $o_group_field = $model->field_list[$group_field_id];
             $group_field = $o_group_field->name;
         }
-
-        //预先处理查询条件的
-        list($_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
-        $this->_procBegin($_param);
         if ($group_field == "") {
+            //默认count id
             $group_field = "id";
         }
 
-        echo "SET @s_sql = 'SELECT COUNT(`{$group_field}`) AS i_count  FROM `t_{$model->table_name}` WHERE ';\n";
+        $this->_procBegin($a_param);
+        echo "SET @s_sql = 'SELECT COUNT(`{$group_field}`) AS i_count FROM `t_{$model->table_name}` WHERE ';\n";
 
         //基本条件sql
         echo $_sql2;
-
         echo "CALL p__debug('{$proc_name}', @s_sql);\n";
         echo "PREPARE stmt FROM @s_sql;\n";
         echo "EXECUTE stmt;\n";

@@ -340,12 +340,8 @@ class JavaServletMvc extends MvcBase
             default:
         }
         echo _tab(3) . "}\n";
-        echo _tab(2) . "} catch (SQLException e0) {\n";
-        echo _tab(3) . "logger.error(\"SQLException-e0\",e0);\n";
-        echo _tab(2) . "} catch (ClassNotFoundException e1) {\n";
-        echo _tab(3) . "logger.error(\"ClassNotFoundException\",e1);\n";
-        echo _tab(2) . "} catch (Exception e2) {\n";
-        echo _tab(3) . "logger.error(\"FinalException\",e2);\n";
+        echo _tab(2) . "} catch (Exception ex) {\n";
+        echo _tab(3) . "logger.error(\"SqlException\",ex);\n";
         echo _tab(2) . "} finally {\n";
         echo _tab(3) . "Db{$db_type}.release(conn, st, rs);\n";
         if ($op_type == "read") {
@@ -618,7 +614,6 @@ class JavaServletMvc extends MvcBase
         $fun_name2 = $this->makeModelFunName($fun_name, "fetch", true);//散列参数添加返回bean
 
         $a_all_fields = $model->field_list_kv;
-
         //更新条件
         list($i_w_param,
             $a_w_param_comment,
@@ -757,54 +752,48 @@ class JavaServletMvc extends MvcBase
         $fun_name1 = $this->makeModelFunName($fun_name, "count");//散列参数添加
 
         $a_all_fields = $model->field_list_kv;
-        $i_param = 0;
-        $a_param_comment = array();//用于注释
-        $a_param_define = array();//用于定义
-        $a_param_use = array();//用于使用
-        $a_param_field = array();//用于定位原来的field的值
-        list($a_param_comment, $a_param_define, $a_param_use, $a_param_field) = $this->_procWhereCond($model, $fun);
-        $i_param = count($a_param_comment);
-        //var_dump($fun->field_list);
+        //更新条件
+        list($i_w_param,
+            $a_w_param_comment,
+            $a_w_param_define,
+            $a_w_param_use,
+            $a_w_param_type,
+            $a_w_param_field) = $this->_procWhereCond($model, $fun);
 
         _fun_comment_header("普通统计数据", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
-        foreach ($a_param_comment as $param) {
+        foreach ($a_w_param_comment as $param) {
             echo _tab(1) . "{$param}\n";
         }
         echo _tab(1) . " * @return int\n";
         _fun_comment_footer(1);
         echo _tab(1) . "public int {$fun_name1}(";
-        $ii = 0;
-        foreach ($a_param_define as $param) {
-            echo _warp2join($ii) . _tab(5) . "{$param}";
-            $ii++;
-        }
-        echo _tab(1) . "\n" . _tab(1) . ")\n";
+        $this->_echoFunParams($a_w_param_define);
+        echo  ")\n";
         echo _tab(1) . "{\n";
-        $s_qm = _db_question_marks($i_param);
-        echo _tab(2) . "//question_marks = {$i_param}\n";
-        echo _tab(2) . "int iRet = 0;\n";
+        $s_qm = _db_question_marks($i_w_param);
+        echo _tab(2) . "//question_marks = {$i_w_param}\n";
+        echo _tab(2) . "int iCount = 0;\n";
         $this->_dbQueryHeader("read");
         echo _tab(4) . "String sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
         echo _tab(4) . "st = conn.prepareCall(sql);\n";
-
         $ii = 0;
-        foreach ($a_param_use as $param) {
-            $o_field = $a_param_field[$ii];
+        foreach ($a_w_param_use as $param) {
+            $o_field = $a_w_param_field[$ii];
             echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
             $ii++;
         }
         echo "\n";
         echo _tab(4) . "rs = st.executeQuery();\n";
         echo _tab(4) . "while (rs.next()) {\n";
-        echo _tab(5) . "iRet = rs.getInt(\"i_count\");\n";
+        echo _tab(5) . "iCount = rs.getInt(\"i_count\");\n";
         echo _tab(5) . "break;\n";
         echo _tab(4) . "}\n";
 
-        echo _tab(4) . "logger.debug(\"call {$proc_name} done --\" + iRet);\n";
+        echo _tab(4) . "logger.debug(\"call {$proc_name} done --\" + iCount);\n";
         $this->_dbQueryFooter();
-        echo _tab(2) . "return iRet;\n";
+        echo _tab(2) . "return iCount;\n";
         echo _tab(1) . "}";
 
         $this->_funFooter($model, $fun);

@@ -518,7 +518,57 @@ class PhpPhalconMvc extends MvcBase
 
     function cCount(MyModel $model, MyFun $fun)
     {
-        // TODO: Implement cCount() method.
+        $this->_funHeader($model, $fun);
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $fun_name = $fun->name;
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "count");//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, "count");//散列参数添加
+
+        $a_all_fields = $model->field_list_kv;
+        //更新条件
+        list($i_w_param,
+            $a_w_param_comment,
+            $a_w_param_define,
+            $a_w_param_use,
+            $a_w_param_type,
+            $a_w_param_field) = $this->_procWhereCond($model, $fun);
+
+        _fun_comment_header("普通统计数据", 1);
+        echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
+        echo _tab(1) . " *\n";
+        foreach ($a_w_param_comment as $param) {
+            echo _tab(1) . "{$param}\n";
+        }
+        echo _tab(1) . " * @return int\n";
+        _fun_comment_footer(1);
+        echo _tab(1) . "public function {$fun_name1}(";
+        $this->_echoFunParams($a_w_param_define);
+        echo  ")\n";
+        echo _tab(1) . "{\n";
+        $s_qm = _db_question_marks($i_w_param);
+        echo _tab(2) . "//question_marks = {$i_w_param}\n";
+        echo _tab(2) . "\$iCount = 0;\n";
+        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        $this->_beforeQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_use);
+        echo "\n";
+        $this->_onQuery();
+        echo _tab(4);
+        echo implode(",\n" . _tab(4), $a_w_param_type);
+        echo "\n";
+        $this->_afterQuery();
+        $this->_beforeResultLoop();
+        echo _tab(4) . "\$iCount = \$a_ret['i_count'];\n";
+        echo _tab(4) . "break;\n";
+        $this->_afterResultLoop();
+
+        echo _tab(2) . "SeasLog::debug(\"call {$proc_name} return {\$iCount}\");\n";
+        echo _tab(2) . "return \$iCount;\n";
+        echo _tab(1) . "}";
+
+        $this->_funFooter($model, $fun);
     }
 
     function ccModel($model)
@@ -649,7 +699,7 @@ class PhpPhalconMvc extends MvcBase
         $this->_makeheader();
         echo "use Phalcon\Db as Db;\n";
         _fun_comment("自定义的操作模型类--{$model->title}");
-        echo "public class {$uc_model_name}ModelX extends {$uc_model_name}Model {\n";
+        echo "class {$uc_model_name}ModelX extends {$uc_model_name}Model {\n";
         echo "}";
 
         $data = ob_get_contents();
