@@ -794,7 +794,7 @@ class PhpPhalconMvc extends MvcBase
             echo _tab(3) . "}\n";
             echo _tab(3) . "\$a_bean_list[] = \$o_bean;\n";
             echo _tab(2) . "}\n";
-            echo _tab(2) . "return a_bean_list;\n";
+            echo _tab(2) . "return \$a_bean_list;\n";
             echo _tab(1) . "}";
         }
         //分页时包含对应的计数/////////////////////////////////////////////////////////////////////////////////

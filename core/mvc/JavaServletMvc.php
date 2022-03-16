@@ -941,7 +941,7 @@ class JavaServletMvc extends MvcBase
         echo "\n";
         echo _tab(4) . "rs = st.executeQuery();\n";
         echo _tab(4) . "while (rs.next()) {\n";
-        echo _tab(2) . "HashMap<String, String> mRet = new HashMap<>();\n";
+        echo _tab(5) . "HashMap<String, String> mRet = new HashMap<>();\n";
         echo _tab(5) . "for (Map.Entry<String, String> entry : mPlainRowMap.entrySet()) {\n";
         echo _tab(6) . "mRet.put(entry.getKey(), rs.getString(entry.getValue())); \n";
         echo _tab(5) . "}\n";
