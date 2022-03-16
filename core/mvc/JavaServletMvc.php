@@ -21,7 +21,7 @@ class JavaServletMvc extends MvcBase
     {
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
-        SeasLog::info("创建JAV数据模型--{$model_name}");
+        SeasLog::info("创建JAVA数据模型--{$model_name}");
         $_target = $this->odir_models . DS . "{$uc_model_name}Model.java";
         ob_start();
 
@@ -177,41 +177,17 @@ class JavaServletMvc extends MvcBase
         $fun_name1 = $this->makeModelFunName($fun_name, "add");//散列参数添加
         $fun_name2 = $this->makeModelFunName($fun_name, "add", true);//通过bean添加
 
-        $a_all_fields = $model->field_list_kv;
-        $i_param = 0;
-        $a_param_comment = array();//用于注释
-        $a_param_define = array();//用于定义
-        $a_param_use = array();//用于使用
-        $a_param_field = array();//
+        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
 
-        $a_field_add = $fun->field_list;
-        if ($fun->all_field == 1) {
-            $a_field_add = $model->field_list;
+        if ($i_param == 0) {
+            //没有输入参数
+            return;
         }
-        //制作参数
-        $return_new_id = false;
-        foreach ($a_field_add as $field) {
-            /* @var MyField $field */
-            $field_name = $field->name;
-            //存在于fun, 但不存在于model的字段，不处理
-            if (!isset($a_all_fields[$field_name])) {
-                continue;
-            }
-            //如果id也是自inc的，也不用输入了
-            if ($field_name == 'id' && $field->auto_increment = 1) {
-                $return_new_id = true;
-                continue;
-            }
-            $i_param++;
-            list($param1, $param2, $param3) = $this->_procParam($field, $i_param);
-            $a_param_comment[] = $param1;
-            $a_param_define[] = $param2;
-            $a_param_use[] = $param3;
-            $a_param_field[] = $field;
-        }
-        if ($return_new_id) {
+
+        if ($is_return_new_id) {
             $i_param++;
         }
+
         _fun_comment_header("插入数据vars-", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
         echo _tab(1) . " *\n";
@@ -244,7 +220,7 @@ class JavaServletMvc extends MvcBase
             echo $this->_procStatementParam($field->name, $field->type, $param, $ii, 4);
             $ii++;
         }
-        if ($return_new_id) {
+        if ($is_return_new_id) {
             echo "\n";
             echo _tab(4) . "st.registerOutParameter({$ii}, Types.INTEGER);\n";
             echo _tab(4) . "rs = st.executeQuery();\n";
@@ -278,79 +254,6 @@ class JavaServletMvc extends MvcBase
 
         $this->_funFooter($model, $fun);
 
-    }
-
-
-    /**
-     * 处理参数
-     * 需要区分需要输入的参数和使用的参数，还有注释的参数
-     *
-     * @param MyField $o_field
-     * @param string $idx_append 避免重复的计数器
-     * @param string $append u/w  update or where
-     *
-     * @return string [用于注释的，用于输入的，用于使用的]
-     */
-    function _procParam($o_field, $idx_append = 0, $append = "")
-    {
-        $key = $o_field->name;
-        $type = $o_field->type;
-        $desc = $o_field->title;
-
-        $ret1 = "";
-        $ret2 = "";
-        $ret3 = "";
-
-        //i_w_1_key
-        //c_w_2_from_key
-        //s_w_3_to_key
-
-        $prefix = $this->getFieldParamPrefix($type);
-        if ($append != "") {
-            $prefix = "{$prefix}_{$append}";
-        }
-        $param_key = "v_{$idx_append}_{$prefix}_{$key}";
-        $param_type = "String";
-        switch ($type) {
-            case Constant::DB_FIELD_TYPE_BOOL :
-                $param_type = "bool";
-                break;
-            //整型
-            case Constant::DB_FIELD_TYPE_INT:
-                $param_type = "int";
-                break;
-            case Constant::DB_FIELD_TYPE_LONGINT:
-                $param_type = "long";
-                break;
-            case Constant::DB_FIELD_TYPE_BLOB :
-                $param_type = "byte[]";
-                break;
-            case Constant::DB_FIELD_TYPE_LONGBLOB :
-                $param_type = "byte[]";
-                break;
-            //单个字符
-            case Constant::DB_FIELD_TYPE_CHAR:
-                //字符串
-            case Constant::DB_FIELD_TYPE_VARCHAR:
-
-            case Constant::DB_FIELD_TYPE_TEXT :
-
-            case Constant::DB_FIELD_TYPE_LONGTEXT :
-
-            case Constant::DB_FIELD_TYPE_DATE :
-
-            case Constant::DB_FIELD_TYPE_TIME :
-
-            case Constant::DB_FIELD_TYPE_DATETIME :
-                //默认的字符串
-            default :
-                break;
-        }
-        $ret1 = " * @param {$param_key} [{$param_type}] {$desc}";
-        $ret2 = "{$param_type} {$param_key}";
-        $ret3 = "{$param_key}";
-
-        return array($ret1, $ret2, $ret3);
     }
 
     function _dbQueryHeader($op_type = "write")
@@ -456,7 +359,6 @@ class JavaServletMvc extends MvcBase
         }
         echo _tab(2) . "}\n";
     }
-
 
     /**
      *  需要删除的UI
@@ -641,6 +543,77 @@ class JavaServletMvc extends MvcBase
         //用于定义
         //用于使用
         return array($a_param_comment, $a_param_define, $a_param_use, $a_param_field);
+    }
+
+    /**
+     * 处理参数
+     * 需要区分需要输入的参数和使用的参数，还有注释的参数
+     *
+     * @param MyField $o_field
+     * @param string $idx_append 避免重复的计数器
+     * @param string $append u/w  update or where
+     *
+     * @return string [用于注释的，用于输入的，用于使用的]
+     */
+    function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false)
+    {
+        $key = $o_field->name;
+        $type = $o_field->type;
+        $desc = $o_field->title;
+
+        $ret1 = "";
+        $ret2 = "";
+        $ret3 = "";
+
+        //i_w_1_key
+        //c_w_2_from_key
+        //s_w_3_to_key
+
+        $prefix = $this->getFieldParamPrefix($type);
+        if ($append != "") {
+            $prefix = "{$prefix}_{$append}";
+        }
+        $param_key = "v_{$idx_append}_{$prefix}_{$key}";
+        $param_type = "String";
+        switch ($type) {
+            case Constant::DB_FIELD_TYPE_BOOL :
+                $param_type = "int";//tinyint
+                break;
+            //整型
+            case Constant::DB_FIELD_TYPE_INT:
+                $param_type = "int";
+                break;
+            case Constant::DB_FIELD_TYPE_LONGINT:
+                $param_type = "long";
+                break;
+
+            case Constant::DB_FIELD_TYPE_BLOB :
+            case Constant::DB_FIELD_TYPE_LONGBLOB :
+                $param_type = "byte[]";
+                break;
+            //单个字符
+            case Constant::DB_FIELD_TYPE_CHAR:
+                //字符串
+            case Constant::DB_FIELD_TYPE_VARCHAR:
+
+            case Constant::DB_FIELD_TYPE_TEXT :
+
+            case Constant::DB_FIELD_TYPE_LONGTEXT :
+
+            case Constant::DB_FIELD_TYPE_DATE :
+
+            case Constant::DB_FIELD_TYPE_TIME :
+
+            case Constant::DB_FIELD_TYPE_DATETIME :
+                //默认的字符串
+            default :
+                break;
+        }
+        $ret1 = " * @param {$param_key} [{$param_type}] {$desc}";
+        $ret2 = "{$param_type} {$param_key}";
+        $ret3 = "{$param_key}";
+
+        return array($ret1, $ret2, $ret3, $param_type);
     }
 
     function cUpdate(MyModel $model, MyFun $fun)
@@ -1347,12 +1320,16 @@ class JavaServletMvc extends MvcBase
             switch ($field->type) {
                 //bool
                 case Constant::DB_FIELD_TYPE_BOOL :
-                    echo _tab(1) . "public boolean {$key} = false;\n";
+                    //echo _tab(1) . "public boolean {$key} = false;\n";
+                    echo _tab(1) . "public int {$key} = 0;//0 for false,1 for true\n";
                     break;
                 //整型
                 case Constant::DB_FIELD_TYPE_INT:
-                case Constant::DB_FIELD_TYPE_LONGINT:
                     echo _tab(1) . "public int {$key} = 0;\n";
+                    break;
+                    //长整形
+                case Constant::DB_FIELD_TYPE_LONGINT:
+                    echo _tab(1) . "public long {$key} = 0;\n";
                     break;
                 //blob
                 case  Constant::DB_FIELD_TYPE_BLOB:
@@ -1360,6 +1337,7 @@ class JavaServletMvc extends MvcBase
                     echo _tab(1) . "public  byte[] {$key} = null;\n";
                     break;
                 default:
+                    //default all string
                     echo _tab(1) . "public String {$key} = \"\";\n";
                     break;
             }

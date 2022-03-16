@@ -106,14 +106,12 @@ class DbMysql extends DbBase
             $type_size = "VARCHAR(255)";
             switch ($type) {
                 case Constant::DB_FIELD_TYPE_BOOL :
-                    $type_size = "CHAR(1)";
+                    $type_size = "TINYINT";
                     break;
                 //整型
                 case Constant::DB_FIELD_TYPE_INT:
-                    if ($size < 1 || $size > 255) {
-                        $size = 11;
-                    }
-                    $type_size = "INT({$size})";
+                    //$size = 11;
+                    $type_size = "INT";
                     if ($field->auto_increment) {
                         $uq_auto_increment = $key;
                         $after_null = "AUTO_INCREMENT";
@@ -212,7 +210,7 @@ class DbMysql extends DbBase
 
         $charset = $this->db_conf->charset;
         if ("" == $charset || !in_array($charset, Constant::$a_db_charset)) {
-            $charset = Constant::DB_CHARSET_UTF8MB4;
+            $charset = Constant::DB_CHARSET_UTF8;
         }
 
         echo "ENGINE=InnoDB\n";
@@ -299,51 +297,24 @@ class DbMysql extends DbBase
     function cAdd(MyModel $model, MyFun $fun)
     {
         $proc_name = $this->_procHeader($model, $fun->name, $fun->title, "add");
+
         $a_all_fields = $model->field_list_kv;
 
-        $i_param = 0;
-        $a_param_define = array();//用于定义
-        $a_param_use = array();//用于使用
-        $a_param_field = array();//
+        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
 
-
-        $a_field_add = $fun->field_list;
-        if ($fun->all_field == 1) {
-            $a_field_add = $model->field_list;
-        }
-        //制作参数
-        $return_new_id = false;
-        foreach ($a_field_add as $field) {
-            /* @var MyField $field */
-            $key = $field->name;
-            if (!isset($a_all_fields[$key])) {
-                continue;
-            }
-            //如果id也是自inc的，也不用输入了
-            if ($key == 'id' && $field->auto_increment = 1) {
-                $return_new_id = true;
-                continue;
-            }
-            $i_param++;
-            list($param_key, $param_key_define) = $this->_procParam($field, $i_param);
-            $a_param_define[] = $param_key_define;
-            $a_param_use[$key] = $param_key;
-            $a_param_field[$key] = $field;
-
-        }
-        if ($return_new_id) {
+        if ($is_return_new_id) {
             $i_param++;
             $a_param_define[] = "INOUT `v_new_id` INT";
         }
+
         $this->_procBegin($a_param_define);
         _db_comment("vars={$i_param}");
-        if ($return_new_id) {
-            echo "DECLARE m_new_id INT;\n";
-        }
+        echo "DECLARE m_new_id INT;\n";
         //注意这里除去inc外的是全部字段
         echo "INSERT INTO `t_{$model->table_name}` (\n";
         $ii = 0;
         $a_temp = array();
+        //顺序按照all field的顺序
         foreach ($a_all_fields as $key => $field) {
             if ($key == "id" && $field->auto_increment = 1) {
                 continue;
@@ -363,13 +334,12 @@ class DbMysql extends DbBase
             }
             //查询不是输入的部分
             /* @var MyField $field */
-            if (!isset($a_param_use[$key])) {
+            if (!in_array($key, $a_param_key)) {
                 //部分预置默认值
                 switch ($key) {
                     case "flag":
                         $a_temp[] = "'N'";
                         break;
-
                     case "state":
                         if ($field->default_value != "") {
                             if ($field->type == Constant::DB_FIELD_TYPE_INT || $field->type == Constant::DB_FIELD_TYPE_LONGINT) {
@@ -392,6 +362,7 @@ class DbMysql extends DbBase
                         break;
 
                     default:
+                        //那些blob类型应该用\n结尾
                         if ($field->default_value != "") {
                             if ($field->type == Constant::DB_FIELD_TYPE_INT || $field->type == Constant::DB_FIELD_TYPE_LONGINT) {
                                 $a_temp[] = "{$field->default_value}";
@@ -409,15 +380,14 @@ class DbMysql extends DbBase
         }
         echo _tab(1);
         echo implode(",\n" . _tab(1), $a_temp);
-
         echo "\n);\n";
 
         echo "SET m_new_id = LAST_INSERT_ID();\n";
-        //echo "COMMIT;\n";
+        //非自增可能为空
         echo "SET @s_new_id = CONCAT('', m_new_id);\n";
 
         echo "CALL p__debug('{$proc_name}', @s_new_id);\n";
-        if ($return_new_id) {
+        if ($is_return_new_id) {
             echo "SELECT m_new_id INTO v_new_id;\n";
             echo "SELECT m_new_id AS i_new_id;\n";
         }
@@ -436,7 +406,7 @@ class DbMysql extends DbBase
     function _procHeader($model, $fun_name, $fun_title, $base_fun)
     {
 
-        $real_fun = _db_find_proc_name($model->table_name,$fun_name,$base_fun);
+        $real_fun = _db_find_proc_name($model->table_name, $fun_name, $base_fun);
 
         _db_comment_begin();
         _db_comment("Procedure structure for {$real_fun}");
@@ -452,118 +422,6 @@ class DbMysql extends DbBase
         echo "(";
         return $real_fun;
     }
-
-    /**
-     * 处理参数
-     * 不考虑小数,如果是金钱，用分做单位
-     * 第一个是参数名，第二个是定义
-     *
-     * @param MyField $o_field
-     * @param string $idx_append 避免重复的计数器
-     * @param string $append u/w  update or where
-     * @param bool $for_hash 是否一堆数据组合输入
-     * @return string[]
-     */
-    function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false)
-    {
-        $charset = $this->db_conf->charset;
-        if ("" == $charset) {
-            $charset = "utf8mb4";
-        }
-        $key = $o_field->name;
-        $type = $o_field->type;
-        //i_w_1_key
-        //c_w_2_from_key
-        //s_w_3_to_key
-        if (!$for_hash) {
-            //这是正常参数
-            $prefix = $this->getFieldParamPrefix($type);
-            if ($append != "") {
-                $prefix = "{$prefix}_{$append}";
-            }
-            $param_key = "v_{$idx_append}_{$prefix}_{$key}";
-
-            $has_charset = true;
-            $size = $o_field->size;
-            $type_size = "VARCHAR(255)";
-            switch ($type) {
-                case Constant::DB_FIELD_TYPE_BOOL :
-                    $type_size = "CHAR(1)";
-                    break;
-                //整型
-                case Constant::DB_FIELD_TYPE_INT:
-                    if ($size < 1 || $size > 255) {
-                        $size = 11;
-                    }
-                    $type_size = "INT({$size})";
-                    $has_charset = false;
-                    break;
-                case Constant::DB_FIELD_TYPE_LONGINT:
-                    $type_size = "BIGINT";
-                    $has_charset = false;
-                    break;
-
-                //单个字符
-                case Constant::DB_FIELD_TYPE_CHAR:
-
-                    if ($size < 1 || $size > 255) {
-                        $size = 1;
-                    }
-                    $type_size = "CHAR({$size})";
-                    break;
-
-                //字符串
-                case Constant::DB_FIELD_TYPE_VARCHAR:
-                    if ($size < 1 || $size > 9999) {
-                        $size = 255;
-                    }
-                    $type_size = "VARCHAR({$size})";
-                    break;
-
-                case Constant::DB_FIELD_TYPE_TEXT :
-                    $type_size = "TEXT";
-                    break;
-                case Constant::DB_FIELD_TYPE_LONGTEXT :
-                    $type_size = "LONGTEXT";
-                    break;
-
-                case Constant::DB_FIELD_TYPE_BLOB :
-                    $type_size = "BLOB";
-                    $has_charset = false;
-                    break;
-                case Constant::DB_FIELD_TYPE_LONGBLOB :
-                    $type_size = "LONGBLOB";
-                    $has_charset = false;
-                    break;
-
-                case Constant::DB_FIELD_TYPE_DATE :
-                    $type_size = "DATE";
-                    $type_size = "VARCHAR(10)";
-                    break;
-                case Constant::DB_FIELD_TYPE_TIME :
-                    $type_size = "DATE";
-                    $type_size = "VARCHAR(8)";
-                    break;
-                case Constant::DB_FIELD_TYPE_DATETIME :
-                    $type_size = "DATETIME";
-                    $type_size = "VARCHAR(19)";
-                    break;
-                //默认为255的字符串
-                default :
-                    break;
-            }
-        } else {
-            //准备离散函数
-            $has_charset = true;
-            $param_key = "v_{$idx_append}_s_{$key}";
-            $type_size = "VARCHAR(9999)";
-        }
-        if ($has_charset) {
-            return array($param_key, "IN `{$param_key}` {$type_size} CHARSET {$charset}");
-        }
-        return array($param_key, "IN `{$param_key}` {$type_size}");
-    }
-
 
     /**
      * 存储过程的参数
@@ -779,12 +637,6 @@ class DbMysql extends DbBase
     }
 
     /**
-     * @inheritDoc
-     * 创建存储过程-查询多个、聚合、统计
-     * @param MyModel $model
-     */
-
-    /**
      * 用来拼接的
      * 用来拼接的 int or notin
      * - 参数结构
@@ -832,7 +684,7 @@ class DbMysql extends DbBase
 
             //函数
             case   Constant::COND_VAl_TYPE_FUN:
-                if($val==""){
+                if ($val == "") {
                     SeasLog::error("DB FUN is Empty");
                     return array("", "", "");
                     break;
@@ -870,6 +722,131 @@ class DbMysql extends DbBase
         }
 
         return array($s_param2, $s_sql1, $s_sql2);
+    }
+
+    /**
+     * @inheritDoc
+     * 创建存储过程-查询多个、聚合、统计
+     * @param MyModel $model
+     */
+
+    /**
+     * 处理参数
+     * 不考虑小数,如果是金钱，用分做单位
+     * 第一个是参数名，第二个是定义
+     *
+     * @param MyField $o_field
+     * @param string $idx_append 避免重复的计数器
+     * @param string $append u/w  update or where
+     * @param bool $for_hash 输入是否一堆数据组合
+     * @return string[]
+     */
+    function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false)
+    {
+        $param_comment = "";//sql 里不需要参数注释
+        $charset = $this->db_conf->charset;
+        if ("" == $charset) {
+            $charset = "utf8";
+        }
+        $key = $o_field->name;
+        $type = $o_field->type;
+        //i_w_1_key
+        //c_w_2_from_key
+        //s_w_3_to_key
+        if (!$for_hash) {
+            //这是正常参数
+            $prefix = $this->getFieldParamPrefix($type);
+            if ($append != "") {
+                $prefix = "{$prefix}_{$append}";
+            }
+            $param_key = "v_{$idx_append}_{$prefix}_{$key}";
+            $has_charset = true;
+            $size = $o_field->size;
+            $type_size = "VARCHAR(255)";
+            switch ($type) {
+                //布尔
+                case Constant::DB_FIELD_TYPE_BOOL :
+                    $type_size = "TINYINT";
+                    $has_charset = false;
+                    break;
+
+                //整型
+                case Constant::DB_FIELD_TYPE_INT:
+                    //$size = 11;
+                    $type_size = "INT";
+                    $has_charset = false;
+                    break;
+
+                //长整形
+                case Constant::DB_FIELD_TYPE_LONGINT:
+                    $type_size = "BIGINT";
+                    $has_charset = false;
+                    break;
+
+                //单个字符
+                case Constant::DB_FIELD_TYPE_CHAR:
+                    if ($size < 1 || $size > 255) {
+                        $size = 1;
+                    }
+                    $type_size = "CHAR({$size})";
+                    break;
+
+                //字符串
+                case Constant::DB_FIELD_TYPE_VARCHAR:
+                    if ($size < 1 || $size > 9999) {
+                        $size = 255;
+                    }
+                    $type_size = "VARCHAR({$size})";
+                    break;
+
+                case Constant::DB_FIELD_TYPE_TEXT :
+                    $type_size = "TEXT";
+                    break;
+                case Constant::DB_FIELD_TYPE_LONGTEXT :
+                    $type_size = "LONGTEXT";
+                    break;
+
+                case Constant::DB_FIELD_TYPE_BLOB :
+                    $type_size = "BLOB";
+                    $has_charset = false;
+                    break;
+                case Constant::DB_FIELD_TYPE_LONGBLOB :
+                    $type_size = "LONGBLOB";
+                    $has_charset = false;
+                    break;
+
+                case Constant::DB_FIELD_TYPE_DATE :
+                    //$type_size = "DATE";
+                    $type_size = "VARCHAR(10)";
+                    $has_charset = false;
+                    break;
+                case Constant::DB_FIELD_TYPE_TIME :
+                    //$type_size = "DATE";
+                    $type_size = "VARCHAR(8)";
+                    $has_charset = false;
+                    break;
+                case Constant::DB_FIELD_TYPE_DATETIME :
+                    //$type_size = "DATETIME";
+                    $type_size = "VARCHAR(19)";
+                    $has_charset = false;
+                    break;
+                //默认为255的字符串
+                default :
+                    $type_size = "VARCHAR(255)";
+                    break;
+            }
+        } else {
+            //离散函数
+            $has_charset = true;
+            $param_key = "v_{$idx_append}_s_{$key}";
+            $type_size = "VARCHAR(9999)";
+        }
+        if ($has_charset) {
+            $param_use = "IN `{$param_key}` {$type_size} CHARSET {$charset}";
+        } else {
+            $param_use = "IN `{$param_key}` {$type_size}";
+        }
+        return array($param_comment, $param_key, $param_use, $type_size);
     }
 
     /**

@@ -51,7 +51,81 @@ abstract class CcBase
 
 
     //和代码无关的函数放在这里
-    //TODO
+
+    /**
+     * 处理参数
+     * 不考虑小数,如果是金钱，用分做单位
+     * 需要返回4个参数
+     *
+     * @param MyField $o_field
+     * @param string $idx_append 避免重复的计数器
+     * @param string $append u/w  update or where
+     * @param bool $for_hash 是否一堆数据组合输入
+     * @return string[]
+     */
+    abstract function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false);
+
+    /**
+     * @param MyModel $model
+     * @param MyFun $fun
+     * @return []
+     */
+    public function parseAdd_field(MyModel $model, MyFun $fun)
+    {
+
+        $a_all_fields = $model->field_list_kv;
+        $i_param = 0;
+        $a_param_comment = array();//用于参数注释
+        $a_param_define = array();//用于参数定义
+        $a_param_use = array();//用于参数使用
+        $a_param_type = array();//参数实际使用的类型
+        $a_param_key = array();//原始key值
+        $a_param_field = array();//原始字段结构
+
+        $a_field_add = $fun->field_list;
+        if ($fun->all_field == 1) {
+            $a_field_add = $model->field_list;
+        }
+        //制作参数
+        $is_return_new_id = false;
+        foreach ($a_field_add as $field) {
+            /* @var MyField $field */
+            $field_name = $field->name;
+            //存在于fun, 但不存在于model的字段，不处理
+            if (!isset($a_all_fields[$field_name])) {
+                continue;
+            }
+            //如果id也是自inc的，也不用输入了
+            if ($field_name == 'id' && $field->auto_increment = 1) {
+                $is_return_new_id = true;
+                continue;
+            }
+            $i_param++;
+            list($param1, $param2, $param3, $param4) = $this->_procParam($field, $i_param);
+            $a_param_comment[] = $param1;
+            $a_param_define[] = $param2;
+            $a_param_use[] = $param3;
+            $a_param_type[] = $param4;
+            $a_param_key[] = $field_name;
+            $a_param_field[] = $field;
+        }
+
+        //不怕内存不够
+        return array(
+            $is_return_new_id,
+            $i_param,
+            $a_param_comment,
+            $a_param_define,
+            $a_param_use,
+            $a_param_type,
+            $a_param_key,
+            $a_param_field
+            );
+
+    }
+
+
+
     /**
      * @param MyModel $model
      * @param MyFun $fun

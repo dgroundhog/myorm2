@@ -95,7 +95,6 @@ function php_model_add($model)
     if (count($model['add_keys']) == 0) {
         echo _tab(2) . "return -1;//TODO\n";
     } else {
-
         $s_qm = _question_marks($i_param);
         echo _tab(2) . "\$i_new_id = 0;\n";
         echo _tab(2) . "\$sql = \"{CALL `p_{$table_name}_add`({$s_qm},@_new_id)}\";\n";

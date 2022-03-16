@@ -61,4 +61,7 @@ interface CcImpl
      * @return int
      */
     function cCount(MyModel $model, MyFun $fun);
+
+
+
 }
