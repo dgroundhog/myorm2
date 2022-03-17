@@ -26,7 +26,7 @@ class JavaServletMvc extends MvcBase
         $_target = $this->odir_models . DS . "{$uc_model_name}Model.java";
         ob_start();
 
-        echo "package  {$this->final_package}.models;\n";
+        echo "package {$this->final_package}.models;\n";
         echo "import {$this->final_package}.beans.{$uc_model_name}Bean;\n";
         echo "import {$this->final_package}.model.MvcBase;\n";
 
@@ -158,7 +158,7 @@ class JavaServletMvc extends MvcBase
         $_target2 = $this->odir_models . DS . "{$uc_model_name}ModelX.java";
         ob_start();
 
-        echo "package  {$this->final_package}.models;\n";
+        echo "package {$this->final_package}.models;\n";
         _fun_comment("自定义的操作模型类--{$model->title}");
         echo "public class {$uc_model_name}ModelX extends {$uc_model_name}Model {\n";
         echo "}";
@@ -179,14 +179,7 @@ class JavaServletMvc extends MvcBase
         $fun_name1 = $this->makeModelFunName($fun_name, "add");//散列参数添加
         $fun_name2 = $this->makeModelFunName($fun_name, "add", true);//通过bean添加
 
-        list($is_return_new_id,
-            $i_param,
-            $a_param_comment,
-            $a_param_define,
-            $a_param_use,
-            $a_param_type,
-            $a_param_key,
-            $a_param_field) = $this->parseAdd_field($model, $fun);
+        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
 
         if ($i_param == 0) {
             //没有输入参数
@@ -220,7 +213,7 @@ class JavaServletMvc extends MvcBase
         echo _tab(4) . "st = conn.prepareCall(sql);\n";
 
         $ii = 0;
-        foreach ($a_param_use as $key=> $param) {
+        foreach ($a_param_use as $key => $param) {
             $field = $a_param_field[$ii];
             echo $this->_procStatementParam($field->name, $field->type, $param, $ii, 4);
             $ii++;
@@ -251,7 +244,7 @@ class JavaServletMvc extends MvcBase
             echo _warp2join($ii) . _tab(5) . "v_{$lc_model_name}Bean->{$field->name}";
             $ii++;
         }
-        echo  "\n";
+        echo "\n";
         echo _tab(2) . ");\n";
         echo _tab(2) . "return iRet;\n";
         echo _tab(1) . "}";
@@ -315,7 +308,7 @@ class JavaServletMvc extends MvcBase
                 echo _tab($tab_idx) . "if({$pv_use} == null) {\n";
                 echo _tab(1 + $tab_idx) . "{$pv_use} = new byte[0];\n";
                 echo _tab($tab_idx) . "}\n";
-                echo _tab($tab_idx) . "ByteArrayInputStream _bis_{$field_key} = new ByteArrayInputStream({{$pv_use}}); \n";
+                echo _tab($tab_idx) . "ByteArrayInputStream _bis_{$field_key} = new ByteArrayInputStream({$pv_use}); \n";
                 echo _tab($tab_idx) . "st.setBinaryStream({$ii}, _bis_{$field_key}, _bis_{$field_key}.available());\n";
                 break;
 
@@ -375,13 +368,7 @@ class JavaServletMvc extends MvcBase
         $proc_name = $this->findProcName($model->table_name, $fun_name, "delete");//存储过曾的名字
         $fun_name1 = $this->makeModelFunName($fun_name, "delete");//散列参数添加
 
-        list(
-            $i_param,
-            $a_param_comment,
-            $a_param_define,
-            $a_param_use,
-            $a_param_type,
-            $a_param_field)= $this->_procWhereCond($model, $fun);
+        list($i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_field) = $this->_procWhereCond($model, $fun);
 
 
         _fun_comment_header("删除数据vars", 1);
@@ -422,79 +409,6 @@ class JavaServletMvc extends MvcBase
         $this->_funFooter($model, $fun);
     }
 
-
-
-    /**
-     * 处理参数
-     * 需要区分需要输入的参数和使用的参数，还有注释的参数
-     *
-     * @param MyField $o_field
-     * @param string $idx_append 避免重复的计数器
-     * @param string $append u/w  update or where
-     *
-     * @return string [用于注释的，用于输入的，用于使用的]
-     */
-    function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false)
-    {
-        $key = $o_field->name;
-        $type = $o_field->type;
-        $desc = $o_field->title;
-
-        $ret1 = "";
-        $ret2 = "";
-        $ret3 = "";
-
-        //i_w_1_key
-        //c_w_2_from_key
-        //s_w_3_to_key
-
-        $prefix = $this->getFieldParamPrefix($type);
-        if ($append != "") {
-            $prefix = "{$prefix}_{$append}";
-        }
-        $param_key = "v_{$idx_append}_{$prefix}_{$key}";
-        $param_type = "String";
-        switch ($type) {
-            case Constant::DB_FIELD_TYPE_BOOL :
-                $param_type = "int";//tinyint
-                break;
-            //整型
-            case Constant::DB_FIELD_TYPE_INT:
-                $param_type = "int";
-                break;
-            case Constant::DB_FIELD_TYPE_LONGINT:
-                $param_type = "long";
-                break;
-
-            case Constant::DB_FIELD_TYPE_BLOB :
-            case Constant::DB_FIELD_TYPE_LONGBLOB :
-                $param_type = "byte[]";
-                break;
-            //单个字符
-            case Constant::DB_FIELD_TYPE_CHAR:
-                //字符串
-            case Constant::DB_FIELD_TYPE_VARCHAR:
-
-            case Constant::DB_FIELD_TYPE_TEXT :
-
-            case Constant::DB_FIELD_TYPE_LONGTEXT :
-
-            case Constant::DB_FIELD_TYPE_DATE :
-
-            case Constant::DB_FIELD_TYPE_TIME :
-
-            case Constant::DB_FIELD_TYPE_DATETIME :
-                //默认的字符串
-            default :
-                break;
-        }
-        $ret1 = " * @param {$param_key} [{$param_type}] {$desc}";
-        $ret2 = "{$param_type} {$param_key}";
-        $ret3 = "{$param_key}";
-
-        return array($ret1, $ret2, $ret3, $param_type);
-    }
-
     function cUpdate(MyModel $model, MyFun $fun)
     {
         $this->_funHeader($model, $fun);
@@ -508,23 +422,10 @@ class JavaServletMvc extends MvcBase
 
         $a_all_fields = $model->field_list_kv;
         //需要更新的字段
-        list(
-            $i_u_param,
-            $a_u_param_comment,
-            $a_u_param_define,
-            $a_u_param_use,
-            $a_u_param_type,
-            $a_u_param_key,
-            $a_u_param_field
-        ) = $this->_parseUpdate_field($model, $fun);
+        list($i_u_param, $a_u_param_comment, $a_u_param_define, $a_u_param_use, $a_u_param_type, $a_u_param_key, $a_u_param_field) = $this->_parseUpdate_field($model, $fun);
 
         //更新条件
-        list($i_w_param,
-            $a_w_param_comment,
-            $a_w_param_define,
-            $a_w_param_use,
-            $a_w_param_type,
-            $a_w_param_field) = $this->_procWhereCond($model, $fun);
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
 
         _fun_comment_header("更新数据vars", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
@@ -539,7 +440,7 @@ class JavaServletMvc extends MvcBase
         _fun_comment_footer(1);
 
         echo _tab(1) . "public int {$fun_name1}(";
-        $this->_echoFunParams($a_u_param_define,$a_w_param_define);
+        $this->_echoFunParams($a_u_param_define, $a_w_param_define);
         echo ")\n";
         echo _tab(1) . "{\n";
         $s_qm = _db_question_marks($i_u_param + $i_w_param + 1);
@@ -615,12 +516,7 @@ class JavaServletMvc extends MvcBase
 
         $a_all_fields = $model->field_list_kv;
         //更新条件
-        list($i_w_param,
-            $a_w_param_comment,
-            $a_w_param_define,
-            $a_w_param_use,
-            $a_w_param_type,
-            $a_w_param_field) = $this->_procWhereCond($model, $fun);
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
 
         _fun_comment_header("通过条件获取一个数据，返回值是hash", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
@@ -632,7 +528,7 @@ class JavaServletMvc extends MvcBase
         _fun_comment_footer(1);
         echo _tab(1) . "public HashMap {$fun_name1}(";
         $this->_echoFunParams($a_w_param_define);
-        echo  ")\n";
+        echo ")\n";
 
         echo _tab(1) . "{\n";
         $s_qm = _db_question_marks($i_w_param);
@@ -672,9 +568,9 @@ class JavaServletMvc extends MvcBase
         _fun_comment_footer(1);
         echo _tab(1) . "public {$uc_model_name}Bean {$fun_name2}(";
         $this->_echoFunParams($a_w_param_define);
-        echo  ")\n";
+        echo ")\n";
         echo _tab(1) . "{\n";
-        $s_qm = _db_question_marks($i_w_param );
+        $s_qm = _db_question_marks($i_w_param);
         echo _tab(2) . "//question_marks = {$i_w_param}  \n";
         echo _tab(2) . "{$uc_model_name}Bean mBean = new {$uc_model_name}Bean();\n";
         $this->_dbQueryHeader("read");
@@ -753,12 +649,7 @@ class JavaServletMvc extends MvcBase
 
         $a_all_fields = $model->field_list_kv;
         //更新条件
-        list($i_w_param,
-            $a_w_param_comment,
-            $a_w_param_define,
-            $a_w_param_use,
-            $a_w_param_type,
-            $a_w_param_field) = $this->_procWhereCond($model, $fun);
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
 
         _fun_comment_header("普通统计数据", 1);
         echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
@@ -770,7 +661,7 @@ class JavaServletMvc extends MvcBase
         _fun_comment_footer(1);
         echo _tab(1) . "public int {$fun_name1}(";
         $this->_echoFunParams($a_w_param_define);
-        echo  ")\n";
+        echo ")\n";
         echo _tab(1) . "{\n";
         $s_qm = _db_question_marks($i_w_param);
         echo _tab(2) . "//question_marks = {$i_w_param}\n";
@@ -816,27 +707,24 @@ class JavaServletMvc extends MvcBase
             $has_return_bean = true;
         }
         //1111基本条件
-        list($i_w_param,
-            $a_w_param_comment,
-            $a_w_param_define,
-            $a_w_param_use,
-            $a_w_param_type,
-            $a_w_param_field) = $this->_procWhereCond($model, $fun);
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
         $i_param_list = $i_w_param;
 
-        //22222被聚合键 TODO 放到父级函数里处理
+        //22222被聚合键
         $fun_type = $fun->type;
-        list($has_group_field, $group_field, $o_group_field, $group_field_final,$group_field_sel) = $this->parseGroup_field($model, $fun);
+        list($has_group_field, $group_field, $o_group_field, $group_field_final, $group_field_sel) = $this->parseGroup_field($model, $fun);
         //3333分组键
         list($has_group_by, $group_by) = $this->parseGroup_by($model, $fun);
 
-        //4444先处理having
-        //预先处理hading的条件
-        $o_having = $fun->group_having;
-        $has_having = $this->parseHaving($model, $fun, $has_group_field, $has_group_by);
+        //4444先处理having,预先处理hading的条件
+        $has_having = false;
+        $o_having = $fun->group_having;//用来判断绑定关系
+        if ($has_group_field && $has_group_by) {
+            list($has_having, $a_param_comment_having, $a_param_define_having, $a_param_use_having, $a_param_type_having, $_sql1_having, $_sql2_having) = $this->parseHaving($model, $fun, $o_group_field, $group_field_final);
+        }
 
         //5555排序键
-        list($has_order, $is_order_by_input, $s_order_by, $is_order_dir_input, $s_order_dir) = $this->parseOrder_by($model, $fun);
+        list($has_order, $is_order_by_input, $s_order_by, $is_order_dir_input, $s_order_dir) = $this->parseOrder_by($model, $fun, $has_group_field, $group_field_final);
 
         //6666 分页
         list($has_pager, $is_pager_size_input, $pager_size) = $this->parsePager($model, $fun);
@@ -851,6 +739,12 @@ class JavaServletMvc extends MvcBase
         //2222
         //3333
         //4444
+        if ($has_group_field && $has_group_by && $has_having) {
+            foreach ($a_param_comment_having as $param) {
+                echo _tab(1) . "{$param}\n";
+                $i_param_list++;
+            }
+        }
         //5555
         if ($has_order) {
             if ($is_order_by_input) {
@@ -879,6 +773,13 @@ class JavaServletMvc extends MvcBase
         foreach ($a_w_param_define as $param) {
             echo _warp2join($ii) . _tab(5) . "{$param}";
             $ii++;
+        }
+        //44444
+        if ($has_group_field && $has_group_by && $has_having) {
+            foreach ($a_param_define_having as $param) {
+                echo _warp2join($ii) . _tab(5) . "{$param}";
+                $ii++;
+            }
         }
         //5555
         if ($has_order) {
@@ -913,26 +814,40 @@ class JavaServletMvc extends MvcBase
         $ii = 0;
         foreach ($a_w_param_use as $param) {
             $o_field = $a_w_param_field[$ii];
+            //TODO 对于 hash的处理
             echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
             $ii++;
         }
+        if ($has_group_field && $has_group_by && $has_having) {
+            foreach ($a_param_use_having as $param) {
+                if($o_having->type == Constant::COND_TYPE_IN || $o_having->type== Constant::COND_TYPE_NOTIN ){
+                    echo _tab(4) . "st.setString({$ii}, {$param}); \n";
+                }
+                else{
+                    echo _tab(4) . "st.setInt({$ii}, {$param}); \n";
+                }
+
+                $ii++;
+            }
+        }
+
         //5555
         if ($has_order) {
             if ($is_order_by_input) {
-                echo _tab(4) . "st.setString({$ii}, {v_order_by}); \n";
+                echo _tab(4) . "st.setString({$ii}, v_order_by); \n";
                 $ii++;
             }
             if ($is_order_by_input) {
-                echo _tab(4) . "st.setString({$ii}, {v_order_dir}); \n";
+                echo _tab(4) . "st.setString({$ii}, v_order_dir); \n";
                 $ii++;
             }
         }
         //6666
         if ($has_pager) {
-            echo _tab(4) . "st.setInt({$ii}, {v_page}); \n";
+            echo _tab(4) . "st.setInt({$ii}, v_page); \n";
             $ii++;
             if ($is_pager_size_input) {
-                echo _tab(4) . "st.setInt({$ii}, {v_page_size}); \n";
+                echo _tab(4) . "st.setInt({$ii}, v_page_size); \n";
                 $ii++;
             }
         }
@@ -942,10 +857,11 @@ class JavaServletMvc extends MvcBase
         echo _tab(4) . "while (rs.next()) {\n";
         echo _tab(5) . "HashMap<String, String> mRet = new HashMap<>();\n";
         echo _tab(5) . "for (Map.Entry<String, String> entry : mPlainRowMap.entrySet()) {\n";
-        echo _tab(6) . "mRet.put(entry.getKey(), rs.getString(entry.getValue())); \n";
+        echo _tab(6) . "if (null != rs.getString(entry.getValue())) {\n";
+        echo _tab(7) . "mRet.put(entry.getKey(), rs.getString(entry.getValue())); \n";
+        echo _tab(6) . "}\n";
         echo _tab(5) . "}\n";
-        //TODO 去掉不需要的
-        if (!$has_return_bean) {
+        if ($has_group_field && $has_group_by && $has_having) {
             //聚合的结果
             echo _tab(5) . "mRet.put({$group_field_final}, rs.getInt({$group_field_final})); \n";
         }
@@ -960,6 +876,7 @@ class JavaServletMvc extends MvcBase
         //选中分页的才分页/////////////////////////////////////////////////////////////////////////////////
         if ($has_return_bean) {
             //非聚合的才有bean
+            //此处不需要考虑having
             _fun_comment_header("通过条件获取列表，返回值是bean", 1);
             echo _tab(1) . " * {$fun->type}-{$fun->title}\n";
             echo _tab(1) . " *\n";
@@ -1072,6 +989,14 @@ class JavaServletMvc extends MvcBase
             foreach ($a_w_param_comment as $param) {
                 echo _tab(1) . "{$param}\n";
             }
+            $i_param_count = $i_w_param;
+            //4444
+            if ($has_group_field && $has_group_by && $has_having) {
+                foreach ($a_param_comment_having as $param) {
+                    echo _tab(1) . "{$param}\n";
+                    $i_param_count++;
+                }
+            }
             echo _tab(1) . " * @return  int\n";
             _fun_comment_footer(1);
             echo _tab(1) . "public int {$fun_name1}_Count(";
@@ -1080,10 +1005,17 @@ class JavaServletMvc extends MvcBase
                 echo _warp2join($ii) . _tab(5) . "{$param}";
                 $ii++;
             }
+            //44444
+            if ($has_group_field && $has_group_by && $has_having) {
+                foreach ($a_param_define_having as $param) {
+                    echo _warp2join($ii) . _tab(5) . "{$param}\n";
+                    $ii++;
+                }
+            }
             echo _tab(1) . "\n" . _tab(1) . ")\n";
             echo _tab(1) . "{\n";
-            $s_qm = _db_question_marks($i_w_param);
-            echo _tab(2) . "//question_marks = {$i_w_param} \n";
+            $s_qm = _db_question_marks($i_param_count);
+            echo _tab(2) . "//question_marks = {$i_param_count} \n";
             echo _tab(2) . "int iRet = 0;\n";
             $this->_dbQueryHeader("read");
             echo _tab(4) . "String sql = \"{CALL `{$proc_name}_c`({$s_qm})}\";\n";
@@ -1093,6 +1025,17 @@ class JavaServletMvc extends MvcBase
                 $o_field = $a_w_param_field[$ii];
                 echo $this->_procStatementParam($o_field->name, $o_field->type, $param, $ii, 4);
                 $ii++;
+            }
+            if ($has_group_field && $has_group_by && $has_having) {
+                foreach ($a_param_use_having as $param) {
+                    if($o_having->type== Constant::COND_TYPE_IN || $o_having->type== Constant::COND_TYPE_NOTIN ){
+                        echo _tab(4) . "st.setString({$ii}, {$param}); \n";
+                    }
+                    else{
+                        echo _tab(4) . "st.setInt({$ii}, {$param}); \n";
+                    }
+                    $ii++;
+                }
             }
             echo "\n";
             echo _tab(4) . "rs = st.executeQuery();\n";
@@ -1110,6 +1053,77 @@ class JavaServletMvc extends MvcBase
 
 
         $this->_funFooter($model, $fun);
+    }
+
+    /**
+     * 处理参数
+     * 需要区分需要输入的参数和使用的参数，还有注释的参数
+     *
+     * @param MyField $o_field
+     * @param string $idx_append 避免重复的计数器
+     * @param string $append u/w  update or where
+     *
+     * @return string [用于注释的，用于输入的，用于使用的]
+     */
+    function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false)
+    {
+        $key = $o_field->name;
+        $type = $o_field->type;
+        $desc = $o_field->title;
+
+        $ret1 = "";
+        $ret2 = "";
+        $ret3 = "";
+
+        //i_w_1_key
+        //c_w_2_from_key
+        //s_w_3_to_key
+
+        $prefix = $this->getFieldParamPrefix($type);
+        if ($append != "") {
+            $prefix = "{$prefix}_{$append}";
+        }
+        $param_key = "v_{$idx_append}_{$prefix}_{$key}";
+        $param_type = "String";
+        switch ($type) {
+            case Constant::DB_FIELD_TYPE_BOOL :
+                $param_type = "int";//tinyint
+                break;
+            //整型
+            case Constant::DB_FIELD_TYPE_INT:
+                $param_type = "int";
+                break;
+            case Constant::DB_FIELD_TYPE_LONGINT:
+                $param_type = "long";
+                break;
+
+            case Constant::DB_FIELD_TYPE_BLOB :
+            case Constant::DB_FIELD_TYPE_LONGBLOB :
+                $param_type = "byte[]";
+                break;
+            //单个字符
+            case Constant::DB_FIELD_TYPE_CHAR:
+                //字符串
+            case Constant::DB_FIELD_TYPE_VARCHAR:
+
+            case Constant::DB_FIELD_TYPE_TEXT :
+
+            case Constant::DB_FIELD_TYPE_LONGTEXT :
+
+            case Constant::DB_FIELD_TYPE_DATE :
+
+            case Constant::DB_FIELD_TYPE_TIME :
+
+            case Constant::DB_FIELD_TYPE_DATETIME :
+                //默认的字符串
+            default :
+                break;
+        }
+        $ret1 = " * @param {$param_key} [{$param_type}] {$desc}";
+        $ret2 = "{$param_type} {$param_key}";
+        $ret3 = "{$param_key}";
+
+        return array($ret1, $ret2, $ret3, $param_type);
     }
 
     function ccTmpl($model)
@@ -1146,7 +1160,7 @@ class JavaServletMvc extends MvcBase
         ob_start();
 
 
-        echo "package  {$this->final_package}.beans;\n\n";
+        echo "package {$this->final_package}.beans;\n\n";
         echo "import java.util.HashMap;\n";
         echo "import java.util.Map;\n";
         echo "import java.util.Vector;\n";
@@ -1169,7 +1183,7 @@ class JavaServletMvc extends MvcBase
                 case Constant::DB_FIELD_TYPE_INT:
                     echo _tab(1) . "public int {$key} = 0;\n";
                     break;
-                    //长整形
+                //长整形
                 case Constant::DB_FIELD_TYPE_LONGINT:
                     echo _tab(1) . "public long {$key} = 0;\n";
                     break;

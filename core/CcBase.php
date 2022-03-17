@@ -53,19 +53,6 @@ abstract class CcBase
     //和代码无关的函数放在这里
 
     /**
-     * 处理参数
-     * 不考虑小数,如果是金钱，用分做单位
-     * 需要返回4个参数
-     *
-     * @param MyField $o_field
-     * @param string $idx_append 避免重复的计数器
-     * @param string $append u/w  update or where
-     * @param bool $for_hash 是否一堆数据组合输入
-     * @return string[]
-     */
-    abstract function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false);
-
-    /**
      * @param MyModel $model
      * @param MyFun $fun
      * @return []
@@ -111,34 +98,38 @@ abstract class CcBase
         }
 
         //不怕内存不够
-        return array(
-            $is_return_new_id,
-            $i_param,
-            $a_param_comment,
-            $a_param_define,
-            $a_param_use,
-            $a_param_type,
-            $a_param_key,
-            $a_param_field
-            );
+        return array($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field);
     }
 
+    /**
+     * 处理参数
+     * 不考虑小数,如果是金钱，用分做单位
+     * 需要返回4个参数
+     *
+     * @param MyField $o_field
+     * @param string $idx_append 避免重复的计数器
+     * @param string $append u/w  update or where
+     * @param bool $for_hash 是否一堆数据组合输入
+     * @return string[]
+     */
+    abstract function _procParam($o_field, $idx_append = 0, $append = "", $for_hash = false);
 
-    function _echoFunParams($a_param1=array(),$a_param2=array()){
-        $i_size1 =count($a_param1);
-        $i_size2 =count($a_param2);
+    function _echoFunParams($a_param1 = array(), $a_param2 = array())
+    {
+        $i_size1 = count($a_param1);
+        $i_size2 = count($a_param2);
 
 
-        if(($i_size1 + $i_size2)==0){
+        if (($i_size1 + $i_size2) == 0) {
             return;
         }
 
-        if(($i_size1 + $i_size2)==1){
-            if($i_size1 ==1){
+        if (($i_size1 + $i_size2) == 1) {
+            if ($i_size1 == 1) {
                 echo $a_param1[0];
                 return;
             }
-            if($i_size2 ==1){
+            if ($i_size2 == 1) {
                 echo $a_param2[0];
                 return;
             }
@@ -163,7 +154,8 @@ abstract class CcBase
      * @param MyFun $fun
      * @return void
      */
-    function _parseUpdate_field(MyModel $model, MyFun $fun){
+    function _parseUpdate_field(MyModel $model, MyFun $fun)
+    {
         $a_all_fields = $model->field_list_kv;
         //需要更新的字段
         $i_u_param = 0;
@@ -194,15 +186,7 @@ abstract class CcBase
             $a_u_param_field[] = $field;
         }
 
-        return array(
-            $i_u_param,
-            $a_u_param_comment,
-            $a_u_param_define,
-            $a_u_param_use,
-            $a_u_param_type,
-            $a_u_param_key,
-            $a_u_param_field
-        );
+        return array($i_u_param, $a_u_param_comment, $a_u_param_define, $a_u_param_use, $a_u_param_type, $a_u_param_key, $a_u_param_field);
     }
 
     /**
@@ -238,7 +222,7 @@ abstract class CcBase
             foreach ($cond_list as $cond) {
                 $field = $model->field_list[$cond->field];
                 $field_type = $field->type;
-                if($field_type==  Constant::DB_FIELD_TYPE_BLOB || $field_type==  Constant::DB_FIELD_TYPE_LONGBLOB ){
+                if ($field_type == Constant::DB_FIELD_TYPE_BLOB || $field_type == Constant::DB_FIELD_TYPE_LONGBLOB) {
                     //blob字段不参与条件运算
                     continue;
                 }
@@ -262,7 +246,7 @@ abstract class CcBase
                         }
                         if ($cond->v2_type == Constant::COND_VAl_TYPE_INPUT) {
                             $o_field = $model->field_list[$cond->field];
-                            list($s_param1, $s_param2, $s_param3,$s_param4) = $this->_procParam($o_field, $jj, "w");
+                            list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
                             $a_param_comment[] = $s_param1;
                             $a_param_define[] = $s_param2;
                             $a_param_use[] = $s_param3;
@@ -274,7 +258,7 @@ abstract class CcBase
                     default:
                         if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
                             $o_field = $model->field_list[$cond->field];
-                            list($s_param1, $s_param2, $s_param3,$s_param4) = $this->_procParam($o_field, $jj, "w");
+                            list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
                             $a_param_comment[] = $s_param1;
                             $a_param_define[] = $s_param2;
                             $a_param_use[] = $s_param3;
@@ -294,7 +278,7 @@ abstract class CcBase
                     foreach ($cond_list2 as $cond) {
                         $field = $model->field_list[$cond->field];
                         $field_type = $field->type;
-                        if($field_type==  Constant::DB_FIELD_TYPE_BLOB || $field_type==  Constant::DB_FIELD_TYPE_LONGBLOB ){
+                        if ($field_type == Constant::DB_FIELD_TYPE_BLOB || $field_type == Constant::DB_FIELD_TYPE_LONGBLOB) {
                             //blob字段不参与条件运算2
                             continue;
                         }
@@ -308,7 +292,7 @@ abstract class CcBase
                             case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
                                 if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
                                     $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3,$s_param4) = $this->_procParam($o_field, $jj, "w");
+                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
                                     $a_param_comment[] = $s_param1;
                                     $a_param_define[] = $s_param2;
                                     $a_param_use[] = $s_param3;
@@ -318,7 +302,7 @@ abstract class CcBase
                                 }
                                 if ($cond->v2_type == Constant::COND_VAl_TYPE_INPUT) {
                                     $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3,$s_param4) = $this->_procParam($o_field, $jj, "w");
+                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
                                     $a_param_comment[] = $s_param1;
                                     $a_param_define[] = $s_param2;
                                     $a_param_use[] = $s_param3;
@@ -330,7 +314,7 @@ abstract class CcBase
                             default:
                                 if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
                                     $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3,$s_param4) = $this->_procParam($o_field, $jj, "w");
+                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
                                     $a_param_comment[] = $s_param1;
                                     $a_param_define[] = $s_param2;
                                     $a_param_use[] = $s_param3;
@@ -344,15 +328,8 @@ abstract class CcBase
             }
         }
         //参数个数，用于注释,用于定义,用于使用
-        return array(
-            $jj,
-            $a_param_comment,
-            $a_param_define,
-            $a_param_use,
-            $a_param_type,
-            $a_param_field);
+        return array($jj, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_field);
     }
-
 
 
     /**
@@ -410,7 +387,7 @@ abstract class CcBase
                     break;
             }
         }
-        return array($has_group_field, $group_field, $o_group_field, $group_field_final,$group_field_sel);
+        return array($has_group_field, $group_field, $o_group_field, $group_field_final, $group_field_sel);
     }
 
     /**
@@ -434,27 +411,6 @@ abstract class CcBase
     }
 
     /**
-     * 返回一致性参数
-     * @param $tab_idx
-     * @param $inc
-     * @param $group_field_final
-     * @param $o_group_field
-     * @param $o_having
-     * @return void
-     */
-    public function _procHaving_V1($tab_idx, $inc, $group_field_final, $o_group_field, $o_having){
-
-    }
-
-    public function _procHaving_V2($tab_idx, $inc, $group_field_final, $o_group_field, $o_having){
-
-    }
-
-    public function _procHaving_V_range($tab_idx, $inc, $group_field_final, $o_group_field, $o_having){
-
-    }
-
-    /**
      * 预先处理hading的条件
      * @param MyModel $model
      * @param MyFun $fun
@@ -462,53 +418,337 @@ abstract class CcBase
      * @param $has_group_by
      * @return array
      */
-    public function parseHaving(MyModel $model, MyFun $fun, $has_group_field, $has_group_by)
+    public function parseHaving(MyModel $model, MyFun $fun, $o_group_field, $group_field_tag)
     {
+        //需要 $has_group_field && $has_group_by
         $has_having = false;//判断分组统计之前的所有条件
         $a_param_comment = array();
         $a_param_define = array();
         $a_param_use = array();
         $a_param_type = array();
-        $s_sql1 ="";
-        $s_sql2 ="";
-        if ($has_group_field && $has_group_by) {
-            //再去判断having
-            //TODO
-            $o_having = $fun->group_having;
-            if ($o_having != null) {
-                switch ($o_having->type) {
-                    case Constant::COND_TYPE_EQ:// = "EQ";//= 等于
-                    case Constant::COND_TYPE_NEQ:// = "NEQ";//!= 不等于
-                    case Constant::COND_TYPE_GT:// = "GT";//&GT; 大于
-                    case Constant::COND_TYPE_GTE:// = "GTE";//&GT;= 大于等于
-                    case Constant::COND_TYPE_LT:// = "LT";//&LT; 少于
-                    case Constant::COND_TYPE_LTE:// = "LTE";//&LT;= 少于等于
-                        return $this->_procHaving_V1(1, 1, $group_field_final, $o_group_field, $o_having->type, $o_having->v1_type, $o_having->v1);
-                        break;
-                    case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
-                    case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
-                    case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
-                    case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
-                    case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
-                        return $this->_procHaving_V2(1, 1, $group_field_final, $o_group_field, $o_having->type, $o_having->v1_type, $o_having->v1, $o_having->v2_type, $o_having->v2);
-                        break;
-                    case Constant::COND_TYPE_IN:// = "IN";//离散量范围内
-                    case Constant::COND_TYPE_NOTIN:// = "NOTIN";//离散量范围外
-                        return $this->_procHaving_V_range(1, 1, $group_field_final, $o_group_field, $o_having->type, $o_having->v1_type, $o_having->v1);
-                        break;
-                    default:
+        $s_sql1 = "";
+        $s_sql2 = "";
+        $o_having = $fun->group_having;
+        if ($o_having != null) {
+            switch ($o_having->type) {
+                case Constant::COND_TYPE_EQ:// = "EQ";//= 等于
+                case Constant::COND_TYPE_NEQ:// = "NEQ";//!= 不等于
+                case Constant::COND_TYPE_GT:// = "GT";//&GT; 大于
+                case Constant::COND_TYPE_GTE:// = "GTE";//&GT;= 大于等于
+                case Constant::COND_TYPE_LT:// = "LT";//&LT; 少于
+                case Constant::COND_TYPE_LTE:// = "LTE";//&LT;= 少于等于
+                    return $this->_procHaving_V1(1, 1, $o_group_field, $group_field_tag, $o_having);
+                    break;
+                case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
+                case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
+                case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
+                case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
+                case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
+                    return $this->_procHaving_V2(1, 1, $o_group_field, $group_field_tag, $o_having);
+                    break;
+                case Constant::COND_TYPE_IN:// = "IN";//离散量范围内
+                case Constant::COND_TYPE_NOTIN:// = "NOTIN";//离散量范围外
+                    return $this->_procHaving_V_range(1, 1, $o_group_field, $group_field_tag, $o_having);
+                    break;
+                default:
 
-                        break;
-                }
+                    break;
             }
         }
-        return array($has_having,
-        $a_param_comment,
-        $a_param_define,
-        $a_param_use ,
-        $a_param_type,
-        $s_sql1 ,
-        $s_sql2 ,);
+
+        return array(false, array(), array(), array(), array(), "", "");
+    }
+
+    /**
+     * 返回一致性参数
+     * @param $tab_idx
+     * @param $inc
+     * @param $group_field_tag
+     * @param $o_group_field
+     * @param $o_having
+     * @return void
+     */
+    public function _procHaving_V1($tab_idx, $inc, $o_group_field, $group_field_tag, $o_having)
+    {
+
+        $v_cond = $o_having->type;
+        $v_type = $o_having->v1_type;
+        $val = $o_having->v1;
+        if (!isset(Constant::$a_cond_type_on_sql_1[$v_cond])) {
+            SeasLog::error("known cond_type1 to proc");
+            return;
+        }
+        $s_cond = Constant::$a_cond_type_on_sql_1[$v_cond];
+
+        $empty_having = array(false, array(), array(), array(), array(), "", "");
+
+        $a_param_comment = array();
+        $a_param_define = array();
+        $a_param_use = array();
+        $a_param_type = array();
+        $s_sql1 = "";
+        $s_sql2 = "";
+        switch ($v_type) {
+            //固定值
+            case  Constant::COND_VAl_TYPE_FIXED:
+                if ($val == "") {
+                    SeasLog::error("fixed 1 is Empty");
+                    return $empty_having;
+                }
+
+                $s_sql1 = " {$group_field_tag}` {$s_cond} {$val}";
+                $s_sql2 = "' {$group_field_tag}` {$s_cond} {$val}'";
+                break;
+            //函数
+            case  Constant::COND_VAl_TYPE_FUN:
+                if ($val == "") {
+                    SeasLog::error("fun 1 is Empty");
+                    return $empty_having;
+                }
+                $s_sql1 = " {$group_field_tag}` {$s_cond} {$val}()";
+                $s_sql2 = "' {$group_field_tag}` {$s_cond} {$val}()'";
+                break;
+            //输入值
+            case Constant::COND_VAl_TYPE_INPUT:
+            default:
+                list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_group_field, $inc, "h");
+                //group where
+                $a_param_comment[] = $param_comment;
+                $a_param_define[] = $param_define;
+                $a_param_use[] = $param_use;
+                $a_param_type[] = $type_size;
+                //$s_param_input = $param_key2;
+                $s_sql1 = "  `{$group_field_tag}` {$s_cond} {$param_use}";
+                $s_sql2 = "' `{$group_field_tag}` {$s_cond} {$param_use}'";
+        }
+        if ($s_sql1 != "") {
+            $s_sql1 = _tab($tab_idx) . $s_sql1;
+        }
+
+        return array(true, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $s_sql1, $s_sql2);
+
+    }
+
+    public function _procHaving_V2($tab_idx, $inc, $o_group_field, $group_field_tag, $o_having)
+    {
+        $v_cond = $o_having->type;
+        $v1_type = $o_having->v1_type;
+        $val1 = $o_having->v1;
+        $v2_type = $o_having->v2_type;
+        $val2 = $o_having->v2;
+        if (!isset(Constant::$a_cond_type_on_sql_2[$v_cond])) {
+            SeasLog::error("known cond_type2 to proc");
+            return;
+        }
+        $s_cond = Constant::$a_cond_type_on_sql_2[$v_cond];
+        $empty_having = array(false, array(), array(), array(), array(), "", "");
+
+        $a_param_comment = array();
+        $a_param_define = array();
+        $a_param_use = array();
+        $a_param_type = array();
+        $s_sql1 = " {$group_field_tag} {$s_cond} ";
+        $s_sql2 = "' {$group_field_tag} {$s_cond} ";
+        switch ($v1_type) {
+            //固定值
+            case  Constant::COND_VAl_TYPE_FIXED:
+                if ($val1 == "") {
+                    SeasLog::error("fixed 1 is Empty");
+                    return $empty_having;
+                }
+                $s_sql1 = $s_sql1 . " {$val1} AND";
+                $s_sql2 = $s_sql2 . " {$val1} AND";
+                switch ($v2_type) {
+                    //固定值
+                    case  Constant::COND_VAl_TYPE_FIXED:
+                        if ($val2 == "") {
+                            SeasLog::error("fixed v2 is Empty");
+                            return $empty_having;
+                        }
+                        $s_sql1 = $s_sql1 . " {$val2} ";
+                        $s_sql2 = $s_sql2 . " {$val2} ";
+                        break;
+                    //函数
+                    case  Constant::COND_VAl_TYPE_FUN:
+                        if ($val2 == "") {
+                            SeasLog::error("fixed f2 is Empty");
+                            return $empty_having;
+                        }
+                        $s_sql1 = $s_sql1 . " {$val2}() ";
+                        $s_sql2 = $s_sql2 . " {$val2}() ";
+                        break;
+                    //输入值
+                    case Constant::COND_VAl_TYPE_INPUT:
+                    default:
+                        list($param_comment2, $param_define2, $param_use2, $param_type2) = $this->_procParam($o_group_field, $inc, "ht");
+                        //group where
+                        $a_param_comment[] = $param_comment2;
+                        $a_param_define[] = $param_define2;
+                        $a_param_use[] = $param_use2;
+                        $a_param_type[] = $param_type2;
+                        $s_sql1 = $s_sql1 . " {$param_use2} ";
+                        $s_sql2 = $s_sql2 . " {$param_use2} ";
+                }
+                break;
+            //函数
+            case  Constant::COND_VAl_TYPE_FUN:
+                if ($val1 == "") {
+                    SeasLog::error("fun f1 is Empty");
+                    return $empty_having;
+                }
+                $s_sql1 = $s_sql1 . " {$val1}() AND";
+                $s_sql2 = $s_sql2 . " {$val1}() AND";
+                switch ($v2_type) {
+                    //固定值
+                    case  Constant::COND_VAl_TYPE_FIXED:
+                        if ($val2 == "") {
+                            SeasLog::error("fun v2 is Empty");
+                            return $empty_having;
+                        }
+                        $s_sql1 = $s_sql1 . " {$val2} ";
+                        $s_sql2 = $s_sql2 . " {$val2} ";
+                        break;
+                    //函数
+                    case  Constant::COND_VAl_TYPE_FUN:
+                        if ($val2 == "") {
+                            SeasLog::error("fun f2 is Empty");
+                            return $empty_having;
+                        }
+                        $s_sql1 = $s_sql1 . " {$val2}() ";
+                        $s_sql2 = $s_sql2 . " {$val2}() ";
+                        break;
+                    //输入值
+                    case Constant::COND_VAl_TYPE_INPUT:
+                    default:
+                        //ipt 2
+                        list($param_comment2, $param_define2, $param_use2, $param_type2) = $this->_procParam($o_group_field, $inc, "ht");
+                        //group where
+                        $a_param_comment[] = $param_comment2;
+                        $a_param_define[] = $param_define2;
+                        $a_param_use[] = $param_use2;
+                        $a_param_type[] = $param_type2;
+                        $s_sql1 = $s_sql1 . " {$param_use2} ";
+                        $s_sql2 = $s_sql2 . " {$param_use2} ";
+                }
+                break;
+            //输入值
+            case Constant::COND_VAl_TYPE_INPUT:
+            default:
+                list($param_comment1, $param_define1, $param_use1, $param_type1) = $this->_procParam($o_group_field, $inc, "hf");
+                //group where
+                $a_param_comment[] = $param_comment1;
+                $a_param_define[] = $param_define1;
+                $a_param_use[] = $param_use1;
+                $a_param_type[] = $param_type1;
+                //$s_param_input = $param_key2;
+                $s_sql1 = $s_sql1 . " {$param_use1} AND ";
+                $s_sql2 = $s_sql2 . " {$param_use1} AND ";
+                switch ($v2_type) {
+                    //固定值
+                    case  Constant::COND_VAl_TYPE_FIXED:
+                        if ($val2 == "") {
+                            SeasLog::error("ipt v2 is Empty");
+                            return $empty_having;
+                        }
+                        $s_sql1 = $s_sql1 . " {$val2} ";
+                        $s_sql2 = $s_sql2 . " {$val2} ";
+                        break;
+                    //函数
+                    case  Constant::COND_VAl_TYPE_FUN:
+                        if ($val2 == "") {
+                            SeasLog::error("ipt f2 is Empty");
+                            return $empty_having;
+                        }
+                        $s_sql1 = $s_sql1 . " {$val2}() ";
+                        $s_sql2 = $s_sql2 . " {$val2}() ";
+                        break;
+                    //输入值
+                    case Constant::COND_VAl_TYPE_INPUT:
+                    default:
+                        //ipt 2
+                        list($param_comment2, $param_define2, $param_use2, $param_type2) = $this->_procParam($o_group_field, $inc, "ht");
+                        //group where
+                        $a_param_comment[] = $param_comment2;
+                        $a_param_define[] = $param_define2;
+                        $a_param_use[] = $param_use2;
+                        $a_param_type[] = $param_type2;
+                        $s_sql1 = $s_sql1 . " {$param_use2} ";
+                        $s_sql2 = $s_sql2 . " {$param_use2} ";
+                }
+        }
+        if ($s_sql1 != "") {
+            $s_sql1 = _tab($tab_idx) . $s_sql1;
+        }
+
+        return array(true, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $s_sql1, $s_sql2);
+
+    }
+
+
+    public function _procHaving_V_range($tab_idx, $inc, $o_group_field, $group_field_tag, $o_having)
+    {
+        $v_cond = $o_having->type;
+        $v_type = $o_having->v1_type;
+        $val = $o_having->v1;
+        if (!isset(Constant::$a_cond_type_on_sql_1[$v_cond])) {
+            SeasLog::error("known cond_type1 to proc");
+            return;
+        }
+        $s_cond = Constant::$a_cond_type_on_sql_1[$v_cond];
+        $empty_having = array(false, array(), array(), array(), array(), "", "");
+
+
+        $a_param_comment = array();
+        $a_param_define = array();
+        $a_param_use = array();
+        $a_param_type = array();
+        $s_sql1 = "";
+        $s_sql2 = "";
+        switch ($v_type) {
+            //固定值
+            case  Constant::COND_VAl_TYPE_FIXED:
+                if ($val == "") {
+                    SeasLog::error("fix v1 is Empty");
+                    return $empty_having;
+                }
+
+                $s_sql1 = " {$group_field_tag} {$s_cond} ($val)";
+                $s_sql2 = "' {$group_field_tag} {$s_cond} ($val)'";
+                break;
+            //函数
+            case  Constant::COND_VAl_TYPE_FUN:
+                if ($val == "") {
+                    SeasLog::error("fun f1 is Empty");
+                    return $empty_having;
+                }
+                $s_sql1 = " {$group_field_tag} {$s_cond}({$val}())";
+                $s_sql2 = "' {$group_field_tag} {$s_cond}({$val}())'";
+
+                break;
+            //输入值
+            case Constant::COND_VAl_TYPE_INPUT:
+            default:
+                list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_group_field, $inc, "gw", true);
+                //group where
+                $a_param_comment[] = $param_comment;
+                $a_param_define[] = $param_define;
+                $a_param_use[] = $param_use;
+                $a_param_type[] = $type_size;
+                //$s_param_input = $param_key2;
+                $s_sql1 = "  `{$group_field_tag}` {$s_cond} {$param_use}";
+                $s_sql2 = "' `{$group_field_tag}` {$s_cond} {$param_use}'";
+
+                $s_sql1 = " {$group_field_tag} {$s_cond} ($param_use)";
+                $s_sql2 = "' {$group_field_tag} {$s_cond} ($param_use)'";
+            //having 仅为数字类型，不需要考虑字符串
+
+        }
+        if ($s_sql1 != "") {
+            $s_sql1 = _tab($tab_idx) . $s_sql1;
+        }
+
+        return array(true, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $s_sql1, $s_sql2);
+
     }
 
     /**
@@ -517,8 +757,11 @@ abstract class CcBase
      * @param MyFun $fun
      * @return []
      */
-    public function parseOrder_by(MyModel $model, MyFun $fun)
+    public function parseOrder_by(MyModel $model, MyFun $fun, $has_group_field = false, $group_field_final)
     {
+        //TODO 排序的结构，可能时group by
+        //TODO 不输入代表不排序
+
         $s_order_by = "";
         $s_order_dir = "";
         $is_order_by_input = false;
@@ -527,13 +770,18 @@ abstract class CcBase
         if ($fun->order_enable == 1) {
             $has_order = true;
             $order_by_id = $fun->order_by;
-            if ($order_by_id != "" && isset($model->field_list[$order_by_id])) {
+            if ($order_by_id == "@@" && $has_group_field && $group_field_final != "") {
+                //这是聚合分组键排序
+                $s_order_by = $group_field_final;
+            } else if ($order_by_id != "" && isset($model->field_list[$order_by_id])) {
                 $o_f = $model->field_list[$order_by_id];
                 $s_order_by = $o_f->name;
             }
+            //其他情况，需要外部输入，可能还需要在应用层校验一下
             if ($s_order_by == "") {
                 $is_order_by_input = true;
             }
+
             $s_order_dir = strtoupper($fun->order_dir);
             if ($s_order_dir != "ASC" && $s_order_dir != "DESC") {
                 $is_order_dir_input = true;
@@ -612,7 +860,6 @@ abstract class CcBase
     }
 
 
-
     /**
      * 获取存储过程的名字
      * @param $table_name
@@ -620,7 +867,8 @@ abstract class CcBase
      * @param $base_fun
      * @return string
      */
-    function findProcName($table_name,$fun_name,$base_fun){
+    function findProcName($table_name, $fun_name, $base_fun)
+    {
         switch ($fun_name) {
             case $base_fun:
             case "default":
