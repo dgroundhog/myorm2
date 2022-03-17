@@ -820,10 +820,9 @@ class JavaServletMvc extends MvcBase
         }
         if ($has_group_field && $has_group_by && $has_having) {
             foreach ($a_param_use_having as $param) {
-                if($o_having->type == Constant::COND_TYPE_IN || $o_having->type== Constant::COND_TYPE_NOTIN ){
+                if ($o_having->type == Constant::COND_TYPE_IN || $o_having->type == Constant::COND_TYPE_NOTIN) {
                     echo _tab(4) . "st.setString({$ii}, {$param}); \n";
-                }
-                else{
+                } else {
                     echo _tab(4) . "st.setInt({$ii}, {$param}); \n";
                 }
 
@@ -856,14 +855,25 @@ class JavaServletMvc extends MvcBase
         echo _tab(4) . "rs = st.executeQuery();\n";
         echo _tab(4) . "while (rs.next()) {\n";
         echo _tab(5) . "HashMap<String, String> mRet = new HashMap<>();\n";
-        echo _tab(5) . "for (Map.Entry<String, String> entry : mPlainRowMap.entrySet()) {\n";
-        echo _tab(6) . "if (null != rs.getString(entry.getValue())) {\n";
-        echo _tab(7) . "mRet.put(entry.getKey(), rs.getString(entry.getValue())); \n";
-        echo _tab(6) . "}\n";
-        echo _tab(5) . "}\n";
-        if ($has_group_field && $has_group_by && $has_having) {
+        if ($fun->all_field == 1) {
+            echo _tab(5) . "for (Map.Entry<String, String> entry : mPlainRowMap.entrySet()) {\n";
+            echo _tab(6) . "if (null != rs.getString(entry.getValue())) {\n";
+            echo _tab(7) . "mRet.put(entry.getKey(), rs.getString(entry.getValue())); \n";
+            echo _tab(6) . "}\n";
+            echo _tab(5) . "}\n";
+        } else {
+            foreach ($fun->field_list as $s_key => $o_filed) {
+                if (isset($model->field_list[$s_key])) {
+                    $filed_name = $o_filed->name;
+                    echo _tab(5) . "mRet.put(\"{$filed_name}\", rs.getString(\"{$filed_name}\")); \n";
+                }
+            }
+        }
+
+
+        if ($has_group_field ) {
             //聚合的结果
-            echo _tab(5) . "mRet.put({$group_field_final}, rs.getInt({$group_field_final})); \n";
+            echo _tab(5) . "mRet.put(\"{$group_field_final}\", rs.getString(\"{$group_field_final}\")); \n";
         }
         echo _tab(5) . "vList.add(mRet);\n";
         echo _tab(4) . "}\n";
@@ -1028,10 +1038,9 @@ class JavaServletMvc extends MvcBase
             }
             if ($has_group_field && $has_group_by && $has_having) {
                 foreach ($a_param_use_having as $param) {
-                    if($o_having->type== Constant::COND_TYPE_IN || $o_having->type== Constant::COND_TYPE_NOTIN ){
+                    if ($o_having->type == Constant::COND_TYPE_IN || $o_having->type == Constant::COND_TYPE_NOTIN) {
                         echo _tab(4) . "st.setString({$ii}, {$param}); \n";
-                    }
-                    else{
+                    } else {
                         echo _tab(4) . "st.setInt({$ii}, {$param}); \n";
                     }
                     $ii++;

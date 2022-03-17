@@ -1355,19 +1355,8 @@ class DbMysql extends DbBase
         list($a_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
 
         $proc_name = self::_procHeader($model, $fun_name, $o_fun->title, $base_fun);
-        $group_field = "";
-        $group_field_id = $o_fun->group_field;
-        if ($group_field_id != "" && isset($model->field_list[$group_field_id])) {
-            $o_group_field = $model->field_list[$group_field_id];
-            $group_field = $o_group_field->name;
-        }
-        if ($group_field == "") {
-            //默认count id
-            $group_field = "id";
-        }
-
         $this->_procBegin($a_param);
-        echo "SET @s_sql = 'SELECT COUNT(`{$group_field}`) AS i_count FROM `t_{$model->table_name}` WHERE ';\n";
+        echo "SET @s_sql = 'SELECT COUNT(`{$model->primary_key}`) AS i_count FROM `t_{$model->table_name}` WHERE ';\n";
 
         //基本条件sql
         echo $_sql2;

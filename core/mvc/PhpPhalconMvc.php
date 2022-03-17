@@ -820,7 +820,6 @@ class PhpPhalconMvc extends MvcBase
                 }
             }
 
-
             if ($has_order) {
                 if ($is_order_by_input) {
                     echo (($inc > 0) ? $tab4 : "") . "\$v_order_by";
@@ -885,15 +884,25 @@ class PhpPhalconMvc extends MvcBase
         echo _tab(2) . "\$b_found = false;\n";
         $this->_beforeResultLoop();
         echo _tab(4) . "\$a_row_info = array();\n";
-        echo _tab(4) . "foreach (\$a_ret as \$kk => \$vv) {\n";
-        echo _tab(5) . "if(isset(self::\$m_row_map[\$kk])){\n";
-        echo _tab(6) . "\$a_row_info[\$kk] = \$vv;\n";
-        echo _tab(5) . "}\n";
-        if ($has_group_field && $has_group_by && $has_having) {
-            echo _tab(5) . "\$a_row_info[\${$group_field_final}] = \$vv;\n";
+        if ($fun->all_field == 1) {
+            echo _tab(4) . "foreach (\$a_ret as \$kk => \$vv) {\n";
+            echo _tab(5) . "if(isset(self::\$m_row_map[\$kk])){\n";
+            echo _tab(6) . "\$a_row_info[\$kk] = \$vv;\n";
+            echo _tab(5) . "}\n";
+            echo _tab(4) . "}\n";
+        }
+        else{
+            foreach ($fun->field_list as $s_key => $o_filed) {
+                if (isset($model->field_list[$s_key])) {
+                    $filed_name = $o_filed->name;
+                    echo _tab(4) . "\$a_row_info['{$filed_name}'] = \$a_ret['{$filed_name}'];\n";
+                }
+            }
+        }
+        if ($has_group_field ) {
+            echo _tab(4) . "\$a_row_info[\${$group_field_final}] = \$vv;\n";
         }
 
-        echo _tab(4) . "}\n";
         echo _tab(4) . "\$a_list[] = \$a_row_info;\n";
         $this->_afterResultLoop();
 
