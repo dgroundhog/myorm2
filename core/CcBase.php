@@ -353,6 +353,8 @@ abstract class CcBase
             $a_param_field);
     }
 
+
+
     /**
      * @param MyModel $model
      * @param MyFun $fun
@@ -363,6 +365,7 @@ abstract class CcBase
         $fun_type = $fun->type;
         $group_field = "";
         $group_field_final = "";
+        $group_field_sel = "";//db 专用
         $has_group_field = true;//分组键
         $o_group_field = null;//TODO 可能无用
         $group_field_id = $fun->group_field;
@@ -382,18 +385,23 @@ abstract class CcBase
             switch ($fun_type) {
                 case Constant::FUN_TYPE_LIST_WITH_AVG:
                     $group_field_final = "i_agv_{$group_field}";
+                    $group_field_sel = " AVG(`{$group_field}`) AS {$group_field_final}\n";
                     break;
                 case Constant::FUN_TYPE_LIST_WITH_SUM:
                     $group_field_final = "i_sum_{$group_field}";
+                    $group_field_sel = " SUM(`{$group_field}`) AS {$group_field_final}\n";
                     break;
                 case Constant::FUN_TYPE_LIST_WITH_MAX:
                     $group_field_final = "i_max_{$group_field}";
+                    $group_field_sel = " MAX(`{$group_field}`) AS {$group_field_final}\n";
                     break;
                 case Constant::FUN_TYPE_LIST_WITH_MIN:
                     $group_field_final = "i_min_{$group_field}";
+                    $group_field_sel = " MIN(`{$group_field}`) AS {$group_field_final}\n";
                     break;
                 case Constant::FUN_TYPE_LIST_WITH_COUNT:
                     $group_field_final = "i_count_{$group_field}";
+                    $group_field_sel = " COUNT(`{$group_field}`) AS {$group_field_final}\n";
                     break;
                 case Constant::FUN_TYPE_LIST:
                 default:
@@ -402,7 +410,7 @@ abstract class CcBase
                     break;
             }
         }
-        return array($has_group_field, $group_field, $o_group_field, $group_field_final);
+        return array($has_group_field, $group_field, $o_group_field, $group_field_final,$group_field_sel);
     }
 
     /**
@@ -426,26 +434,81 @@ abstract class CcBase
     }
 
     /**
+     * 返回一致性参数
+     * @param $tab_idx
+     * @param $inc
+     * @param $group_field_final
+     * @param $o_group_field
+     * @param $o_having
+     * @return void
+     */
+    public function _procHaving_V1($tab_idx, $inc, $group_field_final, $o_group_field, $o_having){
+
+    }
+
+    public function _procHaving_V2($tab_idx, $inc, $group_field_final, $o_group_field, $o_having){
+
+    }
+
+    public function _procHaving_V_range($tab_idx, $inc, $group_field_final, $o_group_field, $o_having){
+
+    }
+
+    /**
      * 预先处理hading的条件
      * @param MyModel $model
      * @param MyFun $fun
      * @param $has_group_field
      * @param $has_group_by
-     * @return bool
+     * @return array
      */
     public function parseHaving(MyModel $model, MyFun $fun, $has_group_field, $has_group_by)
     {
         $has_having = false;//判断分组统计之前的所有条件
+        $a_param_comment = array();
+        $a_param_define = array();
+        $a_param_use = array();
+        $a_param_type = array();
+        $s_sql1 ="";
+        $s_sql2 ="";
         if ($has_group_field && $has_group_by) {
             //再去判断having
-            //
+            //TODO
             $o_having = $fun->group_having;
             if ($o_having != null) {
-                //TODO 可能需要的having 参数
-                $has_having = true;
+                switch ($o_having->type) {
+                    case Constant::COND_TYPE_EQ:// = "EQ";//= 等于
+                    case Constant::COND_TYPE_NEQ:// = "NEQ";//!= 不等于
+                    case Constant::COND_TYPE_GT:// = "GT";//&GT; 大于
+                    case Constant::COND_TYPE_GTE:// = "GTE";//&GT;= 大于等于
+                    case Constant::COND_TYPE_LT:// = "LT";//&LT; 少于
+                    case Constant::COND_TYPE_LTE:// = "LTE";//&LT;= 少于等于
+                        return $this->_procHaving_V1(1, 1, $group_field_final, $o_group_field, $o_having->type, $o_having->v1_type, $o_having->v1);
+                        break;
+                    case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
+                    case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
+                    case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
+                    case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
+                    case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
+                        return $this->_procHaving_V2(1, 1, $group_field_final, $o_group_field, $o_having->type, $o_having->v1_type, $o_having->v1, $o_having->v2_type, $o_having->v2);
+                        break;
+                    case Constant::COND_TYPE_IN:// = "IN";//离散量范围内
+                    case Constant::COND_TYPE_NOTIN:// = "NOTIN";//离散量范围外
+                        return $this->_procHaving_V_range(1, 1, $group_field_final, $o_group_field, $o_having->type, $o_having->v1_type, $o_having->v1);
+                        break;
+                    default:
+
+                        break;
+                }
             }
         }
-        return $has_having;
+        return array($has_having,
+        $a_param_comment,
+        $a_param_define,
+        $a_param_use ,
+        $a_param_type,
+        $s_sql1 ,
+        $s_sql2 ,);
     }
 
     /**

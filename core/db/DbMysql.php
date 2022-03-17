@@ -1384,78 +1384,48 @@ class DbMysql extends DbBase
      * @param $count_only
      * @return mixed|void
      */
-    function cList(MyModel $model, MyFun $o_fun, $count_only = false)
+    function cList(MyModel $model, MyFun $fun)
     {
         //SELECT * FROM xxx a JOIN (select id from xxx limit 1000000, 20) b ON a.ID = b.id;
-        $base_fun = strtolower($o_fun->type);
-        $fun_name = $o_fun->name;
-        if ($count_only) {
-            $fun_name = $fun_name . "_c";
-        }
+        $base_fun = strtolower($fun->type);
+        $fun_name = $fun->name;
+        $fun_type = $fun->type;
         $proc_name = self::_procHeader($model, $fun_name, $o_fun->title, $base_fun);
 
-        $fun_type = $o_fun->type;
-        $group_field = "";
-        $o_group_field = null;
-        $group_field_id = $o_fun->group_field;
-        if (isset($model->field_list[$group_field_id])) {
-            $o_group_field = $model->field_list[$group_field_id];
-            $group_field = $o_group_field->name;
-        }
-        //
-        $group_by = "";
-        $group_by_id = $o_fun->group_by;
-        if (isset($model->field_list[$group_by_id])) {
-            $o_f = $model->field_list[$group_by_id];
-            $group_by = $o_f->name;
-        }
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
 
-        $order_by = "";
-        $order_by_id = $o_fun->order_by;
-        if (isset($model->field_list[$order_by_id])) {
-            $o_f = $model->field_list[$order_by_id];
-            $order_by = $o_f->name;
-        }
-        //先处理having
-        $group_field_final = "";
-        $group_field_sel = "";
-        $allow_pager = false;
-        //检查是否带有聚合
-        switch ($fun_type) {
-            case Constant::FUN_TYPE_LIST_WITH_AVG:
-                $group_field_final = "i_agv_{$group_field}";
-                $group_field_sel = " AVG(`{$group_field}`) AS {$group_field_final}\n";
-                break;
-            case Constant::FUN_TYPE_LIST_WITH_SUM:
-                $group_field_final = "i_sum_{$group_field}";
-                $group_field_sel = " SUM(`{$group_field}`) AS {$group_field_final}\n";
-                break;
-            case Constant::FUN_TYPE_LIST_WITH_MAX:
-                $group_field_final = "i_max_{$group_field}";
-                $group_field_sel = " MAX(`{$group_field}`) AS {$group_field_final}\n";
-                break;
-            case Constant::FUN_TYPE_LIST_WITH_MIN:
-                $group_field_final = "i_min_{$group_field}";
-                $group_field_sel = " MIN(`{$group_field}`) AS {$group_field_final}\n";
-                break;
-            case Constant::FUN_TYPE_LIST_WITH_COUNT:
-                $group_field_final = "i_count_{$group_field}";
-                $group_field_sel = " COUNT(`{$group_field}`) AS {$group_field_final}\n";
-                break;
-            case Constant::FUN_TYPE_LIST:
-                $allow_pager = true;
-                break;
-            default:
-                break;
-        }
+        $proc_name = $this->findProcName($model->table_name, $fun_name, "list");//存储过曾的名字
+
+        $a_all_fields = $model->field_list_kv;//通过主键访问的字段
+        //1111基本条件
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
+        $i_param_list = $i_w_param;
+
+        //22222被聚合键 TODO 放到父级函数里处理
+        $fun_type = $fun->type;
+        list($has_group_field, $group_field, $o_group_field, $group_field_final, $group_field_sel) = $this->parseGroup_field($model, $fun);
+        //3333分组键
+        list($has_group_by, $group_by) = $this->parseGroup_by($model, $fun);
+
+        //4444先处理having
+        //预先处理hading的条件
+        $o_having = $fun->group_having;
+        $has_having = $this->parseHaving($model, $fun, $has_group_field, $has_group_by);
+
+        //5555排序键
+        list($has_order, $is_order_by_input, $s_order_by, $is_order_dir_input, $s_order_dir) = $this->parseOrder_by($model, $fun);
+
+        //6666 分页
+        list($has_pager, $is_pager_size_input, $pager_size) = $this->parsePager($model, $fun);
+
 
         //预先处理查询条件的
-        list($_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
-
+        list($a_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
 
         //预先处理hading的条件
         $o_having = $o_fun->group_having;
-        $_param_having = "";
+        $a_param_having = "";
         $_sql1_having = "";
         $_sql2_having = "";
 
@@ -1630,39 +1600,49 @@ class DbMysql extends DbBase
         }
         $s_cond = Constant::$a_cond_type_on_sql_1[$v_cond];
 
+        $a_param_comment = array();
+        $a_param_define = array();
+        $a_param_use = array();
+        $a_param_type = array();
+
         $s_param1 = "";
         $s_param_input = "";
         $s_sql1 = "";
         $s_sql2 = "";
+        switch ($v_type) {
+            //固定值
+            case  Constant::COND_VAl_TYPE_FIXED:
 
-        //输入值
-        if ($v_type == Constant::COND_VAl_TYPE_INPUT) {
-            list($param_key, $param_key2) = $this->_procParam($o_field, $inc, "gw");
-            $s_param1 = $param_key;
-            //$s_param_input = $param_key2;
-            $s_sql1 = "  `{$new_group_key}` {$s_cond} {$s_param1}";
-            $s_sql2 = "' `{$new_group_key}` {$s_cond} {$s_param1}'";
-            $s_param_input = "IN {$s_param1} INT";
-            $has_if = true;
-        }
-        //固定值
-        if ($v_type == Constant::COND_VAl_TYPE_FIXED) {
-            $s_param_input = "";
-            $s_sql1 = " {$new_group_key}` {$s_cond} {$val}";
-            $s_sql2 = "' {$new_group_key}` {$s_cond} {$val}'";
-        }
-        //函数
-        if ($v_type == Constant::COND_VAl_TYPE_FUN) {
-            $s_param_input = "";
-            $s_sql1 = " {$new_group_key}` {$s_cond} {$val}()";
-            $s_sql2 = "' {$new_group_key}` {$s_cond} {$val}()'";
+                $s_param_input = "";
+                $s_sql1 = " {$new_group_key}` {$s_cond} {$val}";
+                $s_sql2 = "' {$new_group_key}` {$s_cond} {$val}'";
+                break;
+            //函数
+            case  Constant::COND_VAl_TYPE_FUN:
+                $s_param_input = "";
+                $s_sql1 = " {$new_group_key}` {$s_cond} {$val}()";
+                $s_sql2 = "' {$new_group_key}` {$s_cond} {$val}()'";
+                break;
+            //输入值
+            case Constant::COND_VAl_TYPE_INPUT:
+            default:
+                list($param_comment, $param_define, $param_use, $type_size) = $this->_procParam($o_field, $inc, "gw");
+                //group where
+                $a_param_comment[] = $param_comment;
+                $a_param_define[] = $param_define;
+                $a_param_use[] = $param_use;
+                $a_param_type[] = $type_size;
+                //$s_param_input = $param_key2;
+                $s_sql1 = "  `{$new_group_key}` {$s_cond} {$param_use}";
+                $s_sql2 = "' `{$new_group_key}` {$s_cond} {$param_use}'";
+
         }
 
         if ($s_sql1 != "") {
             $s_sql1 = _tab($tab_idx) . $s_sql1;
         }
 
-        return array($s_param_input, $s_sql1, $s_sql2);
+        return array($a_param_comment, $a_param_define, $a_param_use, $a_param_type, $s_sql1, $s_sql2);
     }
 
     /**

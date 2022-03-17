@@ -810,7 +810,6 @@ class JavaServletMvc extends MvcBase
         $fun_name2 = $this->makeModelFunName($fun_name, "list", true);//散列参数添加返回bean
 
         $a_all_fields = $model->field_list_kv;//通过主键访问的字段
-
         $fun_type = $fun->type;
         $has_return_bean = false;
         if ($fun_type == Constant::FUN_TYPE_LIST) {
@@ -827,14 +826,14 @@ class JavaServletMvc extends MvcBase
 
         //22222被聚合键 TODO 放到父级函数里处理
         $fun_type = $fun->type;
-        list($has_group_field, $group_field, $o_group_field, $group_field_final) = $this->parseGroup_field($model, $fun);
+        list($has_group_field, $group_field, $o_group_field, $group_field_final,$group_field_sel) = $this->parseGroup_field($model, $fun);
         //3333分组键
         list($has_group_by, $group_by) = $this->parseGroup_by($model, $fun);
 
         //4444先处理having
         //预先处理hading的条件
         $o_having = $fun->group_having;
-        $has_having = $this->parseGroup_field($model, $fun, $has_group_field, $has_group_by);
+        $has_having = $this->parseHaving($model, $fun, $has_group_field, $has_group_by);
 
         //5555排序键
         list($has_order, $is_order_by_input, $s_order_by, $is_order_dir_input, $s_order_dir) = $this->parseOrder_by($model, $fun);
