@@ -143,8 +143,8 @@ abstract class CcBase
             echo _warp2join($ii) . _tab(5) . "{$param}";
             $ii++;
         }
-        echo "\n";
-        echo _tab(1);
+       // echo "\n";
+        //echo _tab(1);
     }
 
 
@@ -788,6 +788,36 @@ abstract class CcBase
             }
         }
         return array($has_order, $is_order_by_input, $s_order_by, $is_order_dir_input, $s_order_dir);
+    }
+
+    /**
+     * 是否布尔类型
+     * @param $field_type
+     * @return bool
+     */
+    function isBoolType($field_type)
+    {
+        return ($field_type == Constant::DB_FIELD_TYPE_BLOB);
+    }
+
+    /**
+     * 是否数字的类型
+     * @param $field_type
+     * @return bool
+     */
+    function isIntType($field_type)
+    {
+        return ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT);
+    }
+
+    /**
+     * 是否二进制类型
+     * @param $field_type
+     * @return bool
+     */
+    function isBlobType($field_type)
+    {
+        return ($field_type == Constant::DB_FIELD_TYPE_BLOB || $field_type == Constant::DB_FIELD_TYPE_BLOB);
     }
 
     /**

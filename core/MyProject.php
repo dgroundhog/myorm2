@@ -29,31 +29,6 @@ class MyProject extends MyStruct
     }
 
     /**
-     * 尝试建立基本目录
-     * @param $project_name
-     * @return void
-     */
-    public function touchSomeDirs($project_name){
-
-        $data_root = CC_ROOT . DS . ".." . DS . "data" . DS . $project_name;
-        if (!file_exists($data_root) || !is_dir($data_root)) {
-            SeasLog::debug("new prj--({$project_name})---data--mkdir--{$data_root}");
-            @mkdir($data_root);
-        }
-        $this->data_root = $data_root;
-
-        $build_root = CC_ROOT . DS . ".." . DS . "build" . DS . $project_name;
-        if (!file_exists($build_root) || !is_dir($build_root)) {
-            SeasLog::debug("new prj--({$project_name})---build--mkdir--{$build_root}");
-            @mkdir($build_root);
-        }
-        $this->build_root = $build_root;
-
-    }
-
-
-
-    /**
      * 创建一个默认版本
      * @param $new_project_name
      */
@@ -76,6 +51,30 @@ class MyProject extends MyStruct
         SeasLog::debug("创建对应的默认版本应用{$o_app->name}");
 
         $this->version_list[$o_app->uuid] = $o_app;
+    }
+
+    /**
+     * 尝试建立基本目录
+     * @param $project_name
+     * @return void
+     */
+    public function touchSomeDirs($project_name)
+    {
+
+        $data_root = CC_ROOT . DS . ".." . DS . "data" . DS . $project_name;
+        if (!file_exists($data_root) || !is_dir($data_root)) {
+            SeasLog::debug("new prj--({$project_name})---data--mkdir--{$data_root}");
+            @mkdir($data_root);
+        }
+        $this->data_root = $data_root;
+
+        $build_root = CC_ROOT . DS . ".." . DS . "build" . DS . $project_name;
+        if (!file_exists($build_root) || !is_dir($build_root)) {
+            SeasLog::debug("new prj--({$project_name})---build--mkdir--{$build_root}");
+            @mkdir($build_root);
+        }
+        $this->build_root = $build_root;
+
     }
 
     function getAsArray()
@@ -112,9 +111,10 @@ class MyProject extends MyStruct
      * @param $version
      * @param $arch   目标结构配置
      * @param $db     数据库配置
+     * @param $build_all  构建全部，false时只构建基本模型
      * @return void
      */
-    function build($version,  $arch, $db)
+    function build($version, $arch, $db,$build_all)
     {
 
         if (!$this->version_list || count($this->version_list) == 0 || !isset($this->version_list[$version])) {
@@ -125,6 +125,6 @@ class MyProject extends MyStruct
         $o_curr_app = $this->version_list[$version];
         /* @var MyApp $o_curr_app */
 
-        $o_curr_app->build($arch, $db);
+        $o_curr_app->build($arch, $db,$build_all);
     }
 }

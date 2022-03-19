@@ -35,6 +35,7 @@ $_title = @$_POST['title'];
 $_memo = @$_POST['memo'];
 $_arch = @$_POST['arch'];
 $_db = @$_POST['db'];
+$_all = @$_POST['all'];//是否构建全部
 
 $img_id = @$_GET['img_id'];
 
@@ -198,7 +199,7 @@ switch (trim($_act)) {
         break;
 
     case "build":
-        ajax_build_app($_project, $_version1, $_arch, $_db);
+        ajax_build_app($_project, $_version1, $_arch, $_db,$_all);
         break;
 
     default:
@@ -386,9 +387,10 @@ function ajax_drop_app($project, $version)
  * @param $version
  * @param $arch
  * @param $db
+ * @param $_all
  * @return void
  */
-function ajax_build_app($project, $version, $arch, $db)
+function ajax_build_app($project, $version, $arch, $db,$_all)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -403,7 +405,7 @@ function ajax_build_app($project, $version, $arch, $db)
         $a_project_info = json_decode($str_project, true);
         $o_project = new MyProject();
         $o_project->parseToObj($a_project_info);
-        $o_project->build($version, $arch, $db);
+        $o_project->build($version, $arch, $db,$_all);
 
     } else {
         $a_return['code'] = "project_not_exist";

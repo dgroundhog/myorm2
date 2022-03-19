@@ -47,7 +47,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Bootstrap4 Duallistbox -->
     <link rel="stylesheet" href="./vendor/bootstrap4-duallistbox/bootstrap-duallistbox.min.css">
     <!-- Theme style -->
-    <link rel="stylesheet" href="./vendor/adminlte-3.1.0/css/adminlte.min.css">
+    <link rel="stylesheet" href="./vendor/adminlte-3.2.0/css/adminlte.min.css">
 </head>
 <body class="hold-transition sidebar-mini layout-navbar-fixed">
 <div class="wrapper">
@@ -153,7 +153,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <!-- Bootstrap4 Duallistbox -->
 <script src="./vendor/bootstrap4-duallistbox/jquery.bootstrap-duallistbox.min.js"></script>
 <!-- AdminLTE App -->
-<script src="./vendor/adminlte-3.1.0/js/adminlte.min.js"></script>
+<script src="./vendor/adminlte-3.2.0/js/adminlte.min.js"></script>
 
 
 <script src="./js/app.js"></script>

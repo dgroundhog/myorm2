@@ -164,7 +164,6 @@ function java_servlet_list($model)
         _java_comment("关键字", 2);
         _java_req_param("kw", "string", "");
         echo _tab(2) . "v_kw = new String(v_kw.getBytes(\"ISO-8859-1\"), \"UTF-8\"); \n";
-
     }
 
     if (isset($model["list_has_date"]) && $model["list_has_date"] != false) {

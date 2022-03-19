@@ -1107,7 +1107,7 @@ class PhpPhalconMvc extends MvcBase
         // TODO: Implement ccTmpl() method.
     }
 
-    function ccWeb($model)
+    function ccCtrl($model)
     {
         // TODO: Implement ccWeb() method.
     }

@@ -39,16 +39,10 @@ abstract class MvcBase extends CcBase implements  CcImpl
         if (!file_exists($output_root)) {
             mkdir($output_root);
         }
-        SeasLog::info("package11111");
-        SeasLog::error($app->package);
-        SeasLog::error($this->arch_conf->mvc);
-
 
         if(!is_ok_app_package($app->package)){
             $app->package = "default";
         }
-        SeasLog::info("package22222");
-        SeasLog::error($app->package);
 
         if($this->arch_conf->mvc==Constant::MVC_JAVA_SERVLET){
             //src
@@ -66,17 +60,11 @@ abstract class MvcBase extends CcBase implements  CcImpl
             //............/WEB-INF web.xml目录
 
             $output_main = $output_root . DS . "src". DS . "main";
-
             $this->final_package  = str_replace("\\",".",$app->package);
-
             $s_package_dirs = str_replace(".",DS,$this->final_package );
-
-
-
 
             //包主目录
             $this->odir_package  = $output_main . DS . "java". DS . $s_package_dirs;
-            //资源目录
             $this->odir_resource = $output_main . DS . "resource";
             $this->odir_webapp = $output_main . DS . "webapp";
 
@@ -134,14 +122,19 @@ abstract class MvcBase extends CcBase implements  CcImpl
      * @param MyApp $app
      * @return MvcBase
      */
-    public static function findCc(MyApp $app)
+    public static function findCc(MyApp $app,$with_web = false)
     {
 
         $o_curr_arch = $app->getCurrArch();
         $mm = null;
         switch ($o_curr_arch->mvc) {
             case Constant::MVC_JAVA_SERVLET:
-                $mm = new JavaServletMvc($app);
+                if($with_web){
+                    $mm = new JavaServletMvcCtrl($app);
+                }
+                else{
+                    $mm = new JavaServletMvc($app);
+                }
                 break;
             case Constant::MVC_PHP_PHALCON:
                 $mm = new PhpPhalconMvc($app);
@@ -176,11 +169,11 @@ abstract class MvcBase extends CcBase implements  CcImpl
     abstract function ccTmpl($model);
 
     /**
-     * 创建网页层
+     * 创建控制层
      * @param MyModel $model
      * @return mixed
      */
-    abstract function ccWeb($model);
+    abstract function ccCtrl($model);
 
     /**
      * 创建接口层

@@ -1140,13 +1140,16 @@ class JavaServletMvc extends MvcBase
         // TODO: Implement ccTmpl() method.
     }
 
-    function ccWeb($model)
+    function ccCtrl($model)
     {
-        // TODO: Implement ccWeb() method.
+        //仅创建default的方法
+        // TODO: Implement ccApi() method.
     }
+
 
     function ccApi($model)
     {
+        //仅创建default的方法
         // TODO: Implement ccApi() method.
     }
 
@@ -1230,5 +1233,7 @@ class JavaServletMvc extends MvcBase
         ob_end_clean();
         file_put_contents($_target, $cc_data);
     }
+
+
 
 }

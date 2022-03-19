@@ -735,15 +735,7 @@ class DbMysql extends DbBase
      * @param MyModel $model
      */
 
-    /**
-     * 是否数字的类型
-     * @param $field_type
-     * @return bool
-     */
-    function isIntType($field_type)
-    {
-        return ($field_type == Constant::DB_FIELD_TYPE_INT || $field_type == Constant::DB_FIELD_TYPE_LONGINT);
-    }
+
 
     /**
      * 处理参数

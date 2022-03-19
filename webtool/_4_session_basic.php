@@ -77,14 +77,12 @@
                             </button>
 
 
-
                             <button type="button" class="btn btn-success float-right" id="btn_add_app">
                                 <i class="fa fa-plus"></i> 创建新版本
                             </button>
                         </div>
 
                     </div>
-
 
 
                     <div class="card card-info card-outline">
@@ -99,19 +97,19 @@
                         <!-- form start -->
                         <div class="card-body">
                             <button type="button" class="btn btn-info"
-                            onclick="javascript:App.dt.data.ccModel_Admin();"
+                                    onclick="App.dt.data.ccModel_Admin();"
                             >
                                 <i class="fa fa-key"></i> 创建基本管理员
                             </button>
 
                             <button type="button" class="btn btn-info"
-                                    onclick="javascript:App.dt.data.ccModel_Group();"
+                                    onclick="App.dt.data.ccModel_Group();"
                             >
                                 <i class="fa fa-key"></i> 创建人员分组
                             </button>
 
                             <button type="button" class="btn btn-info"
-                                    onclick="javascript:App.dt.data.ccModel_User();"
+                                    onclick="App.dt.data.ccModel_User();"
                             >
                                 <i class="fa fa-key"></i> 创建人员
                             </button>
@@ -255,8 +253,13 @@
                                 </select>
                             </div>
                             <div class="col">
-                                <button type="button" class="btn btn-danger" id="btn_build">
-                                    <i class="fa fa-flag"></i> 构建
+                                <button type="button" class="btn btn-primary" id="btn_build">
+                                    <i class="fa fa-flag"></i> 构建模型
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-danger" id="btn_build_all">
+                                    <i class="fa fa-flag"></i> 构建全部
                                 </button>
                             </div>
                         </div>

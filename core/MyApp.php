@@ -18,6 +18,7 @@ include_once(CC_ROOT . "/MyCond.php");
 
 include_once(CC_ROOT . "/db/DbMysql.php");
 include_once(CC_ROOT . "/mvc/JavaServletMvc.php");
+include_once(CC_ROOT . "/mvc/JavaServletMvcCtrl.php");
 include_once(CC_ROOT . "/mvc/PhpPhalconMvc.php");
 
 /**
@@ -325,7 +326,7 @@ class MyApp extends MyStruct
      * @param $db     数据库配置
      * @return void
      */
-    public function build($arch, $db)
+    public function build($arch, $db,$build_all)
     {
         if (count($this->arch_list) == 0 || count($this->db_list) == 0) {
             SeasLog::error("没有有效的架构和数据库配置！！！");
@@ -355,15 +356,23 @@ class MyApp extends MyStruct
         //数据库配套模型
         $this->buildModel();
 
-        $a_tags = array();
-        //TODO
-        if (in_array("model", $a_tags)) {
-            //模型
-            $this->buildModel(null);
+        if($build_all=="1"){
+            //控制器
+            $this->buildController();
+            //UI
+            //文档
+            //接口
+            //接口
         }
 
+
+
+
+        $a_tags = array();
+
+
         if (in_array("ui", $a_tags)) {
-            //UI
+
             //$this->buildModel(null);
         }
 
@@ -373,7 +382,7 @@ class MyApp extends MyStruct
         }
 
         if (in_array("api", $a_tags)) {
-            //接口
+
             //$this->buildModel(null);
         }
 
@@ -449,7 +458,30 @@ class MyApp extends MyStruct
             $mm->ccBean($o_model);//创建bean 文件
             $mm->ccModel($o_model);//创建bean 文件
 
+
+        }
+    }
+
+    /**
+     * 控制器
+     */
+    public function buildController()
+    {
+        // var_dump($this);
+        $ccc = MvcBase::findCc($this,true);
+        //var_dump($mm);
+        if ($ccc == null) {
+            return;
+        }
+        //TODO 全局资源的
+        foreach ($this->model_list as $o_model) {
+
+            /* @var MyModel $o_model */
+
+            $ccc->ccCtrl($o_model);
+
         }
 
     }
+
 }

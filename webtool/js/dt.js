@@ -1563,7 +1563,7 @@ App.dt.project.onLoadAll = function (_server_return) {
 };
 
 //构建
-App.dt.project.buildCC = function () {
+App.dt.project.buildCC = function (build_all) {
     var self = App.dt;
     var _curr_project = self.project.getCurrProject();
     if (null == _curr_project) {
@@ -1595,6 +1595,9 @@ App.dt.project.buildCC = function () {
     sbf.append(encodeURIComponent(_sel_mvc));
     sbf.append("&db=");
     sbf.append(encodeURIComponent(_sel_db));
+    sbf.append("&all=");
+    sbf.append(build_all?"1":"0");
+
 
     var _data = sbf.toString();
     var _cb = function () {
@@ -4054,8 +4057,14 @@ App.dt.init = function () {
     });
 
     $("#btn_build").click(function () {
-        self.project.buildCC();
+        self.project.buildCC(false);
     });
+
+    $("#btn_build_all").click(function () {
+        self.project.buildCC(true);
+    });
+
+
 
 
     /**
