@@ -1963,6 +1963,76 @@ $this->_makeHtmlFooter($model);
         //TODO
     }
 
+    /**
+     * web xml
+     * @param $model
+     */
+   public  function makeWebConfig($a_models)
+    {
+
+    SeasLog::info("创建Web.xml--");
+    $_target = $this->odir_webapp. DS . "WEB-INF".DS  . "web.xml";
+    ob_start();
+    echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+
+    $webapp_head = <<< WEB
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+             version="2.5">
+WEB;
+    echo $webapp_head;
+    $package = $this->final_package;
+
+    ?>
+        <welcome-file-list>
+            <welcome-file>index.html</welcome-file>
+            <welcome-file>index.jsp</welcome-file>
+        </welcome-file-list>
+
+        <servlet>
+            <servlet-name>my-service</servlet-name>
+            <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+            <init-param>
+                <param-name>jersey.config.server.provider.packages</param-name>
+                <param-value><?= $package ?>.service</param-value>
+            </init-param>
+            <load-on-startup>1</load-on-startup>
+        </servlet>
+        <servlet-mapping>
+            <servlet-name>my-service</servlet-name>
+            <url-pattern>/rest/*</url-pattern>
+        </servlet-mapping>
+
+        <listener>
+            <listener-class><?= $package ?>.MyListener</listener-class>
+        </listener>
+
+        <?php
+        foreach ($a_models as $id => $model) {
+            $model_name = $model->name;
+            $uc_model = ucfirst($model_name);
+            ?>
+            <servlet>
+                <servlet-name><?= $uc_model ?>Servlet</servlet-name>
+                <servlet-class><?= $package ?>.controllers.<?= $uc_model ?>Servlet</servlet-class>
+            </servlet>
+            <servlet-mapping>
+                <servlet-name><?= $uc_model ?>Servlet</servlet-name>
+                <url-pattern>/<?= $model_name ?>/*</url-pattern>
+            </servlet-mapping>
+        <?php }
+        ?>
+
+    <?php
+    echo "</web-app>";
+
+    $cc_data = ob_get_contents();
+    ob_end_clean();
+    file_put_contents($_target, $cc_data);
+}
+
 }
 
 if ($tpl_debug)

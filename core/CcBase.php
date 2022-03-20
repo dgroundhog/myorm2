@@ -944,4 +944,14 @@ abstract class CcBase
         return $real_fun;
     }
 
+    /**
+     * 创建web xml等数据
+     * @param $package
+     * @param $a_models
+     * @return void
+     */
+    public function makeWebConfig($a_models){
+
+    }
+
 }

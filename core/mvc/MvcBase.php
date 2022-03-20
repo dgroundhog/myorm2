@@ -137,7 +137,12 @@ abstract class MvcBase extends CcBase implements  CcImpl
                 }
                 break;
             case Constant::MVC_PHP_PHALCON:
-                $mm = new PhpPhalconMvc($app);
+                if($with_web){
+                    $mm = new PhpPhalconMvcCtrl($app);
+                }
+                else{
+                    $mm = new PhpPhalconMvc($app);
+                }
                 break;
             default:
                 break;

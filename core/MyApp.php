@@ -482,6 +482,7 @@ class MyApp extends MyStruct
             $ccc->ccTmpl($o_model);
 
         }
+        $ccc->makeWebConfig($this->model_list );
 
     }
 
