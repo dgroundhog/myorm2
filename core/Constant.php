@@ -186,13 +186,14 @@ class Constant
     );
 
     const DB_FIELD_INPUT_DEFAULT = "DEFAULT";
-    const DB_FIELD_INPUT_UPLOAD_FILE = "UPLOAD_FILE ";
-    const DB_FIELD_INPUT_UPLOAD_IMAGE = "UPLOAD_IMAGE";
+    const DB_FIELD_INPUT_MULTI_TEXT = "MULTI_TEXT";
     const DB_FIELD_INPUT_SELECT = "SELECT";
     const DB_FIELD_INPUT_RADIO = "RADIO";
     const DB_FIELD_INPUT_CHECKBOX = "CHECKBOX";
     const DB_FIELD_INPUT_DATE = "DATE";
     const DB_FIELD_INPUT_DATETIME = "DATETIME";
+    const DB_FIELD_INPUT_UPLOAD_FILE = "UPLOAD_FILE ";
+    const DB_FIELD_INPUT_UPLOAD_IMAGE = "UPLOAD_IMAGE";
 
     /**
      * 输入办法
@@ -201,6 +202,7 @@ class Constant
     public static $a_db_field_input = array(
 
         self::DB_FIELD_INPUT_DEFAULT => "默认输入",
+        self::DB_FIELD_INPUT_MULTI_TEXT => "多行文本",
         self::DB_FIELD_INPUT_UPLOAD_FILE => "普通文件上传",
         self::DB_FIELD_INPUT_UPLOAD_IMAGE => "图片上传",
         self::DB_FIELD_INPUT_SELECT => "下拉框",

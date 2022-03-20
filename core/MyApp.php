@@ -479,6 +479,7 @@ class MyApp extends MyStruct
             /* @var MyModel $o_model */
 
             $ccc->ccCtrl($o_model);
+            $ccc->ccTmpl($o_model);
 
         }
 
