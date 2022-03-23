@@ -20,6 +20,7 @@ include_once(CC_ROOT . "/db/DbMysql.php");
 include_once(CC_ROOT . "/mvc/JavaServletMvc.php");
 include_once(CC_ROOT . "/mvc/JavaServletMvcCtrl.php");
 include_once(CC_ROOT . "/mvc/PhpPhalconMvc.php");
+include_once(CC_ROOT . "/mvc/PhpPhalconMvcCtrl.php");
 
 /**
  * 主程序模型

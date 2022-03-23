@@ -425,7 +425,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
             if ($o_field->input_hash != "") {
                 echo _tab(2) . "//TODO 输入为有限的字典值 {$o_field->input_hash};\n";
             }
-            if ($o_field->filter != "") {
+            if ($o_field->filter != "" && $o_field->filter != "NO_FILTER") {
                 echo _tab(2) . "//TODO 默认过滤器 {$o_field->filter};\n";
             }
             if ($o_field->regexp != "") {
@@ -772,7 +772,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
             }
             if ($is_order_by_input) {
                 echo _tab(2) . "String v_order_dir = req.getParameter(\"order_dir\");\n";
-                echo _tab(2) . "v_order_dir = tidyStrParam(v_order_by,\"DESC\");\n";
+                echo _tab(2) . "v_order_dir = tidyStrParam(v_order_dir,\"DESC\");\n";
             }
         }
         //6666
@@ -1119,29 +1119,29 @@ list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_us
                                     <?php
 
                                     foreach ($model->field_list as $field) {
-                                    /* @var MyField $field */
-                                    if ($field->input_hash != "") {
-                                        $key = $field->name;
-                                        $uc_key = ucfirst($key);
+                                        /* @var MyField $field */
+                                        if ($field->input_hash != "") {
+                                            $key = $field->name;
+                                            $uc_key = ucfirst($key);
 
-                                        ?>
-                                        <div class="col">
-                                            <label for="ipt_<?= $key ?>"><?= $model->title ?></label>
+                                            ?>
+                                            <div class="col">
+                                                <label for="ipt_<?= $key ?>"><?= $model->title ?></label>
 
 
-                                            <select class="form-control"
-                                                    name="<?= $key ?>"
-                                                    id="ipt_<?= $key ?>">
-                                                <option value="">不限</option>
-                                                <option <?= "th:each=\"_Id,_Value:\${m_{$uc_key}_KV}\"" ?>
-                                                        th:value="${_Value.current.key}"
-                                                        th:text="${_Value.current.value}"
-                                                    <?= "th:selected=\"\${_Value.current.key}==\${curr_{$key}}\"" ?>
-                                                ></option>
-                                            </select>
+                                                <select class="form-control"
+                                                        name="<?= $key ?>"
+                                                        id="ipt_<?= $key ?>">
+                                                    <option value="">不限</option>
+                                                    <option <?= "th:each=\"_Id,_Value:\${m_{$uc_key}_KV}\"" ?>
+                                                            th:value="${_Value.current.key}"
+                                                            th:text="${_Value.current.value}"
+                                                        <?= "th:selected=\"\${_Value.current.key}==\${curr_{$key}}\"" ?>
+                                                    ></option>
+                                                </select>
 
-                                        </div>
-                                        <?php
+                                            </div>
+                                            <?php
                                         }
                                     } ?>
 
@@ -1175,7 +1175,8 @@ list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_us
                                         <label for="date_to">结束日</label>
                                         <div class="input-group mr-sm-2">
                                             <div class="input-group-prepend">
-                                                <div class="input-group-text" id="h_date_to"><i class="fa fa-calendar"></i>
+                                                <div class="input-group-text" id="h_date_to"><i
+                                                            class="fa fa-calendar"></i>
                                                 </div>
                                             </div>
                                             <input type="text"
@@ -1196,7 +1197,8 @@ list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_us
                                                 <i class="fa fa-search"></i>
                                                 查询
                                             </button>
-                                            <a class="btn btn-secondary" href="###" th:href="@{'/<?= $model_name ?>/list'}">
+                                            <a class="btn btn-secondary" href="###"
+                                               th:href="@{'/<?= $model_name ?>/list'}">
                                                 <i class="fa fa-list"></i>
                                                 重置
                                             </a>
@@ -1246,7 +1248,7 @@ list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_us
                                         /* @var MyField $field */
                                         $type = $field->type;
                                         $key = $field->name;
-                                        if ($this->isBlobType($type) || $type==Constant::DB_FIELD_TYPE_LONGTEXT) {
+                                        if ($this->isBlobType($type) || $type == Constant::DB_FIELD_TYPE_LONGTEXT) {
                                             continue;
                                         }
                                         if ($key == "flag") {
@@ -1268,7 +1270,7 @@ list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_us
                                         /* @var MyField $field */
                                         $type = $field->type;
                                         $key = $field->name;
-                                        if ($this->isBlobType($type) || $type==Constant::DB_FIELD_TYPE_LONGTEXT) {
+                                        if ($this->isBlobType($type) || $type == Constant::DB_FIELD_TYPE_LONGTEXT) {
                                             continue;
                                         }
                                         if ($key == "flag") {
@@ -1277,7 +1279,7 @@ list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_us
                                         $_row = "th:text=\"\${oneRow.{$key}}\"";
                                         $_row2 = "[[\${oneRow.{$key}}]]";
                                         ?>
-                                        <td <?= $_row ?> ><?=$key?> <?= $_row2 ?></td>
+                                        <td <?= $_row ?> ><?= $key ?> <?= $_row2 ?></td>
                                         <?php
                                     }
                                     ?>
@@ -1329,7 +1331,8 @@ $this->_makeHtmlFooter2();
 /**
  * 编辑页
  * @param MyModel $model
- */ function makeHtmlEdit($model)
+ */
+function makeHtmlEdit($model)
 {
 if ($this->fun_add == null) {
     return;
@@ -1666,7 +1669,7 @@ if ($for_show){
         <input type="text" class="form-control datetimepicker-input"
                name="<?= $key ?>"
                id="ipt_<?= $key ?>"
-            <?= $val2 ?>
+            <?= $val1 ?>
             <?= $required ?>
                data-target="#data_ipt_<?= $key ?>">
         <div class="input-group-append"
@@ -1700,7 +1703,7 @@ if ($for_show){
         <input type="text" class="form-control datetimepicker-input"
                name="<?= $key ?>"
                id="ipt_<?= $key ?>"
-            <?= $val2 ?>
+            <?= $val1 ?>
             <?= $required ?>
                data-target="#data_ipt_<?= $key ?>">
         <div class="input-group-append"
@@ -1770,7 +1773,8 @@ if ($for_show){
 /**
  * 详细页
  * @param MyModel $model
- */ function makeHtmlDetail($model)
+ */
+function makeHtmlDetail($model)
 {
 if ($this->fun_add == null) {
     return;
@@ -1940,90 +1944,92 @@ $this->_makeHtmlFooter($model);
             setupFormSubmit();
         });
     </script>
-    <?php
-    $this->_makeHtmlFooter2();
+<?php
+$this->_makeHtmlFooter2();
 }
 
-    /**
-     * 创建接口层
-     * @param MyModel $model
-     * @return mixed
-     */
-    function ccApi($model)
-    {
-        //TODO
-    }
+/**
+ * 创建接口层
+ * @param MyModel $model
+ * @return mixed
+ */
+function ccApi($model)
+{
+    //TODO
+}
 
-    /**
-     * 创建文档
-     * @param MyModel $model
-     */
-    function ccDoc($model)
-    {
-        //TODO
-    }
+/**
+ * 创建文档
+ * @param MyModel $model
+ */
+function ccDoc($model)
+{
+    //TODO
+}
 
-    /**
-     * web xml
-     * @param $model
-     */
-   public  function makeWebConfig($a_models)
-    {
+/**
+ * web xml
+ * @param $model
+ */
+public function makeWebConfig($a_models)
+{
 
-    SeasLog::info("创建Web.xml--");
-    $_target = $this->odir_webapp. DS . "WEB-INF".DS  . "web.xml";
-    ob_start();
-    echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+SeasLog::info("创建Web.xml--");
+$_target = $this->odir_config . DS . "web_url.php";
+ob_start();
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-    $webapp_head = <<< WEB
+
+$webapp_head = <<< WEB
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
              version="2.5">
 WEB;
-    echo $webapp_head;
-    $package = $this->final_package;
+echo $webapp_head;
+$package = $this->final_package;
 
+?>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <servlet>
+        <servlet-name>my-service</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value><?= $package ?>.service</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>my-service</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
+
+    <listener>
+        <listener-class><?= $package ?>.MyListener</listener-class>
+    </listener>
+
+    <?php
+foreach ($a_models as $id => $model)
+{
+    $model_name = $model->name;
+    $uc_model = ucfirst($model_name);
     ?>
-        <welcome-file-list>
-            <welcome-file>index.html</welcome-file>
-            <welcome-file>index.jsp</welcome-file>
-        </welcome-file-list>
-
-        <servlet>
-            <servlet-name>my-service</servlet-name>
-            <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-            <init-param>
-                <param-name>jersey.config.server.provider.packages</param-name>
-                <param-value><?= $package ?>.service</param-value>
-            </init-param>
-            <load-on-startup>1</load-on-startup>
-        </servlet>
-        <servlet-mapping>
-            <servlet-name>my-service</servlet-name>
-            <url-pattern>/rest/*</url-pattern>
-        </servlet-mapping>
-
-        <listener>
-            <listener-class><?= $package ?>.MyListener</listener-class>
-        </listener>
-
-        <?php
-        foreach ($a_models as $id => $model) {
-            $model_name = $model->name;
-            $uc_model = ucfirst($model_name);
-            ?>
-            <servlet>
-                <servlet-name><?= $uc_model ?>Servlet</servlet-name>
-                <servlet-class><?= $package ?>.controllers.<?= $uc_model ?>Servlet</servlet-class>
-            </servlet>
-            <servlet-mapping>
-                <servlet-name><?= $uc_model ?>Servlet</servlet-name>
-                <url-pattern>/<?= $model_name ?>/*</url-pattern>
-            </servlet-mapping>
-        <?php }
-        ?>
+    <servlet>
+        <servlet-name><?= $uc_model ?>Servlet</servlet-name>
+        <servlet-class><?= $package ?>.controllers.<?= $uc_model ?>Servlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name><?= $uc_model ?>Servlet</servlet-name>
+        <url-pattern>/<?= $model_name ?>/*</url-pattern>
+    </servlet-mapping>
+<?php }
+    ?>
 
     <?php
     echo "</web-app>";
@@ -2035,9 +2041,8 @@ WEB;
 
 }
 
-if ($tpl_debug)
-{
-?>
+if ($tpl_debug) {
+    ?>
     </html>
     <?php
 }

@@ -105,6 +105,12 @@ function _java_statement_param_bean($key, $p_type, $ii, $bean)
 
 
 
+function _tag1() {
+    return  "{{";
+}
+function _tag2() {
+    return  "}}";
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1137,7 +1137,7 @@ class PhpPhalconMvc extends MvcBase
         ob_start();
 
 
-        $this->_makeheader();
+        $this->_makeHeader();
 
 
         _fun_comment("数据bean-{$model_name}[{$model->title}]", 1);
