@@ -303,7 +303,7 @@ class DbMysql extends DbBase
     function cAdd(MyModel $model, MyFun $fun)
     {
 
-
+        $base_fun = strtolower($fun->type);
         $a_all_fields = $model->field_list_kv;
 
         list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
@@ -313,7 +313,7 @@ class DbMysql extends DbBase
             $a_param_define[] = "INOUT `v_new_id` INT";
         }
 
-        $proc_name = $this->_procHeader($model, $fun->name, $fun->title, "add", $i_param);
+        $proc_name = $this->_procHeader($model, $fun->name, $fun->title, $base_fun, $i_param);
         $this->_procBegin($a_param_define);
 
         echo "DECLARE m_new_id INT;\n";
@@ -473,7 +473,8 @@ class DbMysql extends DbBase
     function cDelete(MyModel $model, MyFun $o_fun)
     {
 
-        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "delete");
+        $base_fun = strtolower($o_fun->type);
+        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, $base_fun);
         // $a_all_fields = $model->field_list_kv;
         $limit = $o_fun->limit;//更新限制
 
@@ -1238,7 +1239,7 @@ class DbMysql extends DbBase
      */
     function cUpdate(MyModel $model, MyFun $o_fun)
     {
-
+        $base_fun = strtolower($o_fun->type);
         $a_all_fields = $model->field_list_kv;
         $limit = $o_fun->limit;//更新限制
 
@@ -1259,7 +1260,7 @@ class DbMysql extends DbBase
         $a_param_all[] = "INOUT `v_affected_rows` INT";
 
 
-        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "update", $i_u_param + $i_count_where);
+        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, $base_fun, $i_u_param + $i_count_where);
 
         self::_procBegin($a_param_all);
 
@@ -1321,10 +1322,11 @@ class DbMysql extends DbBase
      */
     function cFetch(MyModel $model, MyFun $o_fun)
     {
+        $base_fun = strtolower($o_fun->type);
         //查询条件的字段
         list($a_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
         $i_param = count($a_param);
-        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, "fetch", $i_param);
+        $proc_name = self::_procHeader($model, $o_fun->name, $o_fun->title, $base_fun, $i_param);
 
         self::_procBegin($a_param);
 

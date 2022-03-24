@@ -476,7 +476,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         _fun_comment("执行删除", 2);
         echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
-        echo _tab(2) . "int iRet = oModel.delete(";
+        echo _tab(2) . "int iRet = oModel.drop(";
         $this->_echoFunParams($a_w_param_use);
         echo ");\n";
 
@@ -500,7 +500,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         _fun_comment("执行删除", 2);
         echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
-        echo _tab(2) . "int iRet = oModel.delete(";
+        echo _tab(2) . "int iRet = oModel.drop(";
         $this->_echoFunParams($a_w_param_use);
         echo ");\n";
 
@@ -587,7 +587,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         _fun_comment("执行更新", 2);
         echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
-        echo _tab(2) . "int iRet = oModel.update(";
+        echo _tab(2) . "int iRet = oModel.modify(";
         $this->_echoFunParams($a_u_param_use, $a_w_param_use);
         echo ");\n";
 
@@ -621,7 +621,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         _fun_comment("执行更新", 2);
         echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
-        echo _tab(2) . "int iRet = oModel.update(";
+        echo _tab(2) . "int iRet = oModel.modify(";
         $this->_echoFunParams($a_u_param_use, $a_w_param_use);
         echo ");\n";
 
@@ -796,7 +796,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         //列表
         _fun_comment("列表", 2);
-        echo _tab(2) . "Vector<HashMap> vList = oModel.list(";
+        echo _tab(2) . "Vector<HashMap> vList = oModel.lists(";
         $this->_echoFunParams($a_w_param_use);
         $ii = count($a_w_param_use);
         if ($has_order) {

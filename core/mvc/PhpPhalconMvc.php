@@ -231,7 +231,7 @@ class PhpPhalconMvc extends MvcBase
         echo "\n//auto gen via myorm";
         echo "\n";
         if ($this->final_package != "") {
-            echo "namespace {$this->final_package};";
+            //echo "namespace {$this->final_package};";
             echo "\n";
         }
     }
@@ -242,11 +242,11 @@ class PhpPhalconMvc extends MvcBase
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $lc_model_name = strtolower($model_name);
-
+        $base_fun = strtolower($fun->type);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "add");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "add");//散列参数添加
-        $fun_name2 = $this->makeModelFunName($fun_name, "add", true);//通过bean添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, $base_fun, true);//通过bean添加
 
         list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
 
@@ -371,12 +371,13 @@ class PhpPhalconMvc extends MvcBase
     function cDelete(MyModel $model, MyFun $fun)
     {
         $this->_funHeader($model, $fun);
+        $base_fun = strtolower($fun->type);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $lc_model_name = strtolower($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "delete");
-        $fun_name1 = $this->makeModelFunName($fun_name, "delete");
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);
 
 
         list($i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_field) = $this->_procWhereCond($model, $fun);
@@ -430,14 +431,14 @@ class PhpPhalconMvc extends MvcBase
     function cUpdate(MyModel $model, MyFun $fun)
     {
         $this->_funHeader($model, $fun);
-
+        $base_fun = strtolower($fun->type);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $lc_model_name = strtolower($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "update");
-        $fun_name1 = $this->makeModelFunName($fun_name, "update");
-        $fun_name2 = $this->makeModelFunName($fun_name, "update", true);
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);
+        $fun_name2 = $this->makeModelFunName($fun_name, $base_fun, true);
 
         $a_all_fields = $model->field_list_kv;
         //需要更新的字段
@@ -530,12 +531,13 @@ class PhpPhalconMvc extends MvcBase
     function cFetch(MyModel $model, MyFun $fun)
     {
         $this->_funHeader($model, $fun);
+        $base_fun = strtolower($fun->type);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "fetch");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "fetch");//散列参数添加
-        $fun_name2 = $this->makeModelFunName($fun_name, "fetch", true);//散列参数添加返回bean
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, $base_fun, true);//散列参数添加返回bean
 
         $a_all_fields = $model->field_list_kv;
 
@@ -629,10 +631,11 @@ class PhpPhalconMvc extends MvcBase
     {
         $this->_funHeader($model, $fun);
         $model_name = $model->name;
+        $base_fun = strtolower($fun->type);
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "count");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "count");//散列参数添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
 
         $a_all_fields = $model->field_list_kv;
         //更新条件
@@ -683,12 +686,13 @@ class PhpPhalconMvc extends MvcBase
     function cList(MyModel $model, MyFun $fun)
     {
         $this->_funHeader($model, $fun);
+        $base_fun = strtolower($fun->type);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "list");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "list");//散列参数添加
-        $fun_name2 = $this->makeModelFunName($fun_name, "list", true);//散列参数添加返回bean
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, $base_fun, true);//散列参数添加返回bean
 
         $a_all_fields = $model->field_list_kv;//通过主键访问的字段
 
@@ -815,7 +819,7 @@ class PhpPhalconMvc extends MvcBase
             $inc = $i_w_param;
             if ($has_group_field && $has_group_by && $has_having) {
                 foreach ($a_param_use_having as $param) {
-                    echo (($inc > 0) ? $tab4 : "") . "\${$param}";
+                    echo (($inc > 0) ? $tab4 : "") . "{$param}";
                     $inc++;
                 }
             }
@@ -900,7 +904,7 @@ class PhpPhalconMvc extends MvcBase
             }
         }
         if ($has_group_field ) {
-            echo _tab(4) . "\$a_row_info[\${$group_field_final}] = \$vv;\n";
+            echo _tab(4) . "\$a_row_info['{$group_field_final}'] = \$a_ret['{$group_field_final}'];\n";
         }
 
         echo _tab(4) . "\$a_list[] = \$a_row_info;\n";

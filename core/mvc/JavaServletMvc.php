@@ -170,14 +170,15 @@ class JavaServletMvc extends MvcBase
 
     function cAdd(MyModel $model, MyFun $fun)
     {
+        $base_fun = strtolower($fun->type);
         $this->_funHeader($model, $fun);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $lc_model_name = strtolower($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "add");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "add");//散列参数添加
-        $fun_name2 = $this->makeModelFunName($fun_name, "add", true);//通过bean添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, $base_fun, true);//通过bean添加
 
         list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
 
@@ -361,12 +362,13 @@ class JavaServletMvc extends MvcBase
      */
     function cDelete(MyModel $model, MyFun $fun)
     {
+        $base_fun = strtolower($fun->type);
         $this->_funHeader($model, $fun);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "delete");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "delete");//散列参数添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
 
         list($i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_field) = $this->_procWhereCond($model, $fun);
 
@@ -412,13 +414,13 @@ class JavaServletMvc extends MvcBase
     function cUpdate(MyModel $model, MyFun $fun)
     {
         $this->_funHeader($model, $fun);
-
+        $base_fun = strtolower($fun->type);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "update");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "update");//散列参数添加
-        $fun_name2 = $this->makeModelFunName($fun_name, "update", true);//散列参数添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, $base_fun, true);//散列参数添加
 
         $a_all_fields = $model->field_list_kv;
         //需要更新的字段
@@ -506,13 +508,14 @@ class JavaServletMvc extends MvcBase
 
     function cFetch(MyModel $model, MyFun $fun)
     {
+        $base_fun = strtolower($fun->type);
         $this->_funHeader($model, $fun);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "fetch");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "fetch");//散列参数添加
-        $fun_name2 = $this->makeModelFunName($fun_name, "fetch", true);//散列参数添加返回bean
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, $base_fun, true);//散列参数添加返回bean
 
         $a_all_fields = $model->field_list_kv;
         //更新条件
@@ -641,11 +644,12 @@ class JavaServletMvc extends MvcBase
     function cCount(MyModel $model, MyFun $fun)
     {
         $this->_funHeader($model, $fun);
+        $base_fun = strtolower($fun->type);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "count");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "count");//散列参数添加
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
 
         $a_all_fields = $model->field_list_kv;
         //更新条件
@@ -692,13 +696,14 @@ class JavaServletMvc extends MvcBase
 
     function cList(MyModel $model, MyFun $fun)
     {
+        $base_fun = strtolower($fun->type);
         $this->_funHeader($model, $fun);
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $fun_name = $fun->name;
-        $proc_name = $this->findProcName($model->table_name, $fun_name, "list");//存储过曾的名字
-        $fun_name1 = $this->makeModelFunName($fun_name, "list");//散列参数添加
-        $fun_name2 = $this->makeModelFunName($fun_name, "list", true);//散列参数添加返回bean
+        $proc_name = $this->findProcName($model->table_name, $fun_name, $base_fun);//存储过曾的名字
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, $base_fun, true);//散列参数添加返回bean
 
         $a_all_fields = $model->field_list_kv;//通过主键访问的字段
         $fun_type = $fun->type;

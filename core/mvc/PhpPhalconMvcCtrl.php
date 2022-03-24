@@ -39,7 +39,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         $uc_model_name = ucfirst($model_name);
         $lc_model_name = strtolower($model_name);
         SeasLog::info("创建PHP控制器--{$model_name}");
-        $_target = $this->odir_controllers . DS . "{$uc_model_name}Servlet.java";
+        $_target = $this->odir_controllers . DS . "{$uc_model_name}Controller.php";
         ob_start();
 
         $this->_makeHeader();
@@ -286,7 +286,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             if ($o_field->input_hash != "") {
                 echo _tab(2) . "//TODO 输入为有限的字典值 {$o_field->input_hash};\n";
             }
-            if ($o_field->filter != "" && $o_field->filter != "NO_FILTER"  ) {
+            if ($o_field->filter != "" && $o_field->filter != "NO_FILTER") {
                 echo _tab(2) . "//TODO 默认过滤器 {$o_field->filter};\n";
             }
             if ($o_field->regexp != "") {
@@ -334,7 +334,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("TODO 注意来自session的变量", 2);
 
         _fun_comment("执行删除", 2);
-        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->delete(";
+        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->drop(";
         $this->_echoFunParams($a_w_param_use);
         echo ");\n";
 
@@ -362,7 +362,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("TODO 注意来自session的变量", 2);
 
         _fun_comment("执行删除", 2);
-        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->delete(";
+        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->drop(";
         $this->_echoFunParams($a_w_param_use);
         echo ");\n";
 
@@ -441,15 +441,15 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("TODO 注意来自session的变量", 2);
 
         _fun_comment("执行更新", 2);
-        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->update(";
+        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->modify(";
         $this->_echoFunParams($a_u_param_use, $a_w_param_use);
         echo ");\n";
 
         echo _tab(2) . "\$a_result = array();\n";
         echo _tab(2) . "if (\$iRet > 0){\n";
         echo _tab(3) . "\$a_result['__code__'] = ECode::SUCC;\n";
-        $ii=0;
-        foreach ($a_w_param_field as $w_filed){
+        $ii = 0;
+        foreach ($a_w_param_field as $w_filed) {
             $vvv = $a_w_param_use[$ii];
             echo _tab(3) . "\$a_result['{$w_filed->name}'] = {$vvv} ;\n";
             $ii++;
@@ -459,8 +459,8 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(2) . "else {\n";
         _fun_comment("TODO 把原始输入和错误写入session", 2);
         echo _tab(3) . "\$a_result['__code__'] = ECode::E0000;\n";
-        $ii=0;
-        foreach ($a_w_param_field as $w_filed){
+        $ii = 0;
+        foreach ($a_w_param_field as $w_filed) {
             $vvv = $a_w_param_use[$ii];
             echo _tab(3) . "\$a_result['{$w_filed->name}'] = {$vvv} ;\n";
             $ii++;
@@ -485,7 +485,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("TODO 注意来自session的变量", 2);
 
         _fun_comment("执行更新", 2);
-        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->update(";
+        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->modify(";
         $this->_echoFunParams($a_u_param_use, $a_w_param_use);
         echo ");\n";
 
@@ -547,18 +547,13 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         $this->_echoFunParams($a_w_param_use);
         echo ");\n";
 
-        echo _tab(2) . "if(\$iRet > 0){\n";
+        echo _tab(2) . "if(\$mInfo != null){\n";
         echo _tab(3) . "\$this->_ajax2(ECode::SUCC,\"读取成功\",\$mInfo);\n";
         echo _tab(2) . "}else{\n";
         echo _tab(3) . "\$this->_ajax2(ECode::E0000,\"读取失败\");\n";
         echo _tab(2) . "}\n";
         echo _tab(2) . "return;\n";
         echo _tab(1) . "}\n";
-
-
-        echo _tab(1) . "}\n";
-
-
         $this->_funFooter($model, $fun);
 
     }
@@ -626,9 +621,11 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         }
         //6666
         if ($has_pager) {
-            echo _tab(2) . "int i_page = \$this->request->get(\"page\",\"int\",1);\n";
+            echo _tab(2) . "\$i_page = \$this->request->get(\"page\",\"int\",1);\n";
             if ($is_pager_size_input) {
-                echo _tab(2) . "int i_page_size = \$this->request->get(\"page_size\",\"int\",20);\n";
+                echo _tab(2) . "\$i_page_size = \$this->request->get(\"page_size\",\"int\",20);\n";
+            } else {
+                echo _tab(2) . "\$i_page_size = {$pager_size}  ;\n";
             }
         }
         if ($has_pager) {
@@ -641,7 +638,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 
         //列表
         _fun_comment("列表", 2);
-        echo _tab(2) . "\$a_list = \$this->o_{$uc_model_name}->list(";
+        echo _tab(2) . "\$a_list = \$this->o_{$uc_model_name}->lists(";
         $this->_echoFunParams($a_w_param_use);
         $ii = count($a_w_param_use);
         if ($has_order) {
@@ -690,17 +687,17 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             }
             //6666
             //if ($has_pager) {
-            echo _tab(2) . "\$this->assign(\"curr_page\", i_page);\n";
+            echo _tab(2) . "\$this->assign(\"curr_page\", \$i_page);\n";
             $a_param_return["curr_page"] = "i_page";
             if ($is_pager_size_input) {
-                echo _tab(2) . "\$this->assign(\"curr_page_size\", i_page_size);\n";
+                echo _tab(2) . "\$this->assign(\"curr_page_size\", \$i_page_size);\n";
                 $a_param_return["curr_page_size"] = "i_page_size";
             }
             //}
             _fun_comment("分页", 2);
             echo _tab(2) . "\$url_this = \$this->_pool['{$model_name}_list']. \"?__foo__=bar\";\n";
             foreach ($a_param_return as $key => $a_p_return) {
-                echo _tab(2) . "\$url_this .= \"&{$key}=\" + $a_p_return\n";
+                echo _tab(2) . "\$url_this .= \"&{$key}=\" . $a_p_return ;\n";
             }
             echo _tab(4) . "+ \"&\";\n";
             echo _tab(2) . "\$this->_pager(\$url_this, \$i_count, \$i_page, \$i_page_size);\n";
@@ -1855,9 +1852,10 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
     {
 
         SeasLog::info("创建Web.xml--");
-        $_target = $this->odir_config . DS . "web_url.php";
+        $_target = $this->odir_config . DS . "url.php";
         ob_start();
 
+        $this->_makeHeader();
         _fun_comment("全局url重写定义");
 
 
@@ -1886,7 +1884,6 @@ WEB;
             $lc_model = strtolower($model_name);
             echo _tab(1) . "//" . $model->title;
             ?>
-
             'url_<?= $lc_model ?>_add' => '<?= $lc_model ?>/add',
             'url_<?= $lc_model ?>_save' => '<?= $lc_model ?>/save',
             'url_<?= $lc_model ?>_ajax_save' => '<?= $lc_model ?>/ajax_save',
@@ -1895,14 +1892,13 @@ WEB;
             'url_<?= $lc_model ?>_ajax_modify' => '<?= $lc_model ?>/ajax_modify',
             'url_<?= $lc_model ?>_delete' => '<?= $lc_model ?>/delete',
             'url_<?= $lc_model ?>_ajax_delete' => '<?= $lc_model ?>/ajax_delete',
-            'url_<?= $lc_model ?>_list' => '<?= $lc_model ?>/list'
-
+            'url_<?= $lc_model ?>_list' => '<?= $lc_model ?>/list',
             <?php
         }
         ?>
 
         <?php
-        echo "}";
+        echo ");";
 
         $cc_data = ob_get_contents();
         ob_end_clean();

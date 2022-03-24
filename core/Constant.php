@@ -216,11 +216,11 @@ class Constant
      * 查询类型
      */
     const FUN_TYPE_ADD = "ADD";
-    const FUN_TYPE_DELETE = "DELETE";
-    const FUN_TYPE_UPDATE = "UPDATE";
+    const FUN_TYPE_DELETE = "DROP";
+    const FUN_TYPE_UPDATE = "MODIFY";
     const FUN_TYPE_FETCH = "FETCH";
-    const FUN_TYPE_COUNT = "COUNT";//普通统计，返回个数
-    const FUN_TYPE_LIST = "LIST";//普通列表
+    const FUN_TYPE_COUNT = "COUNTS";//普通统计，返回个数
+    const FUN_TYPE_LIST = "LISTS";//普通列表
     const FUN_TYPE_LIST_WITH_COUNT = "LIST_COUNT";
     const FUN_TYPE_LIST_WITH_AVG = "LIST_AVG";
     const FUN_TYPE_LIST_WITH_SUM = "LIST_SUM";
