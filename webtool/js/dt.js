@@ -2503,6 +2503,7 @@ App.dt.project.fieldLoad = function () {
     var g_field_list = $("#table_field_list");
     g_field_list.html(res);
     g_field_list.sortable({
+        handle : ".fa-sort",
         stop: function () {
             var _new_list = {};
             var iii = 0
@@ -2769,6 +2770,7 @@ App.dt.project.modelLoad = function () {
         }
         var _old_list = _model.field_list;
         _mm.sortable({
+            handle : ".fa-sort",
             stop: function () {
                 var _new_list = {};
                 var iii = 0
@@ -2806,6 +2808,7 @@ App.dt.project.modelLoad = function () {
         }
         var _old_list = _model.idx_list;
         _mm.sortable({
+            handle : ".fa-sort",
             stop: function () {
                 var _new_list = {};
                 var iii = 0
@@ -2843,6 +2846,7 @@ App.dt.project.modelLoad = function () {
         }
         var _old_list = _model.fun_list;
         _mm.sortable({
+            handle : ".fa-sort",
             stop: function () {
                 var _new_list = {};
                 var iii = 0
@@ -2873,6 +2877,7 @@ App.dt.project.modelLoad = function () {
     //模型排序
     var _sort_model_list = $("#table_model_list");
     _sort_model_list.sortable({
+        handle : ".fa-sort",
         stop: function () {
             var _new_list = {};
             var iii = 0

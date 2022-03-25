@@ -178,12 +178,12 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         SeasLog::info("新建数据Form");
         _fun_comment("新建数据", 1);
 
-        echo _tab(1) . "protected function newAction() {\n";
+        echo _tab(1) . "public function newAction() {\n";
         echo _tab(2) . "\$this->assign(\"page_title\",\"新建{$model->title}\");\n";
         _fun_comment("启用CSRF预防", 2);
-        echo _tab(2) . "\$a_info = \$this->_beforeFormEdit(\"{$lc_model_name}_new\");\n";
-        echo _tab(2) . "\n";
-        echo _tab(2) . "//TODO 获取上一个记录剩余的数据\n";
+        echo _tab(2) . "\$this->_beforeFormEdit(\"{$lc_model_name}_new\");\n";
+        echo _tab(2) . "\$a_info = array();\n";
+        echo _tab(2) . "//TODO 可能需要获取上一个记录剩余的数据\n";
 
         echo _tab(2) . "\$this->assign(\"a_info\",\$a_info);\n";
         echo _tab(2) . "//TODO其他需要预先输出的参数\n";
@@ -194,7 +194,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 
         SeasLog::info("Form保存");
         _fun_comment("Form保存", 1);
-        echo _tab(1) . "protected function saveAction() {\n";
+        echo _tab(1) . "public function saveAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
         echo _tab(2) . "if (!\$this->_beforeFormPost(\"{$lc_model_name}_new\")){\n";
         echo _tab(3) . "return \$this->_errRedirect('url_{$lc_model_name}_list','CSRF');\n";
@@ -230,7 +230,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(1) . "}\n";
 
         _fun_comment("ajax保存插入数据", 1);
-        echo _tab(1) . "protected function ajax_saveAction() {\n";
+        echo _tab(1) . "public function ajaxSaveAction() {\n";
 
         _fun_comment("检查CSRF攻击", 2);
         echo _tab(2) . "if (!\$this->_beforeAjaxPost(\"ajax_{$lc_model_name}_new\")){\n";
@@ -321,7 +321,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
 
         _fun_comment("FORM删除", 1);
-        echo _tab(1) . "protected function deleteAction() {\n";
+        echo _tab(1) . "public function deleteAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
         echo _tab(2) . "if (!\$this->_beforeFormPost(\"{$lc_model_name}_delete\")){\n";
         echo _tab(3) . "return \$this->_errRedirect('url_{$lc_model_name}_list','CSRF');\n";
@@ -350,7 +350,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(1) . "}\n";
 
         _fun_comment("ajax删除", 1);
-        echo _tab(1) . "protected function ajax_deleteAction() {\n";
+        echo _tab(1) . "public function ajaxDeleteAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
         echo _tab(2) . "if (!\$this->_beforeAjaxPost(\"ajax_{$lc_model_name}_delete\")){\n";
         echo _tab(3) . "return \$this->_errAjax('CSRF');\n";
@@ -397,7 +397,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         SeasLog::info("修改数据Form");
 
         _fun_comment("获取详情用于显示", 1);
-        echo _tab(1) . "protected function editAction() {\n";
+        echo _tab(1) . "public function editAction() {\n";
 
         _fun_comment("启用CSRF预防", 2);
         echo _tab(2) . "if (!\$this->_beforeFormPost(\"{$lc_model_name}_edit\")){\n";
@@ -427,7 +427,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 
 
         _fun_comment("FORM更新", 1);
-        echo _tab(1) . "protected function modifyAction() {\n";
+        echo _tab(1) . "public function modifyAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
         echo _tab(2) . "if (!\$this->_beforeFormPost(\"{$lc_model_name}_edit\")){\n";
         echo _tab(3) . "return \$this->_errRedirect('url_{$lc_model_name}_list','CSRF');\n";
@@ -471,7 +471,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 
 
         _fun_comment("ajax更新", 1);
-        echo _tab(1) . "protected function ajax_modifyAction() {\n";
+        echo _tab(1) . "public function ajaxModifyAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
         echo _tab(2) . "if (!\$this->_beforeAjaxPost(\"ajax_{$lc_model_name}_edit\")){\n";
         echo _tab(3) . "return \$this->_errAjax('CSRF');\n";
@@ -520,7 +520,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 
 
         _fun_comment("获取详情显示", 1);
-        echo _tab(1) . "protected function detailAction() {\n";
+        echo _tab(1) . "public function detailAction() {\n";
         //更新条件
         list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $this->fun_fetch);
 
@@ -537,7 +537,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 
 
         _fun_comment("获取ajax详情用于显示", 1);
-        echo _tab(1) . "protected function ajax_detailAction() {\n";
+        echo _tab(1) . "public function ajaxDetailAction() {\n";
 
         _fun_comment("获取POST参数", 2);
         $this->_echoReqParams($a_w_param_define, $a_w_param_field);
@@ -601,7 +601,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         list($has_pager, $is_pager_size_input, $pager_size) = $this->parsePager($model, $fun);
 
         _fun_comment("获取列表用于显示", 1);
-        echo _tab(1) . "protected function listAction() {\n";
+        echo _tab(1) . "public function listAction() {\n";
 
         echo _tab(2) . "\$t1 = microtime(true);\n";
         _fun_comment("获取GET参数", 2);
@@ -630,7 +630,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         }
         if ($has_pager) {
             _fun_comment("计数", 2);
-            echo _tab(2) . "\$i_count = \$this->o_{$uc_model_name}->list_Count(";
+            echo _tab(2) . "\$i_count = \$this->o_{$uc_model_name}->lists_Count(";
             $this->_echoFunParams($a_w_param_use);
             echo ");\n";
             echo _tab(2) . "\$this->assign(\"i_count\", \$i_count);\n";
@@ -1858,7 +1858,6 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         $this->_makeHeader();
         _fun_comment("全局url重写定义");
 
-
         $webapp_head = <<< WEB
     return array(
         //入口
@@ -1875,16 +1874,14 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 WEB;
         echo $webapp_head;
         $package = $this->final_package;
-        ?>
-
-        <?php
         foreach ($a_models as $id => $model) {
             $model_name = $model->name;
             $uc_model = ucfirst($model_name);
             $lc_model = strtolower($model_name);
-            echo _tab(1) . "//" . $model->title;
+            echo "\n";
+            echo _tab(1) . "//" . $model->title ."\n";
             ?>
-            'url_<?= $lc_model ?>_add' => '<?= $lc_model ?>/add',
+            'url_<?= $lc_model ?>_new' => '<?= $lc_model ?>/new',
             'url_<?= $lc_model ?>_save' => '<?= $lc_model ?>/save',
             'url_<?= $lc_model ?>_ajax_save' => '<?= $lc_model ?>/ajax_save',
             'url_<?= $lc_model ?>_edit' => '<?= $lc_model ?>/edit',
@@ -1903,6 +1900,64 @@ WEB;
         $cc_data = ob_get_contents();
         ob_end_clean();
         file_put_contents($_target, $cc_data);
+
+        SeasLog::info("创建menu.php--");
+        $_target = $this->odir_config . DS . "menu.php";
+        ob_start();
+
+        $this->_makeHeader();
+        _fun_comment("菜单配置");
+
+        $menu_head = <<< WEB
+ 
+function cfg_global_menu(\$a_urls)
+{
+
+    return array(
+
+        'default' => array(
+            'name' => '系统概况',
+            'icon' => 'fas fa-tachometer-alt',
+            'link' => \$a_urls['url_home'],
+            'sub_menu' => array()
+        ),
+
+WEB;
+
+        echo $menu_head;
+        foreach ($a_models as $id => $model) {
+            /* @var MyModel $model */
+            $model_name = $model->name;
+            $uc_model = ucfirst($model_name);
+            $lc_model = strtolower($model_name);
+            ?>
+        '<?=$lc_model?>' => array(
+            'name' => '<?=$model->title?>管理',
+            'icon' => 'fas fa-<?=$model->fa_icon?>',
+            'link' => "#",
+            'sub_menu' => array(
+                '<?=$lc_model?>_edit' => array(
+                    'name' => '新建<?=$model->title?>',
+                    'link' => $a_urls['url_<?=$lc_model?>_new'],
+                    'icon' => 'far fa-circle text-success'
+                ),
+
+                '<?=$lc_model?>_list' => array(
+                    'name' => '<?=$model->title?>列表',
+                    'link' => $a_urls['url_<?=$lc_model?>_list'],
+                    'icon' => 'far fa-circle text-danger'
+                ),
+            )
+        ),
+<?php
+        }
+        echo ");}";
+        $cc_data = ob_get_contents();
+        ob_end_clean();
+        file_put_contents($_target, $cc_data);
+
+
+
     }
 
 }

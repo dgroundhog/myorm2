@@ -28,6 +28,7 @@ class DbMysql extends DbBase
                 _db_comment("for mysql {$db->driver}", true);
                 echo "CREATE USER IF NOT EXISTS '{$db->user}'@'{$db->host}' IDENTIFIED BY '{$db->password}';\n";
                 echo "CREATE DATABASE IF NOT EXISTS `{$db->database}` CHARACTER SET {$db->charset} COLLATE {$db->charset}_general_ci;\n";
+                echo "GRANT ALL PRIVILEGES ON `{$db->user}`.* TO '{$db->user}'@'{$db->host}';\n";
                 echo "GRANT ALL PRIVILEGES ON `{$db->user}\\_%`.* TO '{$db->user}'@'{$db->host}';\n";
                 echo "GRANT SELECT ON mysql.proc TO '{$db->user}'@'{$db->host}';\n";
                 break;

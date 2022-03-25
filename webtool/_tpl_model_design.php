@@ -213,13 +213,10 @@
                                 <td>{$fun.name}</td>
 
                                 <td>
-                                    {if $fun.all_field==1}
-                                    *
-                                    {/if}
                                     {if $fun.type=='DELETE'}
                                     忽略
-                                    {elseif $fun.type=='ADD'}
-                                    (全部)
+                                    {elseif $fun.all_field==1}
+                                    (全部)*
                                     {else}
                                     {foreach $fun.field_list as $ii => $iff}
                                     <strong>{$iff.name}, </strong><br/>
