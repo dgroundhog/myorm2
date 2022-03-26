@@ -6,3 +6,6 @@
 /project1.js 项目主数据
 
 /project2..
+
+
+cp -rf G:/build/20220326193342/src/*  E:/xampp/htdocs/phal/

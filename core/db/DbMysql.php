@@ -710,7 +710,12 @@ class DbMysql extends DbBase
                 $s_param1 = $param_use;
                 $a_param1[] = $param_define;
                 $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$s_param1}";
-                $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} {$s_param1}'";
+                if (!$this->isIntType($f_type)) {
+                    $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} \'', {$s_param1}, '\' '";
+                }
+                else{
+                    $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} ', {$s_param1}, '  '";
+                }
                 $has_if = true;
                 break;
         }
@@ -941,7 +946,13 @@ class DbMysql extends DbBase
                         $a_param[] = $param_define;
 
                         $s_sql1 = $s_sql1 . " {$s_param2_use} ";
-                        $s_sql2 = $s_sql2 . " {$s_param2_use} ";
+                        //$s_sql2 = $s_sql2 . " {$s_param2_use} ";
+                        if (!$this->isIntType($f_type)) {
+                            $s_sql2 = $s_sql2 . " \'', {$s_param2_use}, '\' '";
+                        }
+                        else{
+                            $s_sql2 = $s_sql2 . " ', {$s_param2_use}, '  '";
+                        }
                         break;
                 }
                 break;
@@ -986,7 +997,13 @@ class DbMysql extends DbBase
                         $a_param[] = $param_define;
 
                         $s_sql1 = $s_sql1 . " {$s_param2_use} ";
-                        $s_sql2 = $s_sql2 . " {$s_param2_use} ";
+                        //$s_sql2 = $s_sql2 . " {$s_param2_use} ";
+                        if (!$this->isIntType($f_type)) {
+                            $s_sql2 = $s_sql2 . " \'', {$s_param2_use}, '\' '";
+                        }
+                        else{
+                            $s_sql2 = $s_sql2 . " ', {$s_param2_use}, '  '";
+                        }
                         break;
                 }
                 break;
@@ -1001,7 +1018,15 @@ class DbMysql extends DbBase
 
 
                 $s_sql1 = $s_sql1 . " {$s_param1_use} AND ";
-                $s_sql2 = $s_sql2 . " {$s_param1_use} AND ";
+                //$s_sql2 = $s_sql2 . " {$s_param1_use} AND ";
+
+                if (!$this->isIntType($f_type)) {
+                    $s_sql2 = $s_sql2 . " \'', {$s_param1_use}, '\' AND ";
+                }
+                else{
+                    $s_sql2 = $s_sql2 . " ', {$s_param1_use}, '  AND ";
+                }
+
 
                 switch ($v2_type) {
                     //v2固定值
@@ -1034,8 +1059,14 @@ class DbMysql extends DbBase
                         $a_param[] = $param_define;
 
                         $s_sql1 = $s_sql1 . " {$s_param2_use} ";
-                        $s_sql2 = $s_sql2 . " {$s_param2_use} ";
+                        //$s_sql2 = $s_sql2 . " {$s_param2_use} ";
                         //不完整的支持，当2个都是输入时，才允许用if判断是否为空
+                        if (!$this->isIntType($f_type)) {
+                            $s_sql2 = $s_sql2 . " \'', {$s_param2_use}, '\' ";
+                        }
+                        else{
+                            $s_sql2 = $s_sql2 . " ', {$s_param2_use}, '  ";
+                        }
                         $has_if = true;
                         break;
                 }
@@ -1132,7 +1163,8 @@ class DbMysql extends DbBase
 
                 $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} ($s_param1)";
                 if ($this->isIntType($f_type)) {
-                    $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} ($s_param1)'";
+                    $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} (\'',$s_param1, '\')'";
+
                 } else {
                     //字符串类,需要外部输入时，先行添加单引号来隔离字符串
                     $delay_join = true;
@@ -1205,7 +1237,8 @@ class DbMysql extends DbBase
                     return array(array(), "", "");
                 }
                 $s_sql1 = " {$WHERE_JOIN} LOCATE({$val}(), `{$key}`) > 0  ";
-                $s_sql2 = "' {$WHERE_JOIN} LOCATE({$val}(), `{$key}`) > 0'";
+                $s_sql2 = "'  {$WHERE_JOIN} LOCATE({$val}(), `{$key}`) > 0  '";
+
 
                 break;
             //输入值
@@ -1217,6 +1250,8 @@ class DbMysql extends DbBase
                 $a_param[] = $param_define;
                 $s_sql1 = " {$WHERE_JOIN} LOCATE($s_param1, `{$key}`) > 0  ";
                 $s_sql2 = "' {$WHERE_JOIN} LOCATE($s_param1, `{$key}`) > 0'";
+
+                $s_sql2 = "' {$WHERE_JOIN} LOCATE(\'',$s_param1, '\',`{$key}`) > 0'";
                 break;
         }
 
@@ -1437,7 +1472,7 @@ class DbMysql extends DbBase
             if ($is_pager_size_input) {
                 echo "SET m_offset = ( v_page - 1 ) * v_page_size;\n\n";
             } else {
-                echo "SET m_offset = ( i_page - 1 ) * {$pager_size};\n\n";
+                echo "SET m_offset = ( v_page - 1 ) * {$pager_size};\n\n";
             }
         }
 

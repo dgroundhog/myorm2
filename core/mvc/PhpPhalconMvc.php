@@ -276,9 +276,9 @@ class PhpPhalconMvc extends MvcBase
         echo _tab(2) . "//question_marks = {$i_param} \n";
         echo _tab(2) . "\$i_new_id = 0;\n";
         if ($is_return_new_id) {
-            echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm}, @_new_id)}\";\n";
+            echo _tab(2) . "\$sql = \"CALL `{$proc_name}`({$s_qm}, @_new_id);\";\n";
         } else {
-            echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+            echo _tab(2) . "\$sql = \"CALL `{$proc_name}`({$s_qm});\";\n";
         }
         if ($i_param == 0) {
             $this->_noBindQuery();
@@ -401,10 +401,10 @@ class PhpPhalconMvc extends MvcBase
         echo _tab(2) . "\$i_affected_rows = 0;\n";
 
         if ($i_param == 0) {
-            echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`(@_affected_rows)}\";\n";
+            echo _tab(2) . "\$sql = \"CALL `{$proc_name}`(@_affected_rows);\";\n";
             $this->_noBindQuery();
         } else {
-            echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm},@_affected_rows)}\";\n";
+            echo _tab(2) . "\$sql = \"CALL `{$proc_name}`({$s_qm},@_affected_rows);\";\n";
             $this->_beforeQuery();
             echo _tab(4);
             echo implode(",\n" . _tab(4), $a_param_use);
@@ -467,7 +467,7 @@ class PhpPhalconMvc extends MvcBase
         $s_qm = _db_question_marks($i_u_param + $i_w_param + 1);
         echo _tab(2) . "//question_marks = u {$i_u_param} + w {$i_w_param} + r 1 \n";
         echo _tab(2) . "\$i_affected_rows = 0;\n";
-        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm},@_affected_rows)}\";\n";
+        echo _tab(2) . "\$sql = \"CALL `{$proc_name}`({$s_qm},@_affected_rows);\";\n";
 
         $this->_beforeQuery();
         echo _tab(4);
@@ -560,7 +560,7 @@ class PhpPhalconMvc extends MvcBase
         $s_qm = _db_question_marks($i_w_param);
         echo _tab(2) . "//question_marks = {$i_w_param}\n";
         echo _tab(2) . "\$a_info = array();\n";
-        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(2) . "\$sql = \"CALL `{$proc_name}`({$s_qm});\";\n";
         $this->_beforeQuery();
         echo _tab(4);
         echo implode(",\n" . _tab(4), $a_w_param_use);
@@ -600,7 +600,7 @@ class PhpPhalconMvc extends MvcBase
         $s_qm = _db_question_marks($i_w_param);
         echo _tab(2) . "//question_marks = {$i_w_param}  \n";
         echo _tab(2) . "\$o_bean = new {$uc_model_name}Bean();\n";
-        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(2) . "\$sql = \"CALL `{$proc_name}`({$s_qm});\";\n";
         $this->_beforeQuery();
         echo _tab(4);
         echo implode(",\n" . _tab(4), $a_w_param_use);
@@ -656,7 +656,7 @@ class PhpPhalconMvc extends MvcBase
         $s_qm = _db_question_marks($i_w_param);
         echo _tab(2) . "//question_marks = {$i_w_param}\n";
         echo _tab(2) . "\$iCount = 0;\n";
-        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(2) . "\$sql = \"CALL `{$proc_name}`({$s_qm});\";\n";
         if ($i_w_param == 0) {
             $this->_noBindQuery();
         } else {
@@ -703,6 +703,8 @@ class PhpPhalconMvc extends MvcBase
         }
         //1111基本条件
         list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
+
+
         $i_param_list = $i_w_param;
 
         //22222被聚合键 TODO 放到父级函数里处理
@@ -806,7 +808,7 @@ class PhpPhalconMvc extends MvcBase
         $s_qm = _db_question_marks($i_param_list);
         echo _tab(2) . "//question_marks = {$i_param_list}\n";
         echo _tab(2) . "\$a_list = array();\n";
-        echo _tab(2) . "\$sql = \"{CALL `{$proc_name}`({$s_qm})}\";\n";
+        echo _tab(2) . "\$sql = \"CALL `{$proc_name}`({$s_qm});\";\n";
 
         if ($i_param_list == 0) {
             $this->_noBindQuery();
@@ -1052,7 +1054,7 @@ class PhpPhalconMvc extends MvcBase
             $s_qm = _db_question_marks($i_param_count);
             echo _tab(2) . "//question_marks = {$i_param_count} \n";
             echo _tab(2) . "\$iCount = 0;\n";
-            echo _tab(2) . "\$sql = \"{CALL `{$proc_name}_c`({$s_qm})}\";\n";
+            echo _tab(2) . "\$sql = \"CALL `{$proc_name}_c`({$s_qm});\";\n";
 
             if ($i_param_count == 0) {
                 $this->_noBindQuery();

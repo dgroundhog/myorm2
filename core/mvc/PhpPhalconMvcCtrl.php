@@ -60,18 +60,6 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(2) . "\$this->o_{$uc_model_name} = new {$uc_model_name}Model();\n";
         echo _tab(2) . "\$this->assign(\"model_title\",\"{$model->title}\");\n";
         echo _tab(2) . "//TODO 私有在这里定义\n";
-        //TODO 私有操作连接在这里定义
-        echo _tab(1) . "}\n";
-
-        _fun_comment("一般不使用的默认index页入口路由", 1);
-        echo _tab(1) . "public function indexAction()\n";
-        echo _tab(1) . "{\n";
-        echo _tab(2) . "//TODO nothing to do here\n";
-        echo _tab(1) . "}\n";
-
-        _fun_comment("一般不使用的入口路由", 1);
-        echo _tab(1) . "public function _echoCommon()\n";
-        echo _tab(1) . "{\n";
         _fun_comment("模块内基础字典", 2);
         foreach ($model->field_list as $field) {
             /* @var MyField $field */
@@ -83,7 +71,15 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             }
         }
         echo _tab(2) . "//TODO more to do here\n";
+        //TODO 私有操作连接在这里定义
         echo _tab(1) . "}\n";
+
+        _fun_comment("一般不使用的默认index页入口路由", 1);
+        echo _tab(1) . "public function indexAction()\n";
+        echo _tab(1) . "{\n";
+        echo _tab(2) . "//TODO nothing to do here\n";
+        echo _tab(1) . "}\n";
+
 
         //提取add个fetch的关键函数
         foreach ($model->fun_list as $o_fun) {
@@ -177,26 +173,29 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 
         SeasLog::info("新建数据Form");
         _fun_comment("新建数据", 1);
-
-        echo _tab(1) . "public function newAction() {\n";
+        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
+        echo _tab(1) . "public function addAction() {\n";
         echo _tab(2) . "\$this->assign(\"page_title\",\"新建{$model->title}\");\n";
         _fun_comment("启用CSRF预防", 2);
         echo _tab(2) . "\$this->_beforeFormEdit(\"{$lc_model_name}_new\");\n";
-        echo _tab(2) . "\$a_info = array();\n";
-        echo _tab(2) . "//TODO 可能需要获取上一个记录剩余的数据\n";
 
+        echo _tab(2) . "\$a_info = array();\n";
+        echo _tab(2) . "\$a_info['id'] = '';\n";
+        foreach($a_param_key as $key){
+            echo _tab(2) . "\$a_info['{$key}'] = '';\n";
+        }
+        echo _tab(2) . "//TODO 可能需要获取上一个记录剩余的数据\n";
         echo _tab(2) . "\$this->assign(\"a_info\",\$a_info);\n";
         echo _tab(2) . "//TODO其他需要预先输出的参数\n";
         echo _tab(1) . "}\n";
 
-        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
 
 
         SeasLog::info("Form保存");
         _fun_comment("Form保存", 1);
         echo _tab(1) . "public function saveAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!\$this->_beforeFormPost(\"{$lc_model_name}_new\")){\n";
+        echo _tab(2) . "if (!\$this->_beforeFormSave(\"{$lc_model_name}_new\")){\n";
         echo _tab(3) . "return \$this->_errRedirect('url_{$lc_model_name}_list','CSRF');\n";
         echo _tab(2) . "}\n";
 
@@ -233,7 +232,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(1) . "public function ajaxSaveAction() {\n";
 
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!\$this->_beforeAjaxPost(\"ajax_{$lc_model_name}_new\")){\n";
+        echo _tab(2) . "if (!\$this->_beforeAjaxSave(\"ajax_{$lc_model_name}_new\")){\n";
         echo _tab(3) . "return \$this->_errAjax('CSRF');\n";
         echo _tab(2) . "}\n";
 
@@ -269,15 +268,15 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             if ($this->isIntType($o_field->type) || $this->isBoolType($o_field->type)) {
                 $d_value = ($d_value == "") ? 0 : (1 * $d_value);
                 if ($method == "get") {
-                    echo _tab(2) . "{$param} = \$this->request->get(\"v_{$key}\",\"int\",{$d_value});\n";
+                    echo _tab(2) . "{$param} = \$this->request->get(\"{$key}\",\"int\",{$d_value});\n";
                 } else {
-                    echo _tab(2) . "{$param} = \$this->request->getPost(\"v_{$key}\",\"int\",{$d_value});\n";
+                    echo _tab(2) . "{$param} = \$this->request->getPost(\"{$key}\",\"int\",{$d_value});\n";
                 }
             } else {
                 if ($method == "get") {
-                    echo _tab(2) . "{$param} = \$this->request->get(\"v_{$key}\",\"string\",\"{$d_value}\");\n";
+                    echo _tab(2) . "{$param} = \$this->request->get(\"{$key}\",\"string\",\"{$d_value}\");\n";
                 } else {
-                    echo _tab(2) . "{$param} = \$this->request->getPost(\"v_{$key}\",\"string\",\"{$d_value}\");\n";
+                    echo _tab(2) . "{$param} = \$this->request->getPost(\"{$key}\",\"string\",\"{$d_value}\");\n";
                 }
             }
             if ($this->isBlobType($o_field->type)) {
@@ -293,7 +292,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                 echo _tab(2) . "//TODO 验证正则表达式 {$o_field->regexp};\n";
             }
 
-            echo _tab(2) . "SeasLog::debug(\"GetParam-({$key})--(\" + {$param} + \")\");\n";
+            echo _tab(2) . "SeasLog::debug(\"GetParam-({$key})--(\" . {$param} . \")\");\n";
             $ii++;
         }
 
@@ -323,7 +322,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("FORM删除", 1);
         echo _tab(1) . "public function deleteAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!\$this->_beforeFormPost(\"{$lc_model_name}_delete\")){\n";
+        echo _tab(2) . "if (!\$this->_beforeFormSave(\"{$lc_model_name}_delete\")){\n";
         echo _tab(3) . "return \$this->_errRedirect('url_{$lc_model_name}_list','CSRF');\n";
         echo _tab(2) . "}\n";
 
@@ -352,7 +351,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("ajax删除", 1);
         echo _tab(1) . "public function ajaxDeleteAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!\$this->_beforeAjaxPost(\"ajax_{$lc_model_name}_delete\")){\n";
+        echo _tab(2) . "if (!\$this->_beforeAjaxSave(\"ajax_{$lc_model_name}_delete\")){\n";
         echo _tab(3) . "return \$this->_errAjax('CSRF');\n";
         echo _tab(2) . "}\n";
 
@@ -400,7 +399,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(1) . "public function editAction() {\n";
 
         _fun_comment("启用CSRF预防", 2);
-        echo _tab(2) . "if (!\$this->_beforeFormPost(\"{$lc_model_name}_edit\")){\n";
+        echo _tab(2) . "if (!\$this->_beforeFormSave(\"{$lc_model_name}_edit\")){\n";
         echo _tab(3) . "return \$this->_errRedirect('url_{$lc_model_name}_list','CSRF');\n";
         echo _tab(2) . "}\n";
 
@@ -429,7 +428,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("FORM更新", 1);
         echo _tab(1) . "public function modifyAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!\$this->_beforeFormPost(\"{$lc_model_name}_edit\")){\n";
+        echo _tab(2) . "if (!\$this->_beforeFormSave(\"{$lc_model_name}_edit\")){\n";
         echo _tab(3) . "return \$this->_errRedirect('url_{$lc_model_name}_list','CSRF');\n";
         echo _tab(2) . "}\n";
 
@@ -473,7 +472,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("ajax更新", 1);
         echo _tab(1) . "public function ajaxModifyAction() {\n";
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!\$this->_beforeAjaxPost(\"ajax_{$lc_model_name}_edit\")){\n";
+        echo _tab(2) . "if (!\$this->_beforeAjaxSave(\"ajax_{$lc_model_name}_edit\")){\n";
         echo _tab(3) . "return \$this->_errAjax('CSRF');\n";
         echo _tab(2) . "}\n";
 
@@ -601,7 +600,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         list($has_pager, $is_pager_size_input, $pager_size) = $this->parsePager($model, $fun);
 
         _fun_comment("获取列表用于显示", 1);
-        echo _tab(1) . "public function listAction() {\n";
+        echo _tab(1) . "public function listsAction() {\n";
 
         echo _tab(2) . "\$t1 = microtime(true);\n";
         _fun_comment("获取GET参数", 2);
@@ -643,20 +642,20 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         $ii = count($a_w_param_use);
         if ($has_order) {
             if ($is_order_by_input) {
-                echo _warp2join($ii) . _tab(5) . "v_order_by";
+                echo _warp2join($ii) . _tab(5) . "\$v_order_by";
                 $ii++;
             }
             if ($is_order_by_input) {
-                echo _warp2join($ii) . _tab(5) . "v_order_dir";
+                echo _warp2join($ii) . _tab(5) . "\$v_order_dir";
                 $ii++;
             }
         }
         //6666
         if ($has_pager) {
-            echo _warp2join($ii) . _tab(5) . "i_page";
+            echo _warp2join($ii) . _tab(5) . "\$i_page";
             $ii++;
             if ($is_pager_size_input) {
-                echo _warp2join($ii) . _tab(5) . "i_page_size";
+                echo _warp2join($ii) . _tab(5) . "\$i_page_size";
                 $ii++;
             }
         }
@@ -678,28 +677,20 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             if ($has_order) {
                 if ($is_order_by_input) {
                     echo _tab(2) . "\$this->assign(\"curr_order_by\", v_order_by);\n";
-                    $a_param_return["curr_order_by"] = "v_order_by";
+                    $a_param_return["curr_order_by"] = "\$v_order_by";
                 }
                 if ($is_order_by_input) {
                     echo _tab(2) . "\$this->assign(\"curr_order_dir\", v_order_dir);\n";
-                    $a_param_return["curr_order_dir"] = "v_order_dir";
+                    $a_param_return["curr_order_dir"] = "\$v_order_dir";
                 }
             }
             //6666
-            //if ($has_pager) {
-            echo _tab(2) . "\$this->assign(\"curr_page\", \$i_page);\n";
-            $a_param_return["curr_page"] = "i_page";
-            if ($is_pager_size_input) {
-                echo _tab(2) . "\$this->assign(\"curr_page_size\", \$i_page_size);\n";
-                $a_param_return["curr_page_size"] = "i_page_size";
-            }
-            //}
             _fun_comment("分页", 2);
-            echo _tab(2) . "\$url_this = \$this->_pool['{$model_name}_list']. \"?__foo__=bar\";\n";
+            echo _tab(2) . "\$url_this = \$this->_pool['url_{$model_name}_lists']. \"?__foo__=bar\";\n";
             foreach ($a_param_return as $key => $a_p_return) {
                 echo _tab(2) . "\$url_this .= \"&{$key}=\" . $a_p_return ;\n";
             }
-            echo _tab(4) . "+ \"&\";\n";
+            echo _tab(2) . "\$url_this .= \"&\";\n";
             echo _tab(2) . "\$this->_pager(\$url_this, \$i_count, \$i_page, \$i_page_size);\n";
 
             echo _tab(2) . "\$this->assign('need_pager', 1);\n";
@@ -737,7 +728,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         file_put_contents($_target, $data);
 
         SeasLog::info("列表页模板--{$model_name}");
-        $_target = $view_model_dir . DS . "{$model_name}_list.volt";
+        $_target = $view_model_dir . DS . "lists.volt";
         ob_start();
         $this->makeHtmlList($model);
         $data = ob_get_contents();
@@ -745,7 +736,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         file_put_contents($_target, $data);
 
         SeasLog::info("新建页模板--{$model_name}");
-        $_target = $view_model_dir . DS . "{$model_name}_new.volt";
+        $_target = $view_model_dir . DS . "add.volt";
         ob_start();
         $this->makeHtmlEdit($model);
         $data = ob_get_contents();
@@ -753,7 +744,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         file_put_contents($_target, $data);
 
         SeasLog::info("编辑页模板--{$model_name}");
-        $_target = $view_model_dir . DS . "{$model_name}_edit.volt";
+        $_target = $view_model_dir . DS . "edit.volt";
         ob_start();
         $this->makeHtmlEdit($model);
         $data = ob_get_contents();
@@ -761,7 +752,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         file_put_contents($_target, $data);
 
         SeasLog::info("详情页模板--{$model_name}");
-        $_target = $view_model_dir . DS . "{$model_name}_detail.volt";
+        $_target = $view_model_dir . DS . "detail.volt";
         ob_start();
         $this->makeHtmlDetail($model);
         $data = ob_get_contents();
@@ -897,15 +888,15 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
      */
     function makeHtmlList($model)
     {
-        if ($this->fun_add == null) {
+        if ($this->fun_list == null) {
             return;
         }
         $model_name = $model->name;
         $uc_model_name = ucfirst($model_name);
         $lc_model_name = strtolower($model_name);
         $this->_makeHtmlHeader($model);
-        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $this->fun_add);
 
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $this->fun_list);
         ?>
         <session class="content-header">
             <div class="container-fluid">
@@ -937,7 +928,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         <session class="content">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-12">
                         <div class="card card-success card-outline">
                             <div class="card-header">
                                 <h3 class="card-title">
@@ -963,19 +954,18 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                                 <form method="get"
                                       action=""
                                       id="form_main"
-                                      action="{{ url_<?= $model_name ?>_list }}">
+                                      action="{{ url_<?= $model_name ?>_lists }}">
                                     <div class="form-row">
                                         <?php
 
-                                        foreach ($model->field_list as $field) {
+                                        foreach ($a_w_param_field as $field) {
                                             /* @var MyField $field */
+                                            $key = $field->name;
+                                            $uc_key = ucfirst($key);
                                             if ($field->input_hash != "") {
-                                                $key = $field->name;
-                                                $uc_key = ucfirst($key);
-
                                                 ?>
                                                 <div class="col">
-                                                    <label for="ipt_<?= $key ?>"><?= $model->title ?></label>
+                                                    <label for="ipt_<?= $key ?>"><?= $field->title ?></label>
 
                                                     <select class="form-control"
                                                             name="<?= $key ?>"
@@ -997,55 +987,41 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 
                                                 </div>
                                                 <?php
-                                            }
-                                        } ?>
+                                            } else if ($field->type == Constant:: DB_FIELD_TYPE_DATE || $field->type == Constant:: DB_FIELD_TYPE_TIME || $field->type == Constant:: DB_FIELD_TYPE_DATETIME) {
 
-                                        <div class="col">
-                                            <label for="iptKw">关键字TODO</label>
-                                            <input type="text" class="form-control mr-sm-2"
-                                                   id="iptKw"
-                                                   name="kw"
-                                                   placeholder="关键字"
-                                                   value="{{ curr_kw }}"/>
-                                        </div>
-
-                                        <div class="col">
-                                            <label for="date_from">开始日</label>
-                                            <div class="input-group mr-sm-2">
-                                                <div class="input-group-prepend"
-                                                     id="h_date_from">
-                                                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                                                </div>
-                                                <input type="text"
-                                                       class="form-control"
-                                                       id="date_from"
-
-                                                       name="date_from"
-                                                       placeholder="开始日期"
-                                                       value="{{ curr_date_from }}"
-                                                />
-
-                                            </div>
-                                        </div>
-                                        <div class="col">
-                                            <label for="date_to">结束日</label>
-                                            <div class="input-group mr-sm-2">
-                                                <div class="input-group-prepend">
-                                                    <div class="input-group-text" id="h_date_to"><i
-                                                                class="fa fa-calendar"></i>
+                                                ?>
+                                                <div class="col">
+                                                    <label for="ipt_<?= $key ?>"><?= $field->title ?></label>
+                                                    <div class="input-group mr-sm-2">
+                                                        <div class="input-group-prepend">
+                                                            <div class="input-group-text"><i class="fa fa-calendar"></i>
+                                                            </div>
+                                                        </div>
+                                                        <input type="text"
+                                                               class="form-control"
+                                                               name="<?= $key ?>"
+                                                               id="ipt_<?= $key ?>"
+                                                               placeholder="日期"
+                                                               value="{{ curr_<?= $key ?> }}"
+                                                        />
                                                     </div>
                                                 </div>
-                                                <input type="text"
-                                                       class="form-control"
-                                                       id="date_to"
-                                                       name="date_to"
+                                                <?php
+                                            } else {
 
-                                                       placeholder="结束日起"
-                                                       value="{{ curr_date_to }}"/>
+                                                ?>
+                                                <div class="col">
+                                                    <label for="ipt_<?= $key ?>"><?= $field->title ?></label>
+                                                    <input type="text" class="form-control mr-sm-2"
+                                                           name="<?= $key ?>"
+                                                           id="ipt_<?= $key ?>"
+                                                           placeholder=""
+                                                           value="{{ curr_<?= $key ?> }}"/>
+                                                </div>
 
-                                            </div>
-                                        </div>
-
+                                                <?php
+                                            }
+                                        } ?>
                                         <div class="col">
                                             <label>&nbsp;</label>
                                             <div class="">
@@ -1054,7 +1030,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                                                     查询
                                                 </button>
                                                 <a class="btn btn-secondary"
-                                                   href="{{ url_<?= $model_name ?>_list }}">
+                                                   href="{{ url_<?= $model_name ?>_lists }}">
                                                     <i class="fa fa-list"></i>
                                                     重置
                                                 </a>
@@ -1068,7 +1044,6 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </session>
@@ -1240,7 +1215,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item">
                                 <a href="#"
-                                   href="{{ url_<?= $model_name ?>_list }}"
+                                   href="{{ url_<?= $model_name ?>_lists }}"
                                    id="txt_curr_version_name">返回列表</a>
                             </li>
                             <li class="breadcrumb-item active" id="txt_curr_version_title">编辑</li>
@@ -1282,12 +1257,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                                   id="form_main"
                                   action="{{ url_<?= $model_name ?>_modify }}">
                                 <div class="card-body">
-                                    <input type="hidden"
-                                           readonly="readonly"
-                                           name="form_token__"
-                                           value='{{ __form_token__ }}'
-                                    />
-
+                                    {{ __form_token__ }}
                                     <input type="hidden"
                                            readonly="readonly"
                                            name="_id"
@@ -1312,8 +1282,6 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                                             <div class="col-sm-10">
 
                                                 <?php
-
-
                                                 switch ($o_field->input_by) {
                                                     //多行文本
                                                     case Constant::DB_FIELD_INPUT_MULTI_TEXT:
@@ -1383,10 +1351,10 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                         <?php
                         if ($has_upload) {
                             ?>
-                            {% include \"layouts/block_upload_avatar.volt\" %}
+                            {% include "layouts/block_upload_avatar.volt" %}
                             <?php
                         } ?>
-                        {% include \"layouts/block_confirm_delete.volt\" %}
+                        {% include "layouts/block_confirm_delete.volt" %}
                     </div>
                 </div>
             </div>
@@ -1400,7 +1368,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             var _g_token = "[[${op_token__}]]";
             $(function () {
                 //TODO add js logic code here
-                setupFormSubmit();
+               App.setupFormSubmit("#form_main");
             });
         </script>
         <?php
@@ -1449,7 +1417,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             ?>
             <select class="form-control select2"
                     name="<?= $key ?>"
-                    id="ipt_<?= $key ?>"
+                    id="ipt_<?= $key ?>">
             <option value="">不限</option>
             {% for k, v in m_<?= $uc_key ?>_KV %}
             <option value="{{ k }}"
@@ -1458,7 +1426,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             {% endif %}
             >
             {{ v }}
-            </tr>
+                </option>
             {% endfor %}
 
             </select>
@@ -1472,6 +1440,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         $uc_key = ucfirst($key);
         $val1 = "value=\"{{ a_info['{$key}'] }}\"";
         $a_hash = explode(";", $field->input_hash);
+        $required = ($field->required == 1) ? 'required=required' : '';
         if ($for_show) {
             ?>
             <input type="text" class="form-control "
@@ -1538,6 +1507,16 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         $uc_key = ucfirst($key);
         $val1 = "value=\"{{ a_info['{$key}'] }}\"";
         $required = ($field->required == 1) ? 'required=required' : '';
+
+        $has_filter = "";
+        $this_filter = "";
+        if($field->filter != ""){
+            if($field->filter != Constant::DB_FIELD_FILTER_NULL){
+                $has_filter = "has_filter";
+                $this_filter = "filter=\"DATE\"";
+            }
+        }
+
         if ($for_show) {
             ?>
             <input type="text" class="form-control "
@@ -1547,10 +1526,11 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             <?php
         } else {
             ?>
-            <div class="input-group date has_data" id="data_ipt_<?= $key ?>" data-target-input="nearest">
-                <input type="text" class="form-control datetimepicker-input"
+            <div class="input-group <?=$has_filter?> date has_data" id="data_ipt_<?= $key ?>" data-target-input="nearest">
+                <input type="text" class="form-control datetimepicker-input "
                        name="<?= $key ?>"
                        id="ipt_<?= $key ?>"
+                    <?= $this_filter ?>
                     <?= $val1 ?>
                     <?= $required ?>
                        data-target="#data_ipt_<?= $key ?>">
@@ -1559,6 +1539,13 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                      data-toggle="datetimepicker">
                     <div class="input-group-text"><i class="fa fa-calendar-alt"></i></div>
                 </div>
+            </div>
+
+            <div class="invalid-feedback">
+
+            </div>
+            <div class="valid-feedback">
+
             </div>
 
             <?php
@@ -1571,6 +1558,14 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         $uc_key = ucfirst($key);
         $val1 = "value=\"{{ a_info['{$key}'] }}\"";
         $required = ($field->required == 1) ? 'required=required' : '';
+        $has_filter = "";
+        $this_filter = "";
+        if($field->filter != ""){
+            if($field->filter != Constant::DB_FIELD_FILTER_NULL){
+                $has_filter = "has_filter";
+                $this_filter = "filter=\"DATETIME\"";
+            }
+        }
         if ($for_show) {
             ?>
             <input type="text" class="form-control "
@@ -1580,18 +1575,26 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             <?php
         } else {
             ?>
-            <div class="input-group date has_datatime" id="datatime_ipt_<?= $key ?>" data-target-input="nearest">
-                <input type="text" class="form-control datetimepicker-input"
+            <div class="input-group <?=$has_filter?> date has_datatime" id="datatime_ipt_<?= $key ?>" data-target-input="nearest">
+                <input type="text" class="form-control datetimepicker-input "
                        name="<?= $key ?>"
                        id="ipt_<?= $key ?>"
+                    <?= $this_filter ?>
                     <?= $val1 ?>
                     <?= $required ?>
-                       data-target="#data_ipt_<?= $key ?>">
+                       data-target="#datatime_ipt_<?= $key ?>">
                 <div class="input-group-append"
                      data-target="#datatime_ipt_<?= $key ?>"
                      data-toggle="datetimepicker">
                     <div class="input-group-text"><i class="fa fa-clock"></i></div>
                 </div>
+            </div>
+
+            <div class="invalid-feedback">
+
+            </div>
+            <div class="valid-feedback">
+
             </div>
 
             <?php
@@ -1628,6 +1631,18 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         $uc_key = ucfirst($key);
         $val1 = "value=\"{{ a_info['{$key}'] }}\"";
         $required = ($field->required == 1) ? 'required=required' : '';
+        $has_filter = "";
+        $this_filter = "";
+        $this_filter_reg = "";//
+        if($field->filter != ""){
+            if($field->filter != Constant::DB_FIELD_FILTER_NULL){
+                $has_filter = "has_filter";
+                $this_filter = "filter=\"{$field->filter}\"";
+                if($field->filter == Constant::DB_FIELD_FILTER_REGEXP){
+                    $this_filter_reg = "filter_reg=\"{$field->regexp}\"";
+                }
+            }
+        }
         if ($for_show) {
             ?>
             <input type="text" class="form-control "
@@ -1637,12 +1652,21 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
             <?php
         } else {
             ?>
-            <input type="text" class="form-control "
+            <input type="text" class="form-control <?=$has_filter?>"
                    name="<?= $key ?>"
                    id="ipt_<?= $key ?>"
+                <?= $this_filter ?>
+                <?= $this_filter_reg ?>
                 <?= $val1 ?>
                 <?= $required ?>
             />
+
+            <div class="invalid-feedback">
+
+            </div>
+            <div class="valid-feedback">
+
+            </div>
 
             <?php
         }
@@ -1677,7 +1701,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item">
-                                <a href="{{ url_<?= $model_name ?>_list }}"
+                                <a href="{{ url_<?= $model_name ?>_lists }}"
                                    id="txt_curr_version_name">返回列表</a>
                             </li>
                             <li class="breadcrumb-item active" id="txt_curr_version_title">详情</li>
@@ -1871,6 +1895,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         'url_dashboard' => 'default/dashboard',
         //登陆后主框架默认内容
         'url_home' => 'default/home',
+        
 WEB;
         echo $webapp_head;
         $package = $this->final_package;
@@ -1879,9 +1904,9 @@ WEB;
             $uc_model = ucfirst($model_name);
             $lc_model = strtolower($model_name);
             echo "\n";
-            echo _tab(1) . "//" . $model->title ."\n";
+            echo _tab(1) . "//" . $model->title . "\n";
             ?>
-            'url_<?= $lc_model ?>_new' => '<?= $lc_model ?>/new',
+            'url_<?= $lc_model ?>_add' => '<?= $lc_model ?>/add',
             'url_<?= $lc_model ?>_save' => '<?= $lc_model ?>/save',
             'url_<?= $lc_model ?>_ajax_save' => '<?= $lc_model ?>/ajax_save',
             'url_<?= $lc_model ?>_edit' => '<?= $lc_model ?>/edit',
@@ -1889,7 +1914,7 @@ WEB;
             'url_<?= $lc_model ?>_ajax_modify' => '<?= $lc_model ?>/ajax_modify',
             'url_<?= $lc_model ?>_delete' => '<?= $lc_model ?>/delete',
             'url_<?= $lc_model ?>_ajax_delete' => '<?= $lc_model ?>/ajax_delete',
-            'url_<?= $lc_model ?>_list' => '<?= $lc_model ?>/list',
+            'url_<?= $lc_model ?>_lists' => '<?= $lc_model ?>/lists',
             <?php
         }
         ?>
@@ -1931,31 +1956,30 @@ WEB;
             $uc_model = ucfirst($model_name);
             $lc_model = strtolower($model_name);
             ?>
-        '<?=$lc_model?>' => array(
-            'name' => '<?=$model->title?>管理',
-            'icon' => 'fas fa-<?=$model->fa_icon?>',
+            '<?= $lc_model ?>' => array(
+            'name' => '<?= $model->title ?>管理',
+            'icon' => 'fas fa-<?= $model->fa_icon ?>',
             'link' => "#",
             'sub_menu' => array(
-                '<?=$lc_model?>_edit' => array(
-                    'name' => '新建<?=$model->title?>',
-                    'link' => $a_urls['url_<?=$lc_model?>_new'],
-                    'icon' => 'far fa-circle text-success'
-                ),
+            '<?= $lc_model ?>_edit' => array(
+            'name' => '新建<?= $model->title ?>',
+            'link' => $a_urls['url_<?= $lc_model ?>_add'],
+            'icon' => 'far fa-circle text-success'
+            ),
 
-                '<?=$lc_model?>_list' => array(
-                    'name' => '<?=$model->title?>列表',
-                    'link' => $a_urls['url_<?=$lc_model?>_list'],
-                    'icon' => 'far fa-circle text-danger'
-                ),
+            '<?= $lc_model ?>_list' => array(
+            'name' => '<?= $model->title ?>列表',
+            'link' => $a_urls['url_<?= $lc_model ?>_lists'],
+            'icon' => 'far fa-circle text-danger'
+            ),
             )
-        ),
-<?php
+            ),
+            <?php
         }
         echo ");}";
         $cc_data = ob_get_contents();
         ob_end_clean();
         file_put_contents($_target, $cc_data);
-
 
 
     }

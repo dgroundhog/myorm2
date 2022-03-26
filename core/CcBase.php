@@ -143,7 +143,7 @@ abstract class CcBase
             echo _warp2join($ii) . _tab(5) . "{$param}";
             $ii++;
         }
-       // echo "\n";
+        // echo "\n";
         //echo _tab(1);
     }
 
@@ -227,11 +227,31 @@ abstract class CcBase
                     continue;
                 }
 
+               // var_dump($cond->type, $cond->v1_type, $cond->v2_type);
                 /* @var MyCond $cond */
                 switch ($cond->type) {
                     case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
                     case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
                     case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
+                        if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                            $o_field = $model->field_list[$cond->field];
+                            list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
+                            $a_param_comment[] = $s_param1;
+                            $a_param_define[] = $s_param2;
+                            $a_param_use[] = $s_param3;
+                            $a_param_type[] = $s_param4;
+                            $a_param_field[] = $o_field;
+                            $jj++;
+                            //执行2次
+                            list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
+                            $a_param_comment[] = $s_param1;
+                            $a_param_define[] = $s_param2;
+                            $a_param_use[] = $s_param3;
+                            $a_param_type[] = $s_param4;
+                            $a_param_field[] = $o_field;
+                            $jj++;
+                        }
+                        break;
                     case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
                     case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
                         if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
@@ -288,6 +308,25 @@ abstract class CcBase
                             case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
                             case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
                             case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
+                                if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                    $o_field = $model->field_list[$cond->field];
+                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
+                                    $a_param_comment[] = $s_param1;
+                                    $a_param_define[] = $s_param2;
+                                    $a_param_use[] = $s_param3;
+                                    $a_param_type[] = $s_param4;
+                                    $a_param_field[] = $o_field;
+                                    $jj++;
+                                    //执行2次
+                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
+                                    $a_param_comment[] = $s_param1;
+                                    $a_param_define[] = $s_param2;
+                                    $a_param_use[] = $s_param3;
+                                    $a_param_type[] = $s_param4;
+                                    $a_param_field[] = $o_field;
+                                    $jj++;
+                                }
+                                break;
                             case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
                             case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
                                 if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
@@ -950,7 +989,8 @@ abstract class CcBase
      * @param $a_models
      * @return void
      */
-    public function makeWebConfig($a_models){
+    public function makeWebConfig($a_models)
+    {
 
     }
 
