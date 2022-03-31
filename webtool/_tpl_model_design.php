@@ -9,7 +9,7 @@
                     <div class="card-header">
                         <h3 class="card-title">
                             <a name="model_{$model.uuid}">
-                                <i class="fa fa-cubes"></i> ({$model_inc++} / {$model_total}) 模型设计 <small>{$model.name}
+                                <i class="fa fa-fw  fa-{$model.fa_icon}"></i>     ({$model_inc++} / {$model_total}) 模型设计 <small>{$model.name}
                                     - {$model.title}</small>
                             </a>
                         </h3>

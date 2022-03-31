@@ -28,8 +28,8 @@ class JavaServletMvc extends MvcBase
 
         echo "package {$this->final_package}.models;\n";
         echo "import {$this->final_package}.beans.{$uc_model_name}Bean;\n";
-        echo "import {$this->final_package}.model.MvcBase;\n";
-
+        echo "import com.yzzq.mvc.ModelBase;\n";
+        echo "import com.yzzq.mvc.DbMysql;\n";
 
         echo "import org.slf4j.Logger;\n";
         echo "import org.slf4j.LoggerFactory;\n";
@@ -242,7 +242,7 @@ class JavaServletMvc extends MvcBase
         echo _tab(2) . "int iRet = {$fun_name1}(";
         $ii = 0;
         foreach ($a_param_field as $field) {
-            echo _warp2join($ii) . _tab(5) . "v_{$lc_model_name}Bean->{$field->name}";
+            echo _warp2join($ii) . _tab(5) . "v_{$lc_model_name}Bean.{$field->name}";
             $ii++;
         }
         echo "\n";
@@ -492,7 +492,7 @@ class JavaServletMvc extends MvcBase
         echo _tab(2) . "int iRet = {$fun_name1}(";
         $ii = 0;
         foreach ($a_u_param_field as $field) {
-            echo _warp2join($ii) . _tab(5) . "v_{$uc_model_name}Bean->{$field->name}";
+            echo _warp2join($ii) . _tab(5) . "v_{$uc_model_name}Bean.{$field->name}";
             $ii++;
         }
         foreach ($a_w_param_use as $param) {
@@ -962,21 +962,21 @@ class JavaServletMvc extends MvcBase
             //5555
             if ($has_order) {
                 if ($is_order_by_input) {
-                    echo _tab(4) . "st.setString({$ii}, {v_order_by}); \n";
+                    echo _tab(4) . "st.setString({$ii}, v_order_by); \n";
                     $ii++;
                 }
                 if ($is_order_by_input) {
-                    echo _tab(4) . "st.setString({$ii}, {v_order_dir}); \n";
+                    echo _tab(4) . "st.setString({$ii}, v_order_dir); \n";
                     $ii++;
                 }
             }
             //6666
             if ($has_pager) {
-                echo _tab(4) . "st.setInt({$ii}, {v_page}); \n";
+                echo _tab(4) . "st.setInt({$ii}, v_page); \n";
                 $ii++;
                 if ($is_pager_size_input) {
 
-                    echo _tab(4) . "st.setInt({$ii}, {v_page_size}); \n";
+                    echo _tab(4) . "st.setInt({$ii}, v_page_size); \n";
                     $ii++;
                 }
             }
@@ -984,11 +984,11 @@ class JavaServletMvc extends MvcBase
             echo "\n";
             echo _tab(4) . "rs = st.executeQuery();\n";
             echo _tab(4) . "while (rs.next()) {\n";
-            echo _tab(2) . "{$uc_model_name}Bean mBean = new {$uc_model_name}Bean();\n";
+            echo _tab(5) . "{$uc_model_name}Bean mBean = new {$uc_model_name}Bean();\n";
             foreach ($model->field_list as $key => $o_field) {
                 echo $this->_procResultBean($o_field->name, $o_field->type, 5);
             }
-            echo _tab(5) . "vList.add({$uc_model_name}Bean);\n";
+            echo _tab(5) . "vList.add(mBean);\n";
             echo _tab(4) . "}\n";
 
             echo _tab(4) . "logger.debug(\"call {$proc_name} done\");\n";

@@ -16,17 +16,17 @@
         <li class="nav-item d-none d-sm-inline-block">
             <a href="#" class="nav-link">构建方案 </a>
         </li>
+
+        <li class="nav-item d-none d-sm-inline-block btn_sync_project">
+            <a href="###" class="nav-link"> <i class="fa fa-save"></i> 立即同步 </a>
+        </li>
     </ul>
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
         <!-- Navbar Search -->
 
-        <li class="nav-item">
-            <a class="nav-link btn_sync_project"   href="##" role="button"  >
-                <i class="fa fa-save"></i>
-            </a>
-        </li>
+
 
         <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" href="#" role="button">

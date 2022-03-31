@@ -8,4 +8,17 @@
 /project2..
 
 
-cp -rf G:/build/20220326193342/src/*  E:/xampp/htdocs/phal/
+cd D:/build/20220330105535
+cp -rf ./src/*  D:/xampp/htdocs/phal/
+cp -rf ./doc/sql/init_db.sql  ./init_db.sql
+cat ./doc/sql/*cc_table.sql > ./init_t.sql
+cat ./doc/sql/*reset_table.sql > ./reset_t.sql
+cat ./doc/sql/*_proc.sql > ./init_p.sql
+echo done!
+
+
+cd D:/build/20220330172329
+cp -rf ./src/*  D:/face/arc_java_demo/src/
+echo done!
+
+ 

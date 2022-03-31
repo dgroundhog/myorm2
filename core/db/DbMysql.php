@@ -43,7 +43,65 @@ class DbMysql extends DbBase
 
         _db_comment("for events", true);
         echo "SET GLOBAL event_scheduler = ON;\n";
+        _db_comment("for debugs", true);
+        $sdebug = <<<DDD
+DROP TABLE IF EXISTS `t__debug`;
+CREATE TABLE `t__debug` (
+    `id`  BIGINT(11) NOT NULL AUTO_INCREMENT,
+    `t`   DATETIME      DEFAULT NULL,
+    `tag` VARCHAR(64)   DEFAULT NULL,
+    `msg` VARCHAR(2048) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY idx (`tag`, `t`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = {$db->charset}
+  COLLATE {$db->charset}_general_ci;
 
+-- ----------------------------
+-- Procedure structure for p__debug
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `p__debug`;
+DELIMITER ;;
+CREATE DEFINER = '{$db->user}'@'{$db->host}' PROCEDURE `p__debug`(  
+    IN `v_tag` VARCHAR(64) CHARSET {$db->charset},
+    IN `v_msg` VARCHAR(2048) CHARSET {$db->charset}
+)
+BEGIN
+    INSERT INTO t__debug(`t`, `tag`, `msg`) VALUES (NOW(), v_tag, v_msg);
+END
+;;
+DELIMITER ;
+
+-- ----------------------------
+-- Procedure structure for p__debug_clear
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `p__debug_clear`;
+DELIMITER ;;
+CREATE DEFINER=`{$db->user}`@`{$db->host}` PROCEDURE `p__debug_clear`(IN `i_days` INT)
+BEGIN
+    SET @sql_query = 'DELETE  FROM `t_debug` WHERE 1=1 ';
+    SET @sql_query = CONCAT(@sql_query, ' AND `t` < date_add(now(), interval - ', i_days, ' day)');
+    CALL p__debug('p__debug_clear', @sql_query);
+    PREPARE stmt FROM @sql_query;
+    EXECUTE stmt;
+    COMMIT;
+END
+;;
+DELIMITER ;
+
+-- ----------------------------
+-- Event structure for auto__delete_debug_log
+-- ----------------------------
+DROP EVENT IF EXISTS `auto__delete_debug_log`;
+DELIMITER ;;
+CREATE DEFINER='{$db->user}'@'{$db->host}' EVENT `auto__delete_debug_log` 
+    ON SCHEDULE EVERY 1 DAY STARTS '2022-01-01 12:12:12' 
+    ON COMPLETION PRESERVE ENABLE COMMENT '自动删除30天以前的sql调试数据' 
+    DO CALL p__debug_clear ( 30 )
+;;
+DELIMITER ;
+DDD;
+        echo $sdebug;
         _db_comment("for functions", true);
         _db_comment("TODO");
 
@@ -223,7 +281,7 @@ class DbMysql extends DbBase
         echo "ENGINE=InnoDB\n";
         echo "DEFAULT CHARSET={$charset}\n";
         echo "COLLATE {$charset}_GENERAL_CI\n";
-        echo "COMMENT='{$model->title}表';";
+        echo "COMMENT='{$model->title}表';\n\n";
     }
 
     /**

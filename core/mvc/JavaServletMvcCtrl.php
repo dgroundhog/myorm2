@@ -1975,7 +1975,7 @@ public function makeWebConfig($a_models)
 {
 
 SeasLog::info("创建Web.xml--");
-$_target = $this->odir_config . DS . "web_url.php";
+$_target = $this->odir_config . DS . "web.xml";
 ob_start();
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 

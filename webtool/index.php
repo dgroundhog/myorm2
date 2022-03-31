@@ -7,14 +7,15 @@ if (!defined("DS")) {
 if (!defined("WT_ROOT")) {
     define('WT_ROOT', realpath(dirname(__FILE__)));
 }
-define('MEM_DISK_SPEED_UP', "G:");
+define('MEM_DISK_SPEED_UP', "D:");
 //可以删除掉
-if (!defined("MEM_DISK_SPEED_UP")) {
-    SeasLog::setBasePath(WT_ROOT . DS . ".." . DS . "logs");
-}
-else{
-    SeasLog::setBasePath( MEM_DISK_SPEED_UP . DS ."logs");
-}
+//if (!defined("MEM_DISK_SPEED_UP")) {
+//    //SeasLog::setBasePath(WT_ROOT . DS . ".." . DS . "logs");
+//    SeasLog::setBasePath("D:/xampp/apache/logs");
+//}
+//else{
+//    SeasLog::setBasePath( MEM_DISK_SPEED_UP . DS ."logs");
+//}
 include_once(WT_ROOT . "/../core/Constant.php");
 include_once(WT_ROOT . "/../core/MyProject.php");
 include_once(WT_ROOT . "/../core/MyApp.php");

@@ -7,7 +7,7 @@ if (!defined("DS")) {
 if (!defined("WT_ROOT")) {
     define('WT_ROOT', realpath(dirname(__FILE__)));
 }
-SeasLog::setBasePath(WT_ROOT . DS . ".." . DS . "logs");
+//SeasLog::setBasePath(WT_ROOT . DS . ".." . DS . "logs");
 // img_upload.php
 // 'one_image' refers to your file input name attribute
 if (empty($_FILES['one_image'])) {
