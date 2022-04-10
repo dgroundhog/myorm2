@@ -24,6 +24,9 @@
                 <a href="###" class="btn btn-info"
                    onclick="javascript:App.dt.project.fieldEdit('{$field.uuid}');"
                 ><i class="fas fa-edit"></i> 改</a>
+                <a href="###" class="btn btn-success"
+                   onclick="javascript:App.dt.project.fieldCopy('{$field.uuid}');"
+                ><i class="fas fa-copy"></i> 复</a>
                 <a href="###" class="btn btn-danger"
                    onclick="javascript:App.dt.project.fieldDrop('{$field.uuid}');"
                 ><i class="fas fa-trash"></i> 删</a>

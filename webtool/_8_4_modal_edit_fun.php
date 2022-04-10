@@ -283,17 +283,17 @@
 
                                 </div>
                             </div>
-                            <div class="card-body p-1" id="block_having">
+                            <div class="card-body p-1" id="block_having" style="display: none;">
                                 <table class="table table-striped table-sm">
                                     <tr>
                                         <td>
                                             聚合健
                                         </td>
-                                        <td id="txt_having_type">{$cond.type}</td>
-                                        <td id="txt_having_v1_type">{$cond.v1_type}</td>
-                                        <td id="txt_having_v1">{$cond.v1}</td>
-                                        <td id="txt_having_v2_type">{$cond.v2_type}</td>
-                                        <td id="txt_having_v2">{$cond.v2}</td>
+                                        <td id="txt_having_type"></td>
+                                        <td id="txt_having_v1_type"></td>
+                                        <td id="txt_having_v1"></td>
+                                        <td id="txt_having_v2_type"></td>
+                                        <td id="txt_having_v2"></td>
 
                                         <td class="text-right py-0 align-middle">
                                             <div class="btn-group btn-group-sm" id="btn_drop_having">
@@ -315,7 +315,6 @@
                                         </td>
                                     </tr>
                                 </table>
-
                             </div>
                         </div>
                     </div>

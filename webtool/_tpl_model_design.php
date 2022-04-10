@@ -94,6 +94,10 @@
                                         ><i class="fas fa-edit"></i> 改</a>
                                         {/if}
 
+                                        <a href="###" class="btn btn-success"
+                                           onclick="javascript:App.dt.project.fieldCopy('{$field.uuid}','{$model.uuid}');"
+                                        ><i class="fas fa-copy"></i> 复</a>
+
                                         <a href="###" class="btn btn-danger"
                                            onclick="javascript:App.dt.project.fieldDrop('{$field.uuid}','{$model.uuid}');"
                                         ><i class="fas fa-trash"></i> 删</a>
@@ -387,9 +391,15 @@
 
                                 <td class="text-right py-0 align-middle">
                                     <div class="btn-group btn-group-sm">
+
                                         <a href="###" class="btn btn-info"
                                            onclick="javascript:App.dt.project.modelFunEdit('{$model.uuid}','{$fun.uuid}');"
                                         ><i class="fas fa-edit"></i> 改</a>
+
+                                        <a href="###" class="btn btn-success"
+                                           onclick="javascript:App.dt.project.modelFunCopy('{$model.uuid}','{$fun.uuid}');"
+                                        ><i class="fas fa-copy"></i> 复</a>
+
                                         <a href="###" class="btn btn-danger"
                                            onclick="javascript:App.dt.project.modelFunDrop('{$model.uuid}','{$fun.uuid}');"
                                         ><i class="fas fa-trash"></i> 删</a>

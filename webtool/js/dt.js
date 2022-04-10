@@ -23,12 +23,12 @@ App.dt = {};
  */
 App.dt.fail = function (_msg) {
     console.log(_msg)
-    toastr.error(_msg);
+    toastr.error(_msg, '错误警告', {positionClass: 'toast-bottom-left'});
 };
 
 App.dt.succ = function (_msg) {
     console.log(_msg)
-    toastr.success(_msg);
+    toastr.success(_msg, '操作成功', {positionClass: 'toast-bottom-left'});
 };
 
 
@@ -1598,7 +1598,7 @@ App.dt.project.buildCC = function (build_all) {
     sbf.append("&db=");
     sbf.append(encodeURIComponent(_sel_db));
     sbf.append("&all=");
-    sbf.append(build_all?"1":"0");
+    sbf.append(build_all ? "1" : "0");
 
 
     var _data = sbf.toString();
@@ -2505,8 +2505,7 @@ App.dt.project.fieldLoad = function () {
     var g_field_list = $("#table_field_list");
     g_field_list.html(res);
     g_field_list.sortable({
-        handle : ".fa-sort",
-        stop: function () {
+        handle: ".fa-sort", stop: function () {
             var _new_list = {};
             var iii = 0
             g_field_list.find(".field_row").each(function () {
@@ -2688,6 +2687,67 @@ App.dt.project.fieldEdit = function (_uuid, _model_id) {
     $('.select2').change();
 }
 
+
+/**
+ * 删除字段
+ */
+App.dt.project.fieldCopy = function (_uuid, _model_id) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    var _curr_model = null;
+    //需要区分全局还是局部
+    if (!App.su.isEmpty(_model_id)) {
+        _curr_model = self.project.getCurrModel(_model_id);
+        if (null == _curr_model) {
+            self.fail("未选择有效模型");
+            return;
+        }
+    }
+    if (App.su.isEmpty(_uuid)) {
+        self.fail("未选择字段");
+
+    } else {
+        var _new_uuid = App.su.maths.uuid.create();
+        if (!App.su.isEmpty(_model_id)) {
+
+            //_curr_model = self.project.getCurrModel(_model_id);
+            if (undefined != _curr_model.field_list[_uuid]) {
+                var _f1 = _curr_model.field_list[_uuid];
+
+                var _f2 = deepCopy(_f1);
+                _f2.uuid = _new_uuid
+                _f2.name = _f1.name + "2";
+                _f2.title = _f1.title + "2";
+                _curr_model.field_list[_new_uuid] = _f2;
+
+                self.succ("复制成功1-fieldDrop");
+            } else {
+                self.fail("复制失败1-fieldDrop");
+            }
+            _curr_app.model_list[_model_id] = _curr_model;
+            self.project.setCurrApp(_curr_app);
+        } else if (undefined != _curr_app.field_list[_uuid]) {
+            var _f1 = _curr_app.field_list[_uuid];
+            var _f2 = deepCopy(_f1);
+            _f2.uuid = _new_uuid
+            _f2.name = _f1.name + "2";
+            _f2.title = _f1.title + "2";
+            _curr_app.field_list[_new_uuid] = _f2;
+
+            self.project.setCurrApp(_curr_app);
+            self.succ("复制成功2-fieldDrop");
+        } else {
+            self.fail("复制失败2-fieldDrop");
+        }
+        self.project.fieldLoad();
+        self.project.modelLoad();
+    }
+}
+
 /**
  * 删除字段
  */
@@ -2762,6 +2822,10 @@ App.dt.project.modelLoad = function () {
     var res3 = tpl3.fetch(_curr_app);
     $("#block_model_menu").html(res3);
 
+    var tpl4 = new jSmart(self.getTpl('tpl_model_menu_top'));
+    var res4 = tpl4.fetch(_curr_app);
+    $("#block_top_nav").html(res4);
+
     //字段排序
     $(".m_sort_field_list").each(function () {
         var _mm = $(this);
@@ -2772,8 +2836,7 @@ App.dt.project.modelLoad = function () {
         }
         var _old_list = _model.field_list;
         _mm.sortable({
-            handle : ".fa-sort",
-            stop: function () {
+            handle: ".fa-sort", stop: function () {
                 var _new_list = {};
                 var iii = 0
                 _mm.find(".field_row").each(function () {
@@ -2810,8 +2873,7 @@ App.dt.project.modelLoad = function () {
         }
         var _old_list = _model.idx_list;
         _mm.sortable({
-            handle : ".fa-sort",
-            stop: function () {
+            handle: ".fa-sort", stop: function () {
                 var _new_list = {};
                 var iii = 0
                 _mm.find(".idx_row").each(function () {
@@ -2848,8 +2910,7 @@ App.dt.project.modelLoad = function () {
         }
         var _old_list = _model.fun_list;
         _mm.sortable({
-            handle : ".fa-sort",
-            stop: function () {
+            handle: ".fa-sort", stop: function () {
                 var _new_list = {};
                 var iii = 0
                 _mm.find(".fun_row").each(function () {
@@ -2879,8 +2940,7 @@ App.dt.project.modelLoad = function () {
     //模型排序
     var _sort_model_list = $("#table_model_list");
     _sort_model_list.sortable({
-        handle : ".fa-sort",
-        stop: function () {
+        handle: ".fa-sort", stop: function () {
             var _new_list = {};
             var iii = 0
             _sort_model_list.find(".model_row").each(function () {
@@ -3396,10 +3456,9 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
 
         self.project.curr_where = o_fun.where;
         self.project.modelFunWhereInit();
-
         self.project.curr_having = o_fun.group_having;
-        self.project.modelFunHavingInit();
     }
+    self.project.modelFunHavingInit();
     //需要操作的字段
     var sel_fun_field = $("#sel_fun_field");
     sel_fun_field.empty();
@@ -3417,6 +3476,42 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
     $("#modal_edit_fun").modal('show');
     $('.select2').change();
 }
+
+App.dt.project.modelFunCopy = function (model_id, fun_id) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    var _curr_model = self.project.getCurrModel(model_id);
+    console.log(_curr_model);
+    if (null == _curr_model) {
+        self.fail("未选择目标模型");
+        return;
+    }
+    if (App.su.isEmpty(fun_id)) {
+        self.fail("未选择函数");
+
+    } else {
+        if (undefined != _curr_model.fun_list[fun_id]) {
+            var _f1 = _curr_model.fun_list[fun_id];
+            var _new_uuid = App.su.maths.uuid.create();
+            var _f2 = deepCopy(_f1);
+            _f2.uuid = _new_uuid
+            _f2.name = _f1.name + "2";
+            _f2.title = _f1.title + "2";
+            _curr_model.fun_list[_new_uuid] = _f2;
+            _curr_app.model_list[model_id] = _curr_model;
+            if (self.project.setCurrApp(_curr_app)) {
+                self.succ("复制成功--modelFunCopy");
+                self.project.modelLoad();
+            } else {
+                self.fail("复制失败1-modelFunCopy");
+            }
+        } else {
+            self.fail("复制失败2-modelFunCopy");
+        }
+        self.project.modelLoad();
+    }
+}
+
 
 /**
  * 穿件基本的增删改查，注意
@@ -3583,14 +3678,16 @@ App.dt.project.modelFunWhereInit = function () {
  */
 App.dt.project.modelFunHavingInit = function () {
     var self = App.dt;
-    console.log(self.project.curr_having);
-    if (undefined != self.project.curr_having && self.project.curr_having != null) {
+    //console.log(self.project.curr_having);
+    if (undefined != self.project.curr_having && self.project.curr_having != null && self.project.curr_having.uuid != "") {
         $("#txt_having_type").html(self.project.curr_having.type);
         $("#txt_having_v1").html(self.project.curr_having.v1);
         $("#txt_having_v1_type").html(self.project.curr_having.v1_type);
         $("#txt_having_v2").html(self.project.curr_having.v2);
         $("#txt_having_v2_type").html(self.project.curr_having.v2_type);
         $("#btn_drop_having").show();
+        $("#block_having").show();
+
     } else {
         $("#txt_having_type").html("");
         $("#txt_having_v1").html("");
@@ -3598,6 +3695,7 @@ App.dt.project.modelFunHavingInit = function () {
         $("#txt_having_v2").html("");
         $("#txt_having_v2_type").html("");
         $("#btn_drop_having").hide();
+        $("#block_having").hide();
     }
 }
 
@@ -3862,7 +3960,7 @@ App.dt.project.modelFunHavingSave = function () {
     var _currCond = self.project.curr_having;
 
     var _now = App.su.datetime.getCurrentDateTime();
-    if (null == _currCond) {
+    if (undefined == _currCond || null == _currCond || App.su.isEmpty(_currCond.uuid)) {
         console.log("保存新配置");
         _currCond = new MyCond();
         _currCond.uuid = App.su.maths.uuid.create();
@@ -4070,8 +4168,6 @@ App.dt.init = function () {
     $("#btn_build_all").click(function () {
         self.project.buildCC(true);
     });
-
-
 
 
     /**
