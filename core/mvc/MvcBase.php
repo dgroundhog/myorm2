@@ -65,7 +65,7 @@ abstract class MvcBase extends CcBase implements  CcImpl
 
             //包主目录
             $this->odir_package  = $output_main . DS . "java". DS . $s_package_dirs;
-            $this->odir_resource = $output_main . DS . "resource";
+            $this->odir_resource = $output_main . DS . "resources";
             $this->odir_webapp = $output_main . DS . "webapp";
 
             $this->odir_beans = $this->odir_package. DS . "beans";//数据结构

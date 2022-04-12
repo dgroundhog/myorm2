@@ -48,22 +48,25 @@ class JavaServletMvcCtrl extends JavaServletMvc
         ob_start();
 
         $package = $this->final_package;
-        echo "package  {$package}.servlet;\n";
+        echo "package  {$package}.controllers;\n";
+
+
+        echo "import com.yzzq.mvc.AjaxResult;\n";
+        echo "import com.yzzq.mvc.MyContext;\n";
+        echo "import com.yzzq.mvc.DateFromToBeanx;\n";
+        echo "import com.yzzq.mvc.DateFromToBeanx;\n";
+        echo "import com.yzzq.mvc.UploadBeanx;\n";
+        echo "import com.yzzq.mvc.ECode;\n";
+        echo "import com.yzzq.mvc.FormServletBase;\n";
+        echo "import com.yzzq.mvc.PagerHelper;\n";
+        echo "import com.yzzq.utils.MixUtil;\n";
 
         echo "import {$package}.MyApp;\n";
-        echo "import {$package}.MyAdmin;\n";
-        echo "import {$package}.MyContext;\n";
+        echo "import {$package}.emuns.MyECode;\n";
+        echo "import {$package}.beans.AdminBean;\n";
+        echo "import {$package}.models.AdminModelX;\n";
         echo "import {$package}.beans.{$uc_model_name}Bean;\n";
-        echo "import {$package}.bean.AjaxResult;\n";
-        echo "import {$package}.bean.AjaxBeanx;\n";
-        echo "import {$package}.bean.DateFromToBeanx;\n";
-        echo "import {$package}.bean.UploadBeanx;\n";
-        echo "import {$package}.bean.AdminBean;\n";
-
         echo "import {$package}.models.{$uc_model_name}Model;\n";
-
-        //echo "import com.hongshi_tech.utils.PagerUtil;\n";
-        //echo "import com.hongshi_tech.utils.DatetimeUtil;\n";
 
         echo "import org.slf4j.Logger;\n";
         echo "import org.slf4j.LoggerFactory;\n";
@@ -82,7 +85,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo "import java.util.*;\n";
 
         _fun_comment("java 控制器 servlet类--{$model_name}");
-        echo "public class {$uc_model_name}Servlet extends HtmlServletBase {\n";
+        echo "public class {$uc_model_name}Servlet extends FormServletBase {\n";
 
         _fun_comment("日志", 1);
         echo _tab(1) . "private static Logger logger = LoggerFactory.getLogger({$uc_model_name}Servlet.class);\n";
@@ -148,7 +151,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
                     echo _tab(4) . "_gDetail(req,resp,ctx);\n";
                     echo _tab(4) . "break;\n";
                     echo _tab(3) . "case \"/ajax_detail\":\n";
-                    echo _tab(4) . "_gAjaxDetail(req,resp,ctx);\n";
+                    echo _tab(4) . "_pAjaxDetail(req,resp,ctx);\n";
                     echo _tab(4) . "break;";
                     break;
 
@@ -160,9 +163,9 @@ class JavaServletMvcCtrl extends JavaServletMvc
                     echo _tab(4) . "ctx.setVariable(\"action_title\", \"默认列表\");\n";
                     echo _tab(4) . "_gList(req,resp,ctx);\n";
                     echo _tab(4) . "break;\n";
-                    echo _tab(3) . "case \"/ajax_list\":\n";
-                    echo _tab(4) . "_gAjaxList(req,resp,ctx);\n";
-                    echo _tab(4) . "break;\n";
+                    //echo _tab(3) . "case \"/ajax_list\":\n";
+                    //echo _tab(4) . "_gAjaxList(req,resp,ctx);\n";
+                    //echo _tab(4) . "break;\n";
 
                 default:
                     break;
@@ -329,13 +332,12 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _gNew(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("启用CSRF预防", 2);
-        echo _tab(2) . "touchFromToken(\"{$model_name}_new\", req, ctx);\n";
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "touchFromToken(req, ctx);\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("加载基本数据TODO", 2);
         echo _tab(2) . "Map<String,String> mInfo = new HashMap<String,String>();\n";
         echo _tab(2) . "ctx.setVariable(\"mInfo\", mInfo);\n";
-        echo _tab(2) . "String tmpl = \"{$model_name}_new.html\";\n";
-
+        echo _tab(2) . "String tmpl = \"{$model_name}_edit.html\";\n";
         echo _tab(2) . "display(req,resp,ctx,tmpl);\n";
         echo _tab(2) . "return;\n";
         echo _tab(1) . "}\n";
@@ -348,11 +350,11 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _pSave(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!checkFromToken(\"{$model_name}_new\", req)) {\n";
+        echo _tab(2) . "if (!checkFromToken(req)) {\n";
         echo _tab(3) . "resp.sendRedirect(\"../index.jsp?err_code=CSRF\");\n";
         echo _tab(3) . "return;\n";
         echo _tab(2) . "}\n";
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         $this->_echoReqParams($a_param_define, $a_param_field);
@@ -377,7 +379,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _pAjaxSave(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查攻击", 2);
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         $this->_echoReqParams($a_param_define, $a_param_field);
@@ -391,9 +393,9 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         echo _tab(2) . "AjaxResult ajaxResult = new AjaxResult();\n";
         echo _tab(2) . "if(iRet==1){\n";
-        echo _tab(3) . "ajaxResult.setCode(ECode.SUCC);\n";
+        echo _tab(3) . "ajaxResult.setCode(ECode.OK.getValue());\n";
         echo _tab(2) . "}else{\n";
-        echo _tab(3) . "ajaxResult.setCode(ECode.E0000);\n";
+        echo _tab(3) . "ajaxResult.setCode(ECode.FAIL.getValue());\n";
         echo _tab(3) . "ajaxResult.setRet(\"\"+iRet);\n";
         echo _tab(2) . "}\n";
         echo _tab(2) . "_jsonOut(resp,ajaxResult);\n";
@@ -463,11 +465,11 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _pDelete(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!checkFromToken(\"{$model_name}_edit\", req)) {\n";
+        echo _tab(2) . "if (!checkFromToken(req)) {\n";
         echo _tab(3) . "resp.sendRedirect(\"../index.jsp?err_code=CSRF\");\n";
         echo _tab(3) . "return;\n";
         echo _tab(2) . "}\n";
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("获取POST参数", 2);
 
         _fun_comment("删除条件", 2);
@@ -491,7 +493,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         _fun_comment("ajax删除", 1);
         echo _tab(1) . "protected void  _pAjaxDelete(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         _fun_comment("删除条件", 2);
@@ -506,9 +508,9 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         echo _tab(2) . "AjaxResult ajaxResult = new AjaxResult();\n";
         echo _tab(2) . "if(iRet==1){\n";
-        echo _tab(3) . "ajaxResult.setCode(ECode.SUCC);\n";
+        echo _tab(3) . "ajaxResult.setCode(ECode.OK.getValue());\n";
         echo _tab(2) . "}else{\n";
-        echo _tab(3) . "ajaxResult.setCode(ECode.E0000);\n";
+        echo _tab(3) . "ajaxResult.setCode(ECode.FAIL.getValue());\n";
         echo _tab(3) . "ajaxResult.setRet(\"\"+iRet);\n";
         echo _tab(2) . "}\n";
         echo _tab(2) . "_jsonOut(resp,ajaxResult);\n";
@@ -541,8 +543,8 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _gEdit(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("启用CSRF预防", 2);
-        echo _tab(2) . "touchFromToken(\"{$model_name}_edit\", req, ctx);\n";
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "touchFromToken(req, ctx);\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
 
 
         //更新条件
@@ -573,11 +575,11 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _pModify(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!checkFromToken(\"{$model_name}_edit\", req)) {\n";
+        echo _tab(2) . "if (!checkFromToken(req)) {\n";
         echo _tab(3) . "resp.sendRedirect(\"../index.jsp?err_code=CSRF\");\n";
         echo _tab(3) . "return;\n";
         echo _tab(2) . "}\n";
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("获取POST参数", 2);
         _fun_comment("需要更新的字段", 2);
         $this->_echoReqParams($a_u_param_define, $a_u_param_field);
@@ -598,6 +600,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
             echo _tab(5) . "+ \"{$o_field->key}=\" + {$_param_use}\n";
             $ii++;
         }
+        echo _tab(5) . ";\n";
         echo _tab(2) . "ctx.setVariable(\"url_goto\", urlGoto);\n";
         echo _tab(2) . "String tmpl = \"_302.html\";\n";
         echo _tab(2) . "display(req,resp,ctx,tmpl);\n";
@@ -610,7 +613,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         _fun_comment("ajax更新", 1);
         echo _tab(1) . "protected void  _pAjaxModify(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         _fun_comment("需要更新的字段", 2);
@@ -627,9 +630,9 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         echo _tab(2) . "AjaxResult ajaxResult = new AjaxResult();\n";
         echo _tab(2) . "if(iRet==1){\n";
-        echo _tab(3) . "ajaxResult.setCode(ECode.SUCC);\n";
+        echo _tab(3) . "ajaxResult.setCode(ECode.OK.getValue());\n";
         echo _tab(2) . "}else{\n";
-        echo _tab(3) . "ajaxResult.setCode(ECode.E0000);\n";
+        echo _tab(3) . "ajaxResult.setCode(ECode.FAIL.getValue());\n";
         echo _tab(3) . "ajaxResult.setRet(\"\"+iRet);\n";
         echo _tab(2) . "}\n";
         echo _tab(2) . "_jsonOut(resp,ajaxResult);\n";
@@ -662,7 +665,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _gDetail(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查攻击", 2);
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
         //更新条件
         list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $this->fun_fetch);
 
@@ -674,9 +677,8 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(2) . "Map<String,String> mInfo = oModel.fetch(";
         $this->_echoFunParams($a_w_param_use);
         echo ");\n";
-
+        echo _tab(2) . "ctx.setVariable(\"mInfo\", mInfo);\n";
         echo _tab(2) . "String tmpl = \"{$model_name}_detail.html\";\n";
-
         echo _tab(2) . "display(req,resp,ctx,tmpl);\n";
         echo _tab(2) . "return;\n";
         echo _tab(1) . "}\n";
@@ -697,7 +699,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
 
         echo _tab(2) . "AjaxResult ajaxResult = new AjaxResult();\n";
-        echo _tab(2) . "ajaxResult.setCode(ECode.SUCC);\n";
+        echo _tab(2) . "ajaxResult.setCode(ECode.OK.getValue());\n";
         echo _tab(2) . "ajaxResult.setData(mInfo);\n";
         echo _tab(2) . "_jsonOut(resp,ajaxResult);\n";
 
@@ -757,7 +759,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _gList(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
         //TODO
         _fun_comment("检查攻击", 2);
-        echo _tab(2) . "MyVisitor currVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("获取GET参数", 2);
         $this->_echoReqParams($a_w_param_define, $a_w_param_field);
         _fun_comment("TODO 注意来自session的变量", 2);
@@ -778,17 +780,20 @@ class JavaServletMvcCtrl extends JavaServletMvc
         //6666
         if ($has_pager) {
             echo _tab(2) . "String v_page = req.getParameter(\"page\");\n";
-            echo _tab(2) . "int i_page = tidyStrParam(v_page, 1);\n";
+            echo _tab(2) . "int i_page = tidyIntParam(v_page, 1);\n";
 
             if ($is_pager_size_input) {
                 echo _tab(2) . "String v_page_size = req.getParameter(\"page_size\");\n";
-                echo _tab(2) . "int i_page_size = tidyStrParam(v_page_size, 20);\n";
+                echo _tab(2) . "int i_page_size = tidyIntParam(v_page_size, 20);\n";
+            }
+            else{
+                echo _tab(2) . "int i_page_size = {$pager_size};\n";
             }
         }
         echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
         if ($has_pager) {
             _fun_comment("计数", 2);
-            echo _tab(2) . "int iTotal = oModel.list_Count(";
+            echo _tab(2) . "int iTotal = oModel.lists_Count(";
             $this->_echoFunParams($a_w_param_use);
             echo ");\n";
             echo _tab(2) . "ctx.setVariable(\"iTotal\", iTotal);\n";
@@ -865,6 +870,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
             echo _tab(2) . "ctx.setVariable(\"pager_html\", sPagerHtml);\n";
         }
 
+        echo _tab(2) . "String tmpl = \"{$model_name}_list.html\";\n";
         echo _tab(2) . "display(req,resp,ctx,tmpl);\n";
         echo _tab(2) . "return;\n";
         echo _tab(1) . "}\n";
