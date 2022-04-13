@@ -409,17 +409,29 @@ class JavaServletMvcCtrl extends JavaServletMvc
     function _echoReqParams($a_param_define, $a_param_field)
     {
         $ii = 0;
+        $a_used_key = array();
         foreach ($a_param_define as $param) {
             $o_field = $a_param_field[$ii];
             $key = $o_field->name;
+            if(!isset($a_used_key[$key])){
+                $a_used_key[$key]=1;
+            }
+            else{
+                $a_used_key[$key]++;
+            }
+            $i_key_count = $a_used_key[$key];
+            $vkey = $key."_{$i_key_count}";
+
             echo "\n";
-            echo _tab(2) . "String v_{$key} = req.getParameter(\"{$key}\");\n";
+            echo _tab(2) . "String v_{$vkey} = req.getParameter(\"{$key}\");\n";
             $d_value = $o_field->default_value;
             if ($this->isIntType($o_field->type) || $this->isBoolType($o_field->type)) {
                 $d_value = ($d_value == "") ? 0 : (1 * $d_value);
-                echo _tab(2) . "{$param} = tidyIntParam(v_{$key},{$d_value});\n";
+                echo _tab(2) . "{$param} = tidyIntParam(v_{$vkey},{$d_value});\n";
+            } elseif ($this->isBlobType($o_field->type) ) {
+                echo _tab(2) . "{$param} = v_{$vkey}.getBytes();\n";
             } else {
-                echo _tab(2) . "{$param} = tidyStrParam(v_{$key},\"{$d_value}\");\n";
+                echo _tab(2) . "{$param} = tidyStrParam(v_{$vkey},\"{$d_value}\");\n";
             }
             if ($this->isBlobType($o_field->type)) {
                 echo _tab(2) . "//TODO add bin data here;\n";
@@ -434,7 +446,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
                 echo _tab(2) . "//TODO 验证正则表达式 {$o_field->regexp};\n";
             }
 
-            echo _tab(2) . "logger.debug(\"GetParam-({$key})--(\" + v_{$key} + \")\");\n";
+            echo _tab(2) . "logger.debug(\"GetParam-({$key})--(\" + v_{$vkey} + \")\");\n";
             $ii++;
         }
 

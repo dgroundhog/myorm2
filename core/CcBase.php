@@ -856,7 +856,7 @@ abstract class CcBase
      */
     function isBlobType($field_type)
     {
-        return ($field_type == Constant::DB_FIELD_TYPE_BLOB || $field_type == Constant::DB_FIELD_TYPE_BLOB);
+        return ($field_type == Constant::DB_FIELD_TYPE_BLOB || $field_type == Constant::DB_FIELD_TYPE_LONGBLOB);
     }
 
     /**

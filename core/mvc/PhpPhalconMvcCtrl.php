@@ -262,6 +262,15 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         foreach ($a_param_define as $param) {
             $o_field = $a_param_field[$ii];
             $key = $o_field->name;
+            if(!isset($a_used_key[$key])){
+                $a_used_key[$key]=1;
+            }
+            else{
+                $a_used_key[$key]++;
+            }
+            $i_key_count = $a_used_key[$key];
+            $vkey = $key."_{$i_key_count}";
+
             echo "\n";
 
             $d_value = $o_field->default_value;

@@ -17,7 +17,7 @@ cd D:/build/20220410203610
 echo done!
 
 
-cd D:/build/20220412175650
+cd D:/build/20220413161139
 cp -rf ./doc/sql/init_db.sql  ./init_db.sql
 cat ./doc/sql/*cc_table.sql > ./init_t.sql
 cat ./doc/sql/*reset_table.sql > ./reset_t.sql
