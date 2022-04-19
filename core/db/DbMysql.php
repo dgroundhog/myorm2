@@ -1526,12 +1526,14 @@ DDD;
         if ($has_pager) {
             echo "DECLARE m_offset INT;\n";
             echo "DECLARE m_length INT;\n";
-            echo "SET m_length = v_page;\n";
             if ($is_pager_size_input) {
-                echo "SET m_offset = ( v_page - 1 ) * v_page_size;\n\n";
+                echo "SET m_offset = ( v_page - 1 ) * v_page_size;\n";
+                echo "SET m_length = v_page_size;\n";
             } else {
-                echo "SET m_offset = ( v_page - 1 ) * {$pager_size};\n\n";
+                echo "SET m_offset = ( v_page - 1 ) * {$pager_size};\n";
+                echo "SET m_length = {$pager_size};\n";
             }
+            echo "\n";
         }
 
         echo "SET @s_sql = 'SELECT ";
