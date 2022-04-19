@@ -898,10 +898,10 @@ class PhpPhalconMvc extends MvcBase
             echo _tab(4) . "}\n";
         }
         else{
-            foreach ($fun->field_list as $s_key => $o_filed) {
+            foreach ($fun->field_list as $s_key => $o_field) {
                 if (isset($model->field_list[$s_key])) {
-                    $filed_name = $o_filed->name;
-                    echo _tab(4) . "\$a_row_info['{$filed_name}'] = \$a_ret['{$filed_name}'];\n";
+                    $field_name = $o_field->name;
+                    echo _tab(4) . "\$a_row_info['{$field_name}'] = \$a_ret['{$field_name}'];\n";
                 }
             }
         }

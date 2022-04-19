@@ -457,9 +457,9 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(2) . "if (\$iRet > 0){\n";
         echo _tab(3) . "\$a_result['__code__'] = ECode::SUCC;\n";
         $ii = 0;
-        foreach ($a_w_param_field as $w_filed) {
+        foreach ($a_w_param_field as $w_field) {
             $vvv = $a_w_param_use[$ii];
-            echo _tab(3) . "\$a_result['{$w_filed->name}'] = {$vvv} ;\n";
+            echo _tab(3) . "\$a_result['{$w_field->name}'] = {$vvv} ;\n";
             $ii++;
         }
         echo _tab(3) . "return \$this->_redirect('url_{$lc_model_name}_detail', \$a_result);\n";
@@ -468,9 +468,9 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("TODO 把原始输入和错误写入session", 2);
         echo _tab(3) . "\$a_result['__code__'] = ECode::E0000;\n";
         $ii = 0;
-        foreach ($a_w_param_field as $w_filed) {
+        foreach ($a_w_param_field as $w_field) {
             $vvv = $a_w_param_use[$ii];
-            echo _tab(3) . "\$a_result['{$w_filed->name}'] = {$vvv} ;\n";
+            echo _tab(3) . "\$a_result['{$w_field->name}'] = {$vvv} ;\n";
             $ii++;
         }
         echo _tab(3) . "return \$this->_redirect('url_{$lc_model_name}_edit', \$a_result);\n";

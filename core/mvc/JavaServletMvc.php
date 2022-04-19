@@ -873,15 +873,13 @@ class JavaServletMvc extends MvcBase
             echo _tab(6) . "}\n";
             echo _tab(5) . "}\n";
         } else {
-            foreach ($fun->field_list as $s_key => $o_filed) {
+            foreach ($fun->field_list as $s_key => $o_field) {
                 if (isset($model->field_list[$s_key])) {
-                    $filed_name = $o_filed->name;
-                    echo _tab(5) . "mRet.put(\"{$filed_name}\", rs.getString(\"{$filed_name}\")); \n";
+                    $field_name = $o_field->name;
+                    echo _tab(5) . "mRet.put(\"{$field_name}\", rs.getString(\"{$field_name}\")); \n";
                 }
             }
         }
-
-
         if ($has_group_field ) {
             //聚合的结果
             echo _tab(5) . "mRet.put(\"{$group_field_final}\", rs.getString(\"{$group_field_final}\")); \n";
@@ -994,9 +992,19 @@ class JavaServletMvc extends MvcBase
             echo _tab(4) . "rs = st.executeQuery();\n";
             echo _tab(4) . "while (rs.next()) {\n";
             echo _tab(5) . "{$uc_model_name}Bean mBean = new {$uc_model_name}Bean();\n";
-            foreach ($model->field_list as $key => $o_field) {
-                echo $this->_procResultBean($o_field->name, $o_field->type, 5);
+
+            if ($fun->all_field == 1) {
+                foreach ($model->field_list as $key => $o_field) {
+                    echo $this->_procResultBean($o_field->name, $o_field->type, 5);
+                }
+            } else {
+                foreach ($fun->field_list as $s_key => $o_field) {
+                    if (isset($model->field_list[$s_key])) {
+                        echo $this->_procResultBean($o_field->name, $o_field->type, 5);
+                    }
+                }
             }
+
             echo _tab(5) . "vList.add(mBean);\n";
             echo _tab(4) . "}\n";
 

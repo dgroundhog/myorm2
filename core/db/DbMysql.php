@@ -1542,9 +1542,9 @@ DDD;
             $has_pre_key = ",";
         } else {
             $a_temp = array();
-            foreach ($fun->field_list as $s_key => $o_filed) {
+            foreach ($fun->field_list as $s_key => $o_field) {
                 if (isset($model->field_list[$s_key])) {
-                    $a_temp[] = "\n" . _tab(1) . "`{$o_filed->name}`";
+                    $a_temp[] = "\n" . _tab(1) . "`{$o_field->name}`";
                     $has_pre_key = ",";
                 }
             }
