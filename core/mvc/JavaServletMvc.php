@@ -221,12 +221,15 @@ class JavaServletMvc extends MvcBase
         }
         if ($is_return_new_id) {
             echo "\n";
-            echo _tab(4) . "st.registerOutParameter({$ii}, Types.INTEGER);\n";
+            $jj = $ii+1;
+            echo _tab(4) . "st.registerOutParameter({$jj}, Types.INTEGER);\n";
             echo _tab(4) . "rs = st.executeQuery();\n";
-            echo _tab(4) . "iRet = st.getInt({$ii});\n";
+            echo _tab(4) . "iRet = st.getInt({$jj});\n";
             echo _tab(4) . "logger.debug(\"call {$proc_name} -- \" + iRet);\n";
         } else {
+            echo _tab(4) . "rs = st.executeQuery();\n";
             echo _tab(4) . "iRet = 1;\n";
+            echo _tab(4) . "logger.debug(\"call {$proc_name} -- no need return-- \" + iRet);\n";
         }
         $this->_dbQueryFooter();
         echo _tab(2) . "return iRet;\n";
@@ -286,13 +289,13 @@ class JavaServletMvc extends MvcBase
      * @param $field_key
      * @param $field_type
      * @param $pv_use 用的字段
-     * @param $ii
+     * @param $jj
      * @param $tab_idx
      * @return void
      */
-    function _procStatementParam($field_key, $field_type, $pv_use, $ii, $tab_idx)
+    function _procStatementParam($field_key, $field_type, $pv_use, $jj, $tab_idx)
     {
-
+        $ii = $jj +1;
         switch ($field_type) {
             case Constant::DB_FIELD_TYPE_BOOL :
                 echo _tab($tab_idx) . "st.setInt({$ii}, {$pv_use}?1:0); \n";
@@ -400,9 +403,10 @@ class JavaServletMvc extends MvcBase
             $ii++;
         }
         echo "\n";
-        echo _tab(4) . "st.registerOutParameter({$ii}, Types.INTEGER);\n";
+        $jj = $ii+1;
+        echo _tab(4) . "st.registerOutParameter({$jj}, Types.INTEGER);\n";
         echo _tab(4) . "rs = st.executeQuery();\n";
-        echo _tab(4) . "iRet = st.getInt({$ii});\n";
+        echo _tab(4) . "iRet = st.getInt({$jj});\n";
         echo _tab(4) . "logger.debug(\"call {$proc_name} -- \" + iRet);\n";
         $this->_dbQueryFooter();
         echo _tab(2) . "return iRet;\n";
@@ -464,9 +468,10 @@ class JavaServletMvc extends MvcBase
             $ii++;
         }
         echo "\n";
-        echo _tab(4) . "st.registerOutParameter({$ii}, Types.INTEGER);\n";
+        $jj = $ii+1;
+        echo _tab(4) . "st.registerOutParameter({$jj}, Types.INTEGER);\n";
         echo _tab(4) . "rs = st.executeQuery();\n";
-        echo _tab(4) . "iRet = st.getInt({$ii});\n";
+        echo _tab(4) . "iRet = st.getInt({$jj});\n";
         echo _tab(4) . "logger.debug(\"call {$proc_name} -- \" + iRet);\n";
         $this->_dbQueryFooter();
         echo _tab(2) . "return iRet;\n";
@@ -825,10 +830,11 @@ class JavaServletMvc extends MvcBase
         }
         if ($has_group_field && $has_group_by && $has_having) {
             foreach ($a_param_use_having as $param) {
+                $jj = $ii+1;
                 if ($o_having->type == Constant::COND_TYPE_IN || $o_having->type == Constant::COND_TYPE_NOTIN) {
-                    echo _tab(4) . "st.setString({$ii}, {$param}); \n";
+                    echo _tab(4) . "st.setString({$jj}, {$param}); \n";
                 } else {
-                    echo _tab(4) . "st.setInt({$ii}, {$param}); \n";
+                    echo _tab(4) . "st.setInt({$jj}, {$param}); \n";
                 }
 
                 $ii++;
@@ -962,21 +968,24 @@ class JavaServletMvc extends MvcBase
             //5555
             if ($has_order) {
                 if ($is_order_by_input) {
-                    echo _tab(4) . "st.setString({$ii}, v_order_by); \n";
+                    $jj = $ii+1;
+                    echo _tab(4) . "st.setString({$jj}, v_order_by); \n";
                     $ii++;
                 }
                 if ($is_order_by_input) {
-                    echo _tab(4) . "st.setString({$ii}, v_order_dir); \n";
+                    $jj = $ii+1;
+                    echo _tab(4) . "st.setString({$jj}, v_order_dir); \n";
                     $ii++;
                 }
             }
             //6666
             if ($has_pager) {
-                echo _tab(4) . "st.setInt({$ii}, v_page); \n";
+                $jj = $ii+1;
+                echo _tab(4) . "st.setInt({$jj}, v_page); \n";
                 $ii++;
                 if ($is_pager_size_input) {
-
-                    echo _tab(4) . "st.setInt({$ii}, v_page_size); \n";
+                    $jj = $ii+1;
+                    echo _tab(4) . "st.setInt({$jj}, v_page_size); \n";
                     $ii++;
                 }
             }
@@ -1043,10 +1052,11 @@ class JavaServletMvc extends MvcBase
             }
             if ($has_group_field && $has_group_by && $has_having) {
                 foreach ($a_param_use_having as $param) {
+                    $jj = $ii+1;
                     if ($o_having->type == Constant::COND_TYPE_IN || $o_having->type == Constant::COND_TYPE_NOTIN) {
-                        echo _tab(4) . "st.setString({$ii}, {$param}); \n";
+                        echo _tab(4) . "st.setString({$jj}, {$param}); \n";
                     } else {
-                        echo _tab(4) . "st.setInt({$ii}, {$param}); \n";
+                        echo _tab(4) . "st.setInt({$jj}, {$param}); \n";
                     }
                     $ii++;
                 }
