@@ -2327,8 +2327,42 @@ App.dt.project.archEdit = function (_uuid) {
     $('.select2').change();
 }
 
+
+
 /**
- * 编辑配置
+ * 复制架构配置
+ */
+App.dt.project.archCopy = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(_uuid)) {
+        self.fail("未选择架构");
+    } else {
+
+        if (undefined != _curr_app.arch_list[_uuid]) {
+            var _new_uuid = App.su.maths.uuid.create();
+            var _f1 = _curr_app.arch_list[_uuid];
+            var _f2 = deepCopy(_f1);
+            _f2.uuid = _new_uuid
+            _f2.name = _f1.name + "2";
+            _f2.title = _f1.title + "2";
+            _curr_app.arch_list[_new_uuid] = _f2;
+
+            self.project.setCurrApp(_curr_app);
+            self.succ("复制成功2-架构配置");
+        } else {
+            self.fail("复制失败2-架构配置");
+        }
+        self.project.archLoad();
+    }
+}
+
+/**
+ * 编辑架构配置
  */
 App.dt.project.archDrop = function (_uuid) {
     var self = App.dt;
@@ -2457,6 +2491,39 @@ App.dt.project.dbEdit = function (_uuid) {
 
     $("#modal_edit_app_db").modal('show');
     $('.select2').change();
+}
+
+
+/**
+ * 复制数据库配置
+ */
+App.dt.project.dbCopy = function (_uuid) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(_uuid)) {
+        self.fail("未选择就的数据库");
+    } else {
+
+        if (undefined != _curr_app.db_list[_uuid]) {
+            var _new_uuid = App.su.maths.uuid.create();
+            var _f1 = _curr_app.db_list[_uuid];
+            var _f2 = deepCopy(_f1);
+            _f2.uuid = _new_uuid
+            _f2.name = _f1.name + "2";
+            _f2.title = _f1.title + "2";
+            _curr_app.db_list[_new_uuid] = _f2;
+
+            self.project.setCurrApp(_curr_app);
+            self.succ("复制成功2-数据库配置");
+        } else {
+            self.fail("复制失败2-数据库配置");
+        }
+        self.project.dbLoad();
+    }
 }
 
 /**

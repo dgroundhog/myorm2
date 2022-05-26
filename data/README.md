@@ -8,7 +8,7 @@
 /project2..
 
 
-cd D:/build/20220330105535
+cd D:/build/20220501142042
 cp -rf ./src/*  D:/xampp/htdocs/phal/
 echo done!
 
@@ -16,8 +16,8 @@ cd D:/build/20220410203610
 
 echo done!
 
-
-cd D:/build/20220420020637
+\
+cd D:/build/20220526104359
 cp -rf ./doc/sql/init_db.sql  ./init_db.sql
 cat ./doc/sql/*cc_table.sql > ./init_t.sql
 cat ./doc/sql/*reset_table.sql > ./reset_t.sql

@@ -17,6 +17,9 @@
 
         <td class="text-right py-0 align-middle">
             <div class="btn-group btn-group-sm">
+                <a href="###" class="btn btn-success"
+                   onclick="javascript:App.dt.project.dbCopy('{$db.uuid}');"
+                ><i class="fas fa-copy"></i> 复制</a>
                 <a href="###" class="btn btn-info"
                    onclick="javascript:App.dt.project.dbEdit('{$db.uuid}');"
                 ><i class="fas fa-edit"></i> 编辑</a>

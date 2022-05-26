@@ -879,8 +879,9 @@ abstract class CcBase
                 $is_pager_size_input = true;
                 //
             }
-            if ($pager_size >= 100) {
-                //大于100的强制的降低为20
+            if ($pager_size > 10000) {
+                //大于10000的强制的降低为20
+                SeasLog::error("分页大小超过10000限制了，请修改参数！！！！！！！！！！！");
                 $pager_size = 20;
             }
         }
