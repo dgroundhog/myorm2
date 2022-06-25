@@ -49,7 +49,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="stylesheet" href="./vendor/bootstrap4-duallistbox/bootstrap-duallistbox.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="./vendor/adminlte-3.2.0/css/adminlte.min.css">
-</head>
+</head> 
 <body class="hold-transition sidebar-mini layout-navbar-fixed">
 <div class="wrapper">
 
