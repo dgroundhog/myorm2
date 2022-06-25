@@ -1,25 +1,29 @@
 # mycoco
 
-一种跨语言应用的代码和项目自动生成小工具，对数据库对所有操作均基于存储过程，默认单表操作
-这个时放弃了orm的便利性，换用sql语句的一次编译
-目前仅支持基于phalcon的php项目和基本servlet的java项目，着手支持基于qtwebapp的cpp项目。
+- 一个跨语言应用的代码和项目自动生成小工具
+- 对数据库对所有操作均基于存储过程，默认单表操作
+- 这是放弃了orm的便利性，换用sql语句的一次编译
+- 目前仅支持基于phalcon的php项目和基本servlet的java项目，
+- 着手支持基于qt-webapp的cpp项目。
 
 ## 应用支支持
 
-| 语言 | 技术     | 网址                                           |
-| ---- | -------- | ---------------------------------------------- |
-| php  | phalcon  | https://phalcon.io/                            |
-| java | servlet  | https://www.oracle.com/java/technologies/java-servlet-tec.html|
-| cpp  | qtwebapp | http://stefanfrings.de/qtwebapp/               |
+| 语言   | 技术       | 网址                               |
+|------|----------|----------------------------------|
+| php  | phalcon  | https://phalcon.io/              |
+| java | servlet  | https://www.oracle.com/java/     |
+| cpp  | qtwebapp | http://stefanfrings.de/qtwebapp/ |
+| c#   | --       | --                               |
 
 ## 数据库建模
 
-| 产品       | 支持计划 |
-| ---------- | -------- |
+| 产品         | 支持计划 |
+|------------| -------- |
 | mysql      | 支持     |
 | sqlite     | 部分支持 |
 | postgresql | 计划支持 |
 | oracle     | 计划支持 |
+| sqlserver  | 计划支持 |
 
 ## UI建模
 
