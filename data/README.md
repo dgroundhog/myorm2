@@ -15,16 +15,17 @@ echo done!
 cd D:/build/20220410203610
 
 echo done!
+run on mingw64 bash shell
 
 \
-cd D:/build/20220528070425
+export src=D:/build/20220730071006
+export tar=D:/face/arc_java_4.0
+cd $src
 cp -rf ./doc/sql/init_db.sql  ./init_db.sql
 cat ./doc/sql/*cc_table.sql > ./init_t.sql
 cat ./doc/sql/*reset_table.sql > ./reset_t.sql
 cat ./doc/sql/*_proc.sql > ./init_p.sql
-cp -rf ./doc/sql/*.sql  D:/face/arc_java_demo/doc/sql/
-cp -rf ./*.sql  D:/face/arc_java_demo/doc/
-cp -rf ./src/*  D:/face/arc_java_demo/src/
+cp -rf ./doc/sql/*.sql  $tar/doc/sql/
+cp -rf ./*.sql  $tar/doc/
+cp -rf ./src/*  $tar/src/
 echo done!
-
- 
