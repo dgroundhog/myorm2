@@ -4,7 +4,7 @@
             <div class="col-lg-12">
                 <div class="card card-success card-outline">
                     <div class="card-header">
-                        <h3 class="card-title">4、数据库配置 <small>可配置1-N个，在构建时仅使用1个</small></h3>
+                        <h3 class="card-title">4、数据库配置 <small><a name="sess_db">可配置1-N个，在构建时仅使用1个</a></small></h3>
 
                         <div class="card-tools">
 

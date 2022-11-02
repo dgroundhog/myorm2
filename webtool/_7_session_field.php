@@ -4,7 +4,7 @@
             <div class="col-lg-12">
                 <div class="card card-success card-outline">
                     <div class="card-header">
-                        <h3 class="card-title">5、全局字段配置 <small>一处修改，全部修改</small></h3>
+                        <h3 class="card-title">5、全局字段配置 <small><a name="sess_g_fields">一处修改，全部修改</a></small></h3>
                         <div class="card-tools">
 
                             <button type="button" class="btn btn-tool" id="btn_edit_field">

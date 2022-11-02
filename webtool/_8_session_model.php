@@ -4,7 +4,7 @@
             <div class="col-lg-12">
                 <div class="card card-success card-outline">
                     <div class="card-header">
-                        <h3 class="card-title">6、实体模型 <small>字段、索引、查询方法</small></h3>
+                        <h3 class="card-title">6、实体模型 <small><a name="session_model">字段、索引、查询方法</a></small></h3>
                         <div class="card-tools">
 
                             <button type="button" class="btn btn-tool" id="btn_edit_model">
