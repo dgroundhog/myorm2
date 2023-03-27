@@ -12,8 +12,7 @@ App.su = {
             return true;
         }
         return false;
-    },
-    isEmpty2: function (v) {
+    }, isEmpty2: function (v) {
         if (undefined == v || '' == v) {
             return true;
         }
@@ -47,8 +46,7 @@ App.su = {
                 }
             }
             return url;
-        },
-        /**
+        }, /**
          * 计算中文长度，把中文当作一个2字节
          *
          * @param str_maybe_cn
@@ -60,8 +58,7 @@ App.su = {
             }
             var arr = str_maybe_cn.match(/[^\x00-\xff]/ig);
             return str_maybe_cn.length + (arr == null ? 0 : arr.length);
-        },
-        /**
+        }, /**
          * 截断中字
          *
          * @param str
@@ -82,8 +79,7 @@ App.su = {
                 }
             }
             return str;
-        },
-        /**
+        }, /**
          * 删除2边空格，包括全角的
          *
          * @param str_maybe_empty
@@ -94,8 +90,7 @@ App.su = {
                 return '';
             }
             return str_maybe_empty.replace(/^\s+/, "").replace(/\s+$/, "");
-        },
-        /**
+        }, /**
          * 删除所有空格，包括全角的
          *
          * @param str_maybe_empty
@@ -106,8 +101,7 @@ App.su = {
                 return '';
             }
             return str_maybe_empty.replace(/[\u3000]/g, "").replace(/\s+/g, "");
-        },
-        /**
+        }, /**
          * text
          *
          * @param str_maybe_html
@@ -124,8 +118,7 @@ App.su = {
          * @returns {number}
          */
         checkStrong: function (sPW) {
-            if (sPW.length < 6)
-                return 0; // 密码太短
+            if (sPW.length < 6) return 0; // 密码太短
             var i;
             // 判断输入密码的类型
             var _charMode = function (iN) {
@@ -134,9 +127,7 @@ App.su = {
                 if (iN >= 65 && iN <= 90) // 大写
                     return 2;
                 if (iN >= 97 && iN <= 122) // 小写
-                    return 4;
-                else
-                    return 8;
+                    return 4; else return 8;
             };
             // bitTotal函数
             // 计算密码模式
@@ -151,13 +142,11 @@ App.su = {
             }
             var _modes = 0;
             for (i = 0; i < 4; i++) {
-                if (Modes & 1)
-                    _modes++;
+                if (Modes & 1) _modes++;
                 Modes >>>= 1;
             }
             return _modes;
-        },
-        jsonToString: function (arr) {
+        }, jsonToString: function (arr) {
             var s = "";
             if (arr instanceof Array || arr instanceof Object) {
                 var isObj = 0;
@@ -187,8 +176,7 @@ App.su = {
                         if (s) {
                             s += ',';
                         }
-                        s += '"' + key + '":'
-                            + App.su.string.jsonToString(value);
+                        s += '"' + key + '":' + App.su.string.jsonToString(value);
                     } else {
                         if (s) {
                             s += ',';
@@ -196,10 +184,7 @@ App.su = {
                         s += App.su.string.jsonToString(value);
                     }
                 }
-                if (isObj)
-                    s = '{' + s + '}';
-                else
-                    s = '[' + s + ']';
+                if (isObj) s = '{' + s + '}'; else s = '[' + s + ']';
             } else {
                 s = '"' + arr + '"';
                 /**
@@ -208,12 +193,10 @@ App.su = {
                  */
             }
             return s;
-        },
-        stringToJson: function (json) {
-            eval('var s=' + json + ';');
+        }, stringToJson: function (json) {
+            eval('var s=' + json + '');
             return s;
-        },
-        /**
+        }, /**
          * base64 编码
          */
         base64: {
@@ -239,13 +222,10 @@ App.su = {
                     } else if (isNaN(chr3)) {
                         enc4 = 64;
                     }
-                    output = output + _keyStr.charAt(enc1)
-                        + _keyStr.charAt(enc2) + _keyStr.charAt(enc3)
-                        + _keyStr.charAt(enc4);
+                    output = output + _keyStr.charAt(enc1) + _keyStr.charAt(enc2) + _keyStr.charAt(enc3) + _keyStr.charAt(enc4);
                 }
                 return output;
-            },
-            decode: function (input) {
+            }, decode: function (input) {
                 var output = "";
                 var chr1, chr2, chr3;
                 var enc1, enc2, enc3, enc4;
@@ -269,8 +249,7 @@ App.su = {
                 }
                 output = this._utf8_decode(output);
                 return output;
-            },
-            // private method for UTF-8 encoding
+            }, // private method for UTF-8 encoding
             _utf8_encode: function (string) {
                 string = string.replace(/\r\n/g, "\n");
                 var utftext = "";
@@ -289,8 +268,7 @@ App.su = {
 
                 }
                 return utftext;
-            },
-            // private method for UTF-8 decoding
+            }, // private method for UTF-8 decoding
             _utf8_decode: function (utftext) {
                 var string = "";
                 var i = 0;
@@ -305,14 +283,12 @@ App.su = {
                         i++;
                     } else if ((c > 191) && (c < 224)) {
                         c2 = utftext.charCodeAt(i + 1);
-                        string += String.fromCharCode(((c & 31) << 6)
-                            | (c2 & 63));
+                        string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
                         i += 2;
                     } else {
                         c2 = utftext.charCodeAt(i + 1);
                         c3 = utftext.charCodeAt(i + 2);
-                        string += String.fromCharCode(((c & 15) << 12)
-                            | ((c2 & 63) << 6) | (c3 & 63));
+                        string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
                         i += 3;
                     }
                 }
@@ -332,16 +308,14 @@ App.su = {
                 }
             }
             return false;
-        },
-        getValue: function (haystack, key) {
+        }, getValue: function (haystack, key) {
             for (var i in haystack) {
                 if (i == key) {
                     return haystack[i];
                 }
             }
             return false;
-        },
-        setValue: function (haystack, key, val) {
+        }, setValue: function (haystack, key, val) {
             for (var i in haystack) {
                 if (i == key) {
                     haystack[i] = val;
@@ -371,8 +345,7 @@ App.su = {
                 });
             };
             setTimeout(fkie6, 10);
-        },
-        /**
+        }, /**
          * 通过value设置选定
          *
          * @param where_select
@@ -410,8 +383,7 @@ App.su = {
                 });
             };
             setTimeout(fkie6, 10);
-        },
-        noOption: function () {
+        }, noOption: function () {
             return '<option value="">请选择</option>';
         }
 
@@ -429,7 +401,7 @@ App.su = {
                 var _me = $(this);
                 if (undefined == _me.attr("valid_rule") || null == _me.attr("valid_rule")) {
                     //return;
-                    ;
+
                 } else {
 
                     _me.removeClass("is-invalid");
@@ -584,49 +556,62 @@ App.su = {
         },
 
         email: function (a) {
-            return  /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(a)
-        },
-        phone: function (a) {
-            return  /^1\d{10}$/.test(a)
-        },
-        cardId: function (a) {
-            return  /(^\d{15}$)|(^\d{17}(x|X|\d)$)/.test(a)
-        },
-        url: function (a) {
-            return  /^(https?|s?ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(a)
-        },
-        date: function (a) {
-            return  !/Invalid|NaN/.test(new Date(a).toString())
-        },
-        dateISO: function (a) {
-            return  /^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/.test(a)
-        },
-        number: function (a) {
-            return  /^-?(?:\d+|\d{1,3}(?:,\d{3})+)?(?:\.\d+)?$/.test(a)
-        },
-        isNumberAndLetter:function(a){//数字与字母
-            return  /^[0-9a-zA-Z]*$/.test(a)
-        },
-        isLetterAndNumber:function(a){//字母与数字
-            return  /^[a-zA-Z][0-9a-zA-Z]*$/.test(a)
-        },
-        letter: function (a) {//英文
-            return  /^[A-Za-z]+$/.test(a)
-        },
-        character: function (a) {//中文
-            return  /^[\u4E00-\u9FA5]+$/.test(a)
-        },
-        characterAndLetter: function (a) {//中文+英文，不包含数字以及特殊符号
-            return  /^[\u4E00-\u9FA5A-Za-z]+$/.test(a)
-        },
-        digits: function (a) {
-            return  /^\d+$/.test(a)
+            return /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(a)
+        }, phone: function (a) {
+            return /^1\d{10}$/.test(a)
+        }, cardId: function (a) {
+            return /(^\d{15}$)|(^\d{17}(x|X|\d)$)/.test(a)
+        }, url: function (a) {
+            return /^(https?|s?ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(a)
+        }, date: function (a) {
+            return !/Invalid|NaN/.test(new Date(a).toString())
+        }, dateISO: function (a) {
+            return /^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/.test(a)
+        }, number: function (a) {
+            return /^-?(?:\d+|\d{1,3}(?:,\d{3})+)?(?:\.\d+)?$/.test(a)
+        }, isNumberAndLetter: function (a) {//数字与字母
+            return /^[0-9a-zA-Z]*$/.test(a)
+        }, isLetterAndNumber: function (a) {//字母与数字
+            return /^[a-zA-Z][0-9a-zA-Z]*$/.test(a)
+        }, letter: function (a) {//英文
+            return /^[A-Za-z]+$/.test(a)
+        }, character: function (a) {//中文
+            return /^[\u4E00-\u9FA5]+$/.test(a)
+        }, characterAndLetter: function (a) {//中文+英文，不包含数字以及特殊符号
+            return /^[\u4E00-\u9FA5A-Za-z]+$/.test(a)
+        }, digits: function (a) {
+            return /^\d+$/.test(a)
         }
 
-    },
-    maths: {
+    }, maths: {
         uuid: {
+            incc: 0, /* 将时间戳格式化为yyyy-MM-dd hh:mm:ss格式，其它格式可自行更改 */
             create: function () {
+                //TODO 1妙1万个操作
+                App.su.maths.uuid.incc++;
+                var iiccc = App.su.maths.uuid.incc % 10000;
+                var siccc = "";
+                if (iiccc < 10) {
+                    siccc = "000" + iiccc;
+                } else if (iiccc < 100) {
+                    siccc = "00" + iiccc;
+                } else if (iiccc < 1000) {
+                    siccc = "0" + iiccc;
+                } else {
+                    siccc = "" + iiccc;
+                }
+                var date = new Date();
+                var timeStr = date.getFullYear();
+                if (date.getMonth() < 9) { // 月份从0开始的
+                    timeStr += '0';
+                }
+                timeStr += date.getMonth() + 1;
+                timeStr += date.getDate() < 10 ? ('0' + date.getDate()) : date.getDate();
+                timeStr += date.getHours() < 10 ? ('0' + date.getHours()) : date.getHours();
+                timeStr += date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes();
+                timeStr += date.getSeconds() < 10 ? ('0' + date.getSeconds()) : date.getSeconds();
+                return "U" + timeStr + "_" + siccc;
+            }, create2: function () {
                 var dg = new Date(1982, 2, 12, 0, 0, 0, 0).getTime();
                 var dc = new Date().getTime();
                 var t = (dg < 0) ? Math.abs(dg) + dc : dc - dg;
@@ -636,15 +621,9 @@ App.su = {
                 var thv = this._getIntegerBits(t, 48, 59) + '1';
                 var csar = this._getIntegerBits(this._randRange(0, 4095), 0, 7);
                 var csl = this._getIntegerBits(this._randRange(0, 4095), 0, 7);
-                var n = this._getIntegerBits(this._randRange(0, 8191), 0, 7)
-                    + this._getIntegerBits(this._randRange(0, 8191), 8, 15)
-                    + this._getIntegerBits(this._randRange(0, 8191), 0, 7)
-                    + this._getIntegerBits(this._randRange(0, 8191), 8, 15)
-                    + this._getIntegerBits(this._randRange(0, 8191), 0, 15);
+                var n = this._getIntegerBits(this._randRange(0, 8191), 0, 7) + this._getIntegerBits(this._randRange(0, 8191), 8, 15) + this._getIntegerBits(this._randRange(0, 8191), 0, 7) + this._getIntegerBits(this._randRange(0, 8191), 8, 15) + this._getIntegerBits(this._randRange(0, 8191), 0, 15);
                 return tl + h + tm + h + thv + h + csar + csl + n;
-            }
-            ,
-            _getIntegerBits: function (val, start, end) {
+            }, _getIntegerBits: function (val, start, end) {
                 var base = 16;
                 var base16 = val.toString(base).toUpperCase();
                 var quadArray = base16.split('');
@@ -658,21 +637,14 @@ App.su = {
                     }
                 }
                 return quadString;
+            }, _randRange: function (min, max) {
+                return Math.max(Math.min(Math.round(Math.random() * max), max), min);
             }
-            ,
-            _randRange: function (min, max) {
-                return Math.max(Math.min(Math.round(Math.random() * max), max),
-                    min);
-            }
-        }
-        ,
-        rand: function (min, max) {
+        }, rand: function (min, max) {
             return Math
                 .max(Math.min(Math.round(Math.random() * max), max), min);
         }
-    }
-    ,
-    file: {
+    }, file: {
         /**
          * 获取扩展名
          * @param file_name
@@ -684,9 +656,7 @@ App.su = {
             var _rex_info = file_name.match(_reg);
             return _rex_info ? _rex_info[1] : false;
 
-        }
-        ,
-        /**
+        }, /**
          * 获取大小描述
          * @param file_size
          * @returns {number}
@@ -704,35 +674,27 @@ App.su = {
                 new_file_size = file_size / 1024 / 1024;
                 mark = "M";
             }
-            new_file_size = new Number(new_file_size).toFixed(2) + mark;
+            new_file_size = Number(new_file_size).toFixed(2) + mark;
             return new_file_size;
         }
 
-    }
-    ,
-    datetime: {
+    }, datetime: {
         /**
          * 星座
          */
         horoscopes: {
             data: "魔羯水瓶双鱼牡羊金牛双子巨蟹狮子处女天秤天蝎射手",
-            seps:
-                [20, 19, 21, 21, 21, 22, 23, 23, 23, 23, 22, 22],
+            seps: [20, 19, 21, 21, 21, 22, 23, 23, 23, 23, 22, 22],
             get:
 
                 function (month, day) {
                     month--;
-                    return this.data.substr(((day >= this.seps[month] ? (month + 1)
-                        : month) % 12) * 2, 2);
+                    return this.data.substr(((day >= this.seps[month] ? (month + 1) : month) % 12) * 2, 2);
                 }
-        }
-        ,
-        // 判断是否是闰年
+        }, // 判断是否是闰年
         isLeapYear: function (year) {
             return (year % 400 == 0) || ((year % 4 == 0) && (year % 100 != 0));
-        }
-        ,
-        // 计算指定月的总天数
+        }, // 计算指定月的总天数
         getDaysByMonth: function (year, month) {
             if (month == 2) {
                 if (this.isLeapYear(year)) {
@@ -740,15 +702,12 @@ App.su = {
                 } else {
                     return 28;
                 }
-            } else if ((month == 4) || (month == 6) || (month == 9)
-                || (month == 11)) {
+            } else if ((month == 4) || (month == 6) || (month == 9) || (month == 11)) {
                 return 30;
             } else {
                 return 31;
             }
-        }
-        ,
-        /**
+        }, /**
          * 格式化最近的时间
          */
         formatRecent: function (seconds) {
@@ -768,9 +727,7 @@ App.su = {
             } else {
                 return (Math.ceil(_d / 31536000) - 1) + "年前";
             }
-        }
-        ,
-        /**
+        }, /**
          * 获取当前日期
          */
         getCurrentDate: function () {
@@ -794,9 +751,7 @@ App.su = {
              // myDate.getMilliseconds(); //获取当前毫秒数(0-999)
              */
             return Y + '-' + m + '-' + d;
-        }
-        ,
-        /**
+        }, /**
          * 获取当前日期时间
          */
         getCurrentDateTime: function () {
@@ -827,14 +782,10 @@ App.su = {
             }
             // myDate.getMilliseconds(); //获取当前毫秒数(0-999)
             return Y + '-' + m + '-' + d + ' ' + H + ':' + i + ':' + s;
-        }
-        ,
-        getWeekdayByDate: function (date) {
+        }, getWeekdayByDate: function (date) {
             var _date = new Date(date);
             return _date.getDay();
-        }
-        ,
-        pickdate: function (input, handle) {
+        }, pickdate: function (input, handle) {
             var _handle = handle || input;
             $('#' + _handle).datepicker({
                 language: 'zh-CN',
@@ -845,14 +796,10 @@ App.su = {
             }).on('changeDate', function (e) {
                 $('#' + _handle).datepicker('hide');
             });
-        }
-        ,
-        pickdatetime: function (where) {
+        }, pickdatetime: function (where) {
             var _w = $('#' + where);
             _w.datetimepicker({
-                format: 'yyyy-MM-dd hh:mm',
-                pickSeconds: false,
-                language: 'zh-CN'
+                format: 'yyyy-MM-dd hh:mm', pickSeconds: false, language: 'zh-CN'
             }).on('show', function (e) {
                 $('.confirm_datetime').click(function () {
                     _w.datetimepicker('hide');
@@ -860,13 +807,10 @@ App.su = {
             });
         }
 
-    }
-    ,
-    color: {
+    }, color: {
         random: function () {
             // 16进制方式表示颜色0-F
-            var arrHex = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-                "A", "B", "C", "D", "E", "F"];
+            var arrHex = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
             var strHex = "#";
             var index;
             for (var i = 0; i < 6; i++) {
@@ -876,55 +820,37 @@ App.su = {
             }
             return strHex;
         }
-    }
-    ,
+    },
 
     notice: {
         succ: function (t, msg) {
             var _title = t || "标题";
             var _msg = msg || "";
-            $.notify({title: _title, message: _msg}
-                , {
-                    type: "success",
-                    placement: {
-                        from: "bottom",
-                        align: "left"
-                    },
-                    delay: 2000,
-                    timer: 2000
-                }
-            );
-        }
-        ,
+            $.notify({title: _title, message: _msg}, {
+                type: "success", placement: {
+                    from: "bottom", align: "left"
+                }, delay: 2000, timer: 2000
+            });
+        },
 
         info: function (t, msg) {
             var _title = t || "标题";
             var _msg = msg || "";
             $.notify({title: _title, message: _msg}, {
-                type: "info",
-                placement: {
-                    from: "bottom",
-                    align: "left"
-                },
-                delay: 2000,
-                timer: 2000
+                type: "info", placement: {
+                    from: "bottom", align: "left"
+                }, delay: 2000, timer: 2000
             });
-        }
-        ,
+        },
 
         err: function (t, msg) {
             var _title = t || "标题";
             var _msg = msg || "";
             $.notify({title: _title, message: _msg}, {
-                type: "danger",
-                placement: {
-                    from: "bottom",
-                    align: "left"
-                },
-                delay: 2000,
-                timer: 2000
+                type: "danger", placement: {
+                    from: "bottom", align: "left"
+                }, delay: 2000, timer: 2000
             });
         }
     }
-}
-;
+};

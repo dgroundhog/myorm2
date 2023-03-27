@@ -158,7 +158,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="./vendor/adminlte-3.2.0/js/adminlte.min.js"></script>
 
 
-<script src="./js/app.js"></script>
+<script src="./js/app.js?_t=<?php echo time();?>"></script>
 <script src="js/struct.js?_t=<?php echo time();?>"></script>
 <script src="./js/dt.js?_t=<?php echo time();?>"></script>
 

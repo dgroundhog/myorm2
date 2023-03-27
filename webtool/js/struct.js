@@ -35,6 +35,7 @@ function deepCopy(obj) {
     }
     return newObj;
 }
+
 //copy
 function clone(item) {
     if (!item) {
@@ -163,7 +164,6 @@ MyProject.prototype.parse = function (json_one) {
 };
 
 
-
 /**
  * 静态方法,是否有效的UID
  */
@@ -217,7 +217,7 @@ MyApp.prototype.parse = function (json_one) {
     this.package = json_one.package;
 
     //架构配置
-    this.arch_list = new Object();
+    this.arch_list = {};
     for (var ii in json_one.arch_list) {
         var _conf = new MyArch();
         _conf.parse(json_one.arch_list[ii]);
@@ -226,7 +226,7 @@ MyApp.prototype.parse = function (json_one) {
     }
 
     //数据库
-    this.db_list = new Object();
+    this.db_list = {};
     for (var ii in json_one.db_list) {
         var _db = new MyDb();
         _db.parse(json_one.db_list[ii]);
@@ -235,7 +235,7 @@ MyApp.prototype.parse = function (json_one) {
     }
 
     //全局字段
-    this.field_list = new Object();
+    this.field_list = {};
     for (var ii in json_one.field_list) {
         var _field = new MyField();
         _field.parse(json_one.field_list[ii]);
@@ -244,7 +244,7 @@ MyApp.prototype.parse = function (json_one) {
     }
 
     //实体模型
-    this.model_list = new Object();
+    this.model_list = {};
     for (var ii in json_one.model_list) {
         var _model = new MyModel();
         _model.parse(json_one.model_list[ii]);
@@ -263,7 +263,7 @@ MyApp.isGoodPackageName = function (_name) {
         console.log("~isGoodPackageName--111");
         return false;
     }
-    if ( _name.length > 32) {
+    if (_name.length > 32) {
         console.log("~PackageName limit to 32 chars");
         return false;
     }
@@ -306,7 +306,7 @@ MyModel.prototype.parse = function (json_one) {
     this.table_name = json_one.table_name;
 
     //字段列表
-    this.field_list = new Object();
+    this.field_list = {};
     for (var ii in json_one.field_list) {
         var _obj = new MyField();
         _obj.parse(json_one.field_list[ii]);
@@ -316,7 +316,7 @@ MyModel.prototype.parse = function (json_one) {
     }
 
     //索引列表
-    this.idx_list = new Object();
+    this.idx_list = {};
     for (var ii in json_one.idx_list) {
         var _obj = new MyIndex();
         _obj.parse(json_one.idx_list[ii]);
@@ -325,7 +325,7 @@ MyModel.prototype.parse = function (json_one) {
     }
 
     //函数列表
-    this.fun_list = new Object();
+    this.fun_list = {};
     for (var ii in json_one.fun_list) {
         var _obj = new MyFun();
         _obj.parse(json_one.fun_list[ii]);
@@ -483,7 +483,7 @@ MyIndex.prototype.parse = function (json_one) {
     //解析一个单体
     this.parseBasic(json_one);
 
-    this.field_list = new Object();
+    this.field_list = {};
     for (var ii in json_one.field_list) {
         var _field = new MyField();
         _field.parse(json_one.field_list[ii]);
@@ -534,9 +534,9 @@ MyFun.prototype.parse = function (json_one) {
     this.group_field = json_one.group_field;
     this.group_by = json_one.group_by;
     this.group_having = null;
-    if(undefined != json_one.group_having && null != json_one.group_having && null != json_one.group_having.uuid){
+    if (undefined != json_one.group_having && null != json_one.group_having && null != json_one.group_having.uuid) {
         console.log(json_one.group_having);
-        var o_having  =  new MyCond();
+        var o_having = new MyCond();
         o_having.parse(json_one.group_having);
         this.group_having = o_having;
     }
@@ -553,13 +553,13 @@ MyFun.prototype.parse = function (json_one) {
     this.limit = json_one.limit;
 
     this.where = null;
-    if(undefined != json_one.where && null != json_one.where ){
-        var o_where  =  new MyWhere();
+    if (undefined != json_one.where && null != json_one.where) {
+        var o_where = new MyWhere();
         o_where.parse(json_one.where);
         this.where = o_where;
     }
 
-    this.field_list = new Object();
+    this.field_list = {};
     for (var ii in json_one.field_list) {
         var _field = new MyField();
         _field.parse(json_one.field_list[ii]);
@@ -597,7 +597,7 @@ MyWhere.prototype.parse = function (json_one) {
     this.type = json_one.type;
     this.parent_where = json_one.parent_where;
 
-    this.cond_list = new Object();
+    this.cond_list = {};
     for (var ii in json_one.cond_list) {
         var _cond = new MyCond();
         _cond.parse(json_one.cond_list[ii]);
@@ -605,7 +605,7 @@ MyWhere.prototype.parse = function (json_one) {
         this.cond_list[_uuid] = _cond;
     }
 
-    this.where_list = new Object();
+    this.where_list = {};
     for (var ii in json_one.where_list) {
         var _where = new MyWhere();
         _where.parse(json_one.where_list[ii]);
@@ -641,10 +641,8 @@ MyCond.prototype.parse = function (json_one) {
     this.parseBasic(json_one);
     this.type = json_one.type;
     this.field = json_one.field;
-    this.v1 =json_one.v1;
+    this.v1 = json_one.v1;
     this.v2 = json_one.v2;
     this.v1_type = json_one.v1_type;
     this.v2_type = json_one.v2_type;
-
-
 }

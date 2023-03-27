@@ -116,6 +116,42 @@
                         </div>
                     </div>
                 </form>
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fa fa fa-cogs"></i>
+                            构建当前版本
+                        </h3>
+
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col">
+                                <select id="sel_build_mvc" class="form-control form-control-sm select2">
+
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select id="sel_build_db" class="form-control form-control-sm select2">
+
+                                </select>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-primary" id="btn_build">
+                                    <i class="fa fa-flag"></i> 构建模型
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-danger" id="btn_build_all">
+                                    <i class="fa fa-flag"></i> 构建全部
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- /.col-md-6 -->
@@ -130,6 +166,18 @@
                                 2、
                                 应用版本信息</h3>
                             <div class="card-tools">
+                                <button type="button" class="btn btn-tool" id="btn_delete_app">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+
+                                <button type="button" class="btn btn-tool" id="btn_edit_app">
+                                    <i class="fas fa-edit"></i> 编辑
+                                </button>
+
+                                <button type="button" class="btn btn-tool" id="btn_clone_app">
+                                    <i class="fas fa-copy"></i> 复制
+                                </button>
+
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse"
                                         title="Collapse">
                                     <i class="fas fa-minus"></i>
@@ -166,7 +214,7 @@
                             </div>
 
                             <div class="form-group row">
-                                <label for="app_file_logo" class="col-sm-2 col-form-label">图片</label>
+                                <label  class="col-sm-2 col-form-label">图片</label>
                                 <div class="col-sm-10">
                                     <table class="table table-sm ">
                                         <tbody>
@@ -212,59 +260,13 @@
                         <!-- /.card-body -->
 
                         <div class="card-footer">
-                            <button type="button" class="btn btn-primary" id="btn_edit_app">
-                                <i class="fa fa-edit"></i>
-                                编辑
-                            </button>
-                            <button type="button" class="btn btn-success" id="btn_clone_app">
-                                <i class="fa fa-copy"></i>
-                                复制
-                            </button>
-                            <button type="button" class="btn btn-danger float-right" id="btn_delete_app">
-                                <i class="fa fa-trash"></i>
-                                删除
-                            </button>
+
                         </div>
 
                     </div>
                 </form>
 
-                <div class="card card-info card-outline">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fa fa fa-cogs"></i>
-                            构建
-                        </h3>
 
-                    </div>
-                    <!-- /.card-header -->
-                    <!-- form start -->
-                    <div class="card-body">
-                        <div class="row">
-
-                            <div class="col">
-                                <select id="sel_build_mvc" class="form-control form-control-sm select2">
-
-                                </select>
-                            </div>
-                            <div class="col">
-                                <select id="sel_build_db" class="form-control form-control-sm select2">
-
-                                </select>
-                            </div>
-                            <div class="col">
-                                <button type="button" class="btn btn-primary" id="btn_build">
-                                    <i class="fa fa-flag"></i> 构建模型
-                                </button>
-                            </div>
-                            <div class="col">
-                                <button type="button" class="btn btn-danger" id="btn_build_all">
-                                    <i class="fa fa-flag"></i> 构建全部
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
             <!-- /.col-md-6 -->
 

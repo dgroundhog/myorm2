@@ -70,7 +70,7 @@ App.dt.aPost = function (_data, _callback) {
  * @param _project_info
  */
 App.dt.renderAll = function (_project_info) {
-
+    //TODO
 }
 
 /**
@@ -171,41 +171,13 @@ App.dt.data.ccField_Time = function (time_key, title) {
     return _field;
 }
 
-/**
- * 模型自定义主键
- * cadmin
- * uadmin
- */
-App.dt.data.ccField_Uuid = function (key, title) {
-    var _field = new MyField();
-    var _now = App.su.datetime.getCurrentDateTime();
-    _field.uuid = App.su.maths.uuid.create();
-    _field.ctime = _now;
-    _field.utime = _now;
-    _field.is_global = 1;
-    _field.name = key;
-    _field.title = title;
-    _field.memo = "sys";
-    _field.type = "STRING";
-    _field.size = 36;
-    _field.auto_increment = 0;
-    _field.default_value = "";
-    _field.required = 1;
-    _field.filter = "NO_FILTER";
-    _field.regexp = "";
-    _field.input_by = "DEFAULT";
-    _field.input_hash = "";
-    _field.position = 1;
-    return _field;
-}
-
 
 /**
  * 模型名称
  * cadmin
  * uadmin
  */
-App.dt.data.ccField_Name = function (key, title) {
+App.dt.data.ccField_Text = function (key, title) {
     var _field = new MyField();
     var _now = App.su.datetime.getCurrentDateTime();
     _field.uuid = App.su.maths.uuid.create();
@@ -235,7 +207,7 @@ App.dt.data.ccField_Name = function (key, title) {
  * cadmin
  * uadmin
  */
-App.dt.data.ccField_Text = function (key, title) {
+App.dt.data.ccField_TextArea = function (key, title) {
     var _field = new MyField();
     var _now = App.su.datetime.getCurrentDateTime();
     _field.uuid = App.su.maths.uuid.create();
@@ -293,7 +265,7 @@ App.dt.data.ccField_Img = function (key, title) {
 /**
  *  单一字段的配置
  */
-App.dt.data.ccField_State = function (key, title) {
+App.dt.data.ccField_Char = function (key, title) {
     var _field = new MyField();
     var _now = App.su.datetime.getCurrentDateTime();
     _field.uuid = App.su.maths.uuid.create();
@@ -345,7 +317,7 @@ App.dt.data.ccField_Int = function (key, title) {
     return _field;
 }
 
-
+//创建全局字段
 App.dt.data.ccGlobalFields = function (key) {
     var self = App.dt;
     var _currApp = self.project.getCurrApp();
@@ -354,14 +326,23 @@ App.dt.data.ccGlobalFields = function (key) {
             return _currApp.field_list[ii];
         }
     }
+
     var _obj = undefined;
     switch (key) {
-
         case "id":
             _obj = self.data.ccField_ID();
             break;
+        case "name":
+            _obj = self.data.ccField_Text("name", "名称");
+            break;
+        case "memo":
+            _obj = self.data.ccField_TextArea("memo", "备注");
+            break;
+        case "state":
+            _obj = self.data.ccField_Char("state", "业务状态");
+            break;
         case "flag":
-            _obj = self.data.ccField_State("flag", "数据状态");
+            _obj = self.data.ccField_Char("flag", "数据状态");
             break;
         case "ctime":
             _obj = self.data.ccField_Time("ctime", "创建时间");
@@ -370,15 +351,16 @@ App.dt.data.ccGlobalFields = function (key) {
             _obj = self.data.ccField_Time("utime", "更新时间");
             break;
         case "cadmin":
-            _obj = self.data.ccField_Uuid("cadmin", "创建人");
+            _obj = self.data.ccField_Text("cadmin", "创建人");
             break;
         case "uadmin":
-            _obj = self.data.ccField_Uuid("uadmin", "更新人");
+            _obj = self.data.ccField_Text("uadmin", "更新人");
             break;
         default:
             break;
     }
     if (undefined != _obj) {
+        _obj.is_global = 1;//
         _currApp.field_list[_obj.uuid] = _obj;
         self.project.setCurrApp(_currApp);
         return _obj;
@@ -416,11 +398,11 @@ App.dt.data.ccModel_Group = function () {
     _modelGroup.fun_list = {};
 
     var _f_id = self.data.ccGlobalFields("id");
-    var _f_group_id = self.data.ccField_Name("group_id", "分组ID");
-    var _f_name = self.data.ccField_Name("name", "组名");
-    var _f_role = self.data.ccField_Name("role", "权限");
-    var _f_memo = self.data.ccField_Text("memo", "备注");
-    var _f_state = self.data.ccField_State("state", "状态");
+    var _f_group_id = self.data.ccField_Text("group_id", "分组ID");
+    var _f_name = self.data.ccField_Text("name", "组名");
+    var _f_role = self.data.ccField_Text("role", "权限");
+    var _f_memo = self.data.ccField_TextArea("memo", "备注");
+    var _f_state = self.data.ccField_Char("state", "状态");
     var _f_flag = self.data.ccGlobalFields("flag");
     var _f_ctime = self.data.ccGlobalFields("ctime");
     var _f_utime = self.data.ccGlobalFields("utime");
@@ -704,13 +686,13 @@ App.dt.data.ccModel_User = function () {
     _modelUser.idx_list = {};
     _modelUser.fun_list = {};
     var _f_id = self.data.ccGlobalFields("id");
-    var _f_user_id = self.data.ccField_Uuid("user_id", "人员ID");
-    var _f_group_id = self.data.ccField_Name("group_id", "分组ID");
-    var _f_name = self.data.ccField_Name("name", "姓名");
-    var _f_gender = self.data.ccField_Name("gender", "性别");
-    var _f_type = self.data.ccField_Name("type", "类型");
-    var _f_memo = self.data.ccField_Text("memo", "备注");
-    var _f_state = self.data.ccField_State("state", "状态");
+    var _f_user_id = self.data.ccField_Text("user_id", "人员ID");
+    var _f_group_id = self.data.ccField_Text("group_id", "分组ID");
+    var _f_name = self.data.ccField_Text("name", "姓名");
+    var _f_gender = self.data.ccField_Text("gender", "性别");
+    var _f_type = self.data.ccField_Text("type", "类型");
+    var _f_memo = self.data.ccField_TextArea("memo", "备注");
+    var _f_state = self.data.ccField_Char("state", "状态");
     var _f_flag = self.data.ccGlobalFields("flag");
     var _f_ctime = self.data.ccGlobalFields("ctime");
     var _f_utime = self.data.ccGlobalFields("utime");
@@ -1087,30 +1069,29 @@ App.dt.data.ccModel_Admin = function () {
     _modelAdmin.uuid = _uuidAdmin;
     _modelAdmin.ctime = _now;
     _modelAdmin.utime = _now;
-    _modelAdmin.name = "admin"
+    _modelAdmin.name = "sys_admin"
     _modelAdmin.title = "管理员";
     _modelAdmin.memo = "auto";
     _modelAdmin.primary_key = "admin_id";
-    _modelAdmin.table_name = "admin";
+    _modelAdmin.table_name = "sys_admin";
     _modelAdmin.fa_icon = "address-card";
     _modelAdmin.fa_icon = 1;
     _modelAdmin.field_list = {};
     _modelAdmin.idx_list = {};
     _modelAdmin.fun_list = {};
     var _f_id = self.data.ccGlobalFields("id");
-    var _f_admin_id = self.data.ccField_Uuid("admin_id", "登录名");
-    var _f_account = self.data.ccField_Name("account", "登录名");
-    var _f_passwd = self.data.ccField_Name("passwd", "加密密码");
-    var _f_role = self.data.ccField_Name("role", "权限");
-    var _f_name = self.data.ccField_Name("name", "姓名");
-    var _f_memo = self.data.ccField_Text("memo", "备注");
-    var _f_state = self.data.ccField_State("state", "业务状态");
+    var _f_admin_id = self.data.ccField_Text("admin_id", "登录名");
+    var _f_account = self.data.ccField_Text("account", "登录名");
+    var _f_passwd = self.data.ccField_Text("passwd", "加密密码");
+    var _f_role = self.data.ccField_Text("role", "权限");
+    var _f_name = self.data.ccGlobalFields("name");
+    var _f_memo = self.data.ccGlobalFields("memo");
+    var _f_state = self.data.ccGlobalFields("state");
     var _f_flag = self.data.ccGlobalFields("flag");
     var _f_ctime = self.data.ccGlobalFields("ctime");
     var _f_utime = self.data.ccGlobalFields("utime");
     var _f_cadmin = self.data.ccGlobalFields("cadmin");
     var _f_uadmin = self.data.ccGlobalFields("uadmin");
-
 
     _f_role.input_hash = "R00,超级管理员;R01,一般操作员";
 
@@ -1127,6 +1108,8 @@ App.dt.data.ccModel_Admin = function () {
     _modelAdmin.field_list[_f_utime.uuid] = _f_utime;
     _modelAdmin.field_list[_f_cadmin.uuid] = _f_cadmin;
     _modelAdmin.field_list[_f_uadmin.uuid] = _f_uadmin;
+
+    console.log(_curr_app.field_list);
 
     var _idx_u = new MyIndex();
     _idx_u.uuid = App.su.maths.uuid.create();
@@ -2328,7 +2311,6 @@ App.dt.project.archEdit = function (_uuid) {
 }
 
 
-
 /**
  * 复制架构配置
  */
@@ -2658,10 +2640,72 @@ App.dt.project.fieldSave = function () {
     _field.input_hash = $("#txt_field_hash").val();
     _field.position = $("#txt_field_position").val();
     //TODO 去重复
-    console.log(_field);
+    //console.log(_field);
     if (App.su.isEmpty(_model_id)) {
         console.log("全局字段");
         _curr_app.field_list[_uuid] = _field;
+        //TODO 替换全部模型的字段信息
+        for (var ii in _curr_app.model_list) {
+            var ii_model = _curr_app.model_list[ii];
+            var _m_uid = ii_model.uuid;
+            for (var jj in ii_model.field_list) {
+                var jj_field = ii_model.field_list[jj];
+                var _f_uid = jj_field.uuid;
+                //console.log(_uuid + " =?= " + _f_uid);
+                if (_uuid == _f_uid) {
+                    var last_pos = jj_field.position;
+                    var _replase = deepCopy(_field);
+                    _replase.uuid = _uuid;
+                    _replase.position = last_pos;
+                    //console.log(_replase);
+                    ii_model.field_list[_uuid] = _replase;
+                }
+            }
+
+            for (var jj in ii_model.idx_list) {
+                var jj_idx = ii_model.idx_list[jj];
+                var _i_uid = jj_idx.uuid;
+                //console.log(_uuid + " =?= " + _f_uid);
+                for (var kk in jj_idx.field_list) {
+                    var kk_field = jj_idx.field_list[kk];
+                    var _f_uid = kk_field.uuid;
+                    //console.log(_uuid + " =?= " + _f_uid);
+                    if (_uuid == _f_uid) {
+                        var last_pos = kk_field.position;
+                        var _replase = deepCopy(_field);
+                        _replase.uuid = _uuid;
+                        _replase.position = last_pos;
+                        //console.log(_replase);
+                        jj_idx.field_list[_uuid] = _replase;
+                    }
+                }
+                ii_model.idx_list[_i_uid] = jj_idx;
+            }
+
+            for (var jj in ii_model.fun_list) {
+                var jj_fun = ii_model.fun_list[jj];
+                var _i_uid = jj_fun.uuid;
+                //console.log(_uuid + " =?= " + _f_uid);
+                for (var kk in jj_fun.field_list) {
+                    var kk_field = jj_fun.field_list[kk];
+                    var _f_uid = kk_field.uuid;
+                    //console.log(_uuid + " =?= " + _f_uid);
+                    if (_uuid == _f_uid) {
+                        var last_pos = kk_field.position;
+                        var _replase = deepCopy(_field);
+                        _replase.uuid = _uuid;
+                        _replase.position = last_pos;
+                        //console.log(_replase);
+                        jj_fun.field_list[_uuid] = _replase;
+                    }
+                }
+                ii_model.fun_list[_i_uid] = jj_fun;
+            }
+
+            _curr_app.model_list[_m_uid] = ii_model;
+        }
+
+
     } else {
         console.log("私有字段");
         var _model = self.project.getCurrModel(_model_id);
@@ -2743,12 +2787,10 @@ App.dt.project.fieldEdit = function (_uuid, _model_id) {
 
     $("#txt_field_regexp").val(_field.regexp);
 
-
     $("#sel_field_input_by").val(_field.input_by);
 
     $("#txt_field_hash").val(_field.input_hash);
     $("#txt_field_position").val(_field.position);
-
 
     $("#modal_edit_field").modal('show');
     $('.select2').change();
@@ -2852,7 +2894,56 @@ App.dt.project.fieldDrop = function (_uuid, _model_id) {
                     _curr_app.model_list[_model_id] = _curr_model;
                     self.project.setCurrApp(_curr_app);
                 } else if (undefined != _curr_app.field_list[_uuid]) {
+
+                    console.log("删除其他用到公共字段的地方");
+                    for (var ii in _curr_app.model_list) {
+                        var ii_model = _curr_app.model_list[ii];
+                        var _m_uid = ii_model.uuid;
+                        console.log("删除模型的字段--"+_m_uid);
+                        for (var jj in ii_model.field_list) {
+                            var jj_field = ii_model.field_list[jj];
+                            var _f_uid = jj_field.uuid;
+                            console.log(_uuid + " =?= " + _f_uid);
+                            if (_uuid == _f_uid) {
+                               delete ii_model.field_list[_f_uid];
+                            }
+                        }
+
+                        for (var jj in ii_model.idx_list) {
+                            var jj_idx = ii_model.idx_list[jj];
+                            var _i_uid = jj_idx.uuid;
+                            console.log("删除索引的字段--"+_i_uid);
+                            //console.log(_uuid + " =?= " + _f_uid);
+                            for (var kk in jj_idx.field_list) {
+                                var kk_field = jj_idx.field_list[kk];
+                                var _f_uid = kk_field.uuid;
+                                console.log(_uuid + " =?= " + _f_uid);
+                                if (_uuid == _f_uid) {
+                                    delete jj_idx.field_list[_uuid] ;
+                                }
+                            }
+                            ii_model.idx_list[_i_uid] = jj_idx;
+                        }
+
+                        for (var jj in ii_model.fun_list) {
+                            var jj_fun = ii_model.fun_list[jj];
+                            var _i_uid = jj_fun.uuid;
+                            console.log("删除函数的字段--"+_i_uid);
+                            //console.log(_uuid + " =?= " + _f_uid);
+                            for (var kk in jj_fun.field_list) {
+                                var kk_field = jj_fun.field_list[kk];
+                                var _f_uid = kk_field.uuid;
+                                console.log(_uuid + " =?= " + _f_uid);
+                                if (_uuid == _f_uid) {
+                                    delete jj_fun.field_list[_uuid] ;
+                                }
+                            }
+                            ii_model.fun_list[_i_uid] = jj_fun;
+                        }
+                        _curr_app.model_list[_m_uid] = ii_model;
+                    }
                     delete _curr_app.field_list[_uuid];
+
                     self.project.setCurrApp(_curr_app);
                     self.succ("移除成功2-fieldDrop");
                 } else {
