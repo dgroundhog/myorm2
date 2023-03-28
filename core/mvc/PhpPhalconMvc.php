@@ -1128,6 +1128,11 @@ class PhpPhalconMvc extends MvcBase
         // TODO: Implement ccDoc() method.
     }
 
+    function ccEcode($kv_list)
+    {
+
+    }
+
 
     /**
      * 创建模型层

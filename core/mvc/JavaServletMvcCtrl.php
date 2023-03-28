@@ -51,28 +51,27 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo "package  {$package}.controllers;\n";
 
 
-        echo "import com.yzzq.mvc.AjaxResult;\n";
-        echo "import com.yzzq.mvc.MyContext;\n";
-        echo "import com.yzzq.mvc.DateFromToBeanx;\n";
-        echo "import com.yzzq.mvc.DateFromToBeanx;\n";
-        echo "import com.yzzq.mvc.UploadBeanx;\n";
-        echo "import com.yzzq.mvc.ECode;\n";
-        echo "import com.yzzq.mvc.FormServletBase;\n";
-        echo "import com.yzzq.mvc.PagerHelper;\n";
-        echo "import com.yzzq.utils.MixUtil;\n";
+        echo "import com.yzzq.base.webapp.AjaxResult;\n";
+        echo "import com.yzzq.base.webapp.MyContext;\n";
+        echo "import com.yzzq.base.webapp.DateFromToBeanx;\n";
+        echo "import com.yzzq.base.webapp.DateFromToBeanx;\n";
+        echo "import com.yzzq.base.webapp.UploadBeanx;\n";
+        echo "import com.yzzq.base.webapp.ECode;\n";
+        echo "import com.yzzq.base.webapp.FormServletBase;\n";
+        echo "import com.yzzq.base.webapp.PagerHelper;\n";
+        echo "import com.yzzq.base.utils.MixUtil;\n";
 
         echo "import {$package}.MyApp;\n";
-        echo "import {$package}.emuns.MyECode;\n";
-        echo "import {$package}.beans.AdminBean;\n";
-        echo "import {$package}.models.AdminModelX;\n";
+        echo "import {$package}.enums.MyECode;\n";
+        echo "import {$package}.beans.Sys_adminBean;\n";
+        echo "import {$package}.models.Sys_adminModelX;\n";
         echo "import {$package}.beans.{$uc_model_name}Bean;\n";
         echo "import {$package}.models.{$uc_model_name}Model;\n";
 
         echo "import org.slf4j.Logger;\n";
         echo "import org.slf4j.LoggerFactory;\n";
         echo "import org.apache.commons.lang3.StringUtils;\n";
-
-
+        
         echo "import java.io.IOException;\n";
         echo "import java.io.InputStream;\n";
         echo "import java.io.ByteArrayInputStream;\n";
@@ -163,9 +162,9 @@ class JavaServletMvcCtrl extends JavaServletMvc
                     echo _tab(4) . "ctx.setVariable(\"action_title\", \"默认列表\");\n";
                     echo _tab(4) . "_gList(req,resp,ctx);\n";
                     echo _tab(4) . "break;\n";
-                    //echo _tab(3) . "case \"/ajax_list\":\n";
-                    //echo _tab(4) . "_gAjaxList(req,resp,ctx);\n";
-                    //echo _tab(4) . "break;\n";
+                //echo _tab(3) . "case \"/ajax_list\":\n";
+                //echo _tab(4) . "_gAjaxList(req,resp,ctx);\n";
+                //echo _tab(4) . "break;\n";
 
                 default:
                     break;
@@ -332,8 +331,8 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _gNew(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("启用CSRF预防", 2);
-        echo _tab(2) . "touchFromToken(req, ctx);\n";
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "setupFormCSRF(req, ctx);\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("加载基本数据TODO", 2);
         echo _tab(2) . "Map<String,String> mInfo = new HashMap<String,String>();\n";
         echo _tab(2) . "ctx.setVariable(\"mInfo\", mInfo);\n";
@@ -350,11 +349,11 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _pSave(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!checkFromToken(req)) {\n";
+        echo _tab(2) . "if (!checkFormCSRF(req)) {\n";
         echo _tab(3) . "resp.sendRedirect(\"../index.jsp?err_code=CSRF\");\n";
         echo _tab(3) . "return;\n";
         echo _tab(2) . "}\n";
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         $this->_echoReqParams($a_param_define, $a_param_field);
@@ -379,7 +378,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _pAjaxSave(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查攻击", 2);
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         $this->_echoReqParams($a_param_define, $a_param_field);
@@ -413,22 +412,23 @@ class JavaServletMvcCtrl extends JavaServletMvc
         foreach ($a_param_define as $param) {
             $o_field = $a_param_field[$ii];
             $key = $o_field->name;
-            if(!isset($a_used_key[$key])){
-                $a_used_key[$key]=1;
-            }
-            else{
+
+            if (!isset($a_used_key[$key])) {
+                $a_used_key[$key] = 1;
+            } else {
                 $a_used_key[$key]++;
             }
             $i_key_count = $a_used_key[$key];
-            $vkey = $key."_{$i_key_count}";
-
+            $vkey = $key . "_{$i_key_count}";
+            $title = $o_field->title;
             echo "\n";
             echo _tab(2) . "String v_{$vkey} = req.getParameter(\"{$key}\");\n";
+            echo _tab(2) . "logger.debug(\"GetParam-({$title})-({$key})--(\" + v_{$vkey} + \")\");\n";
             $d_value = $o_field->default_value;
             if ($this->isIntType($o_field->type) || $this->isBoolType($o_field->type)) {
                 $d_value = ($d_value == "") ? 0 : (1 * $d_value);
                 echo _tab(2) . "{$param} = tidyIntParam(v_{$vkey},{$d_value});\n";
-            } elseif ($this->isBlobType($o_field->type) ) {
+            } elseif ($this->isBlobType($o_field->type)) {
                 echo _tab(2) . "{$param} = v_{$vkey}.getBytes();\n";
             } else {
                 echo _tab(2) . "{$param} = tidyStrParam(v_{$vkey},\"{$d_value}\");\n";
@@ -446,7 +446,10 @@ class JavaServletMvcCtrl extends JavaServletMvc
                 echo _tab(2) . "//TODO 验证正则表达式 {$o_field->regexp};\n";
             }
 
-            echo _tab(2) . "logger.debug(\"GetParam-({$key})--(\" + v_{$vkey} + \")\");\n";
+            if ($key == "ctime" || $key == "utime") {
+                echo _tab(2) . "//TODO 日期范围需要从字段取值 date_from date_to  ";
+                echo _tab(2) . "//TODO DateFromToBeanx dateFromToBeanx = listDataFromTo( v_date_from,  v_date_to);\n";
+            }
             $ii++;
         }
 
@@ -477,11 +480,11 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _pDelete(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!checkFromToken(req)) {\n";
+        echo _tab(2) . "if (!checkFormCSRF(req)) {\n";
         echo _tab(3) . "resp.sendRedirect(\"../index.jsp?err_code=CSRF\");\n";
         echo _tab(3) . "return;\n";
         echo _tab(2) . "}\n";
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("获取POST参数", 2);
 
         _fun_comment("删除条件", 2);
@@ -505,7 +508,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         _fun_comment("ajax删除", 1);
         echo _tab(1) . "protected void  _pAjaxDelete(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         _fun_comment("删除条件", 2);
@@ -555,8 +558,8 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _gEdit(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("启用CSRF预防", 2);
-        echo _tab(2) . "touchFromToken(req, ctx);\n";
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "setupFormCSRF(req, ctx);\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
 
 
         //更新条件
@@ -587,11 +590,11 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _pModify(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查CSRF攻击", 2);
-        echo _tab(2) . "if (!checkFromToken(req)) {\n";
+        echo _tab(2) . "if (!checkFormCSRF(req)) {\n";
         echo _tab(3) . "resp.sendRedirect(\"../index.jsp?err_code=CSRF\");\n";
         echo _tab(3) . "return;\n";
         echo _tab(2) . "}\n";
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("获取POST参数", 2);
         _fun_comment("需要更新的字段", 2);
         $this->_echoReqParams($a_u_param_define, $a_u_param_field);
@@ -625,7 +628,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         _fun_comment("ajax更新", 1);
         echo _tab(1) . "protected void  _pAjaxModify(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         _fun_comment("需要更新的字段", 2);
@@ -677,7 +680,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _gDetail(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查攻击", 2);
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
         //更新条件
         list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $this->fun_fetch);
 
@@ -771,7 +774,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _gList(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
         //TODO
         _fun_comment("检查攻击", 2);
-        echo _tab(2) . "AdminModelX mVisitor = (AdminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("获取GET参数", 2);
         $this->_echoReqParams($a_w_param_define, $a_w_param_field);
         _fun_comment("TODO 注意来自session的变量", 2);
@@ -797,8 +800,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
             if ($is_pager_size_input) {
                 echo _tab(2) . "String v_page_size = req.getParameter(\"page_size\");\n";
                 echo _tab(2) . "int i_page_size = tidyIntParam(v_page_size, 20);\n";
-            }
-            else{
+            } else {
                 echo _tab(2) . "int i_page_size = {$pager_size};\n";
             }
         }
@@ -1439,15 +1441,12 @@ $has_upload = false;
                                     $uc_key = ucfirst($key);
                                     $val1 = "th:value=\"\${mInfo.{$key}}\"";
                                     $val2 = "th:text=\"\${mInfo.{$key}}\"";
-                                    $required = ($o_field->required == 1) ? 'required=required' : '';
+                                    $required = ($o_field->required == 1) ? 'required="required"' : '';
 
-                                    ?>
-                                    <div class="form-group row">
+                                    ?> <div class="form-group row">
                                         <label for="ipt_<?= $key ?>"
                                                class="col-sm-2 col-form-label"><?= $o_field->title ?></label>
-                                        <div class="col-sm-10">
-
-                                            <?php
+                                        <div class="col-sm-10"><?php
 
 
                                             switch ($o_field->input_by) {
@@ -1492,9 +1491,7 @@ $has_upload = false;
                                                     $this->makeHtmlIptLineText($model, $o_field);
 
                                                     break;
-                                            } ?>
-
-                                            <small id="help_<?= $key ?>"
+                                            } ?> <small id="help_<?= $key ?>"
                                                    class="help_text form-text text-muted"><?= trim($o_field->memo) ?></small>
                                             <div class="invalid-feedback"></div>
                                             <div class="valid-feedback"></div>
@@ -1549,7 +1546,7 @@ $key = $field->name;
 $uc_key = ucfirst($key);
 $val1 = "th:value=\"\${mInfo.{$key}}\"";
 $val2 = "th:text=\"\${mInfo.{$key}}\"";
-$required = ($field->required == 1) ? 'required=required' : '';
+$required = ($field->required == 1) ? 'required="required"' : '';
 if ($for_show){
 ?>
     <textarea class="form-control"
@@ -1563,9 +1560,8 @@ if ($for_show){
               rows="3"
               name="<?= $key ?>"
               id="ipt_<?= $key ?>"
-                                                      <?= $val2 ?>
-        <?= $required ?>
-                                                    ></textarea>
+               <?= $val2 ?>
+             <?= $required ?> ></textarea>
 <?php
 }
 }
@@ -1587,7 +1583,7 @@ if ($for_show){
     ?>
 <select class="form-control select2"
         name="<?= $key ?>"
-        id="ipt_<?= $key ?>"
+        id="ipt_<?= $key ?>">
     <option value="">不限</option>
     <option <?= "th:each=\"_Id,_Value:\${m_{$uc_key}_KV}\"" ?>
             th:value="${_Value.current.key}"
@@ -1607,8 +1603,7 @@ $val2 = "th:text=\"\${mInfo.{$key}}\"";
 $a_hash = explode(";", $field->input_hash);
 if ($for_show){
 ?>
-<input type="text" class="form-control "
-       readonly="readonly"
+<input type="text" class="form-control " readonly="readonly"
     <?= $val1 ?>
 />
     <?php
@@ -1641,8 +1636,7 @@ $val2 = "th:text=\"\${mInfo.{$key}}\"";
 $a_hash = explode(";", $field->input_hash);
 if ($for_show){
 ?>
-<input type="text" class="form-control "
-       readonly="readonly"
+<input type="text" class="form-control " readonly="readonly"
     <?= $val1 ?>
 />
     <?php
@@ -1672,7 +1666,7 @@ $key = $field->name;
 $uc_key = ucfirst($key);
 $val1 = "th:value=\"\${mInfo.{$key}}\"";
 $val2 = "th:text=\"\${mInfo.{$key}}\"";
-$required = ($field->required == 1) ? 'required=required' : '';
+$required = ($field->required == 1) ? 'required="required"' : '';
 if ($for_show){
 ?>
 <input type="text" class="form-control "
@@ -1706,7 +1700,7 @@ $key = $field->name;
 $uc_key = ucfirst($key);
 $val1 = "th:value=\"\${mInfo.{$key}}\"";
 $val2 = "th:text=\"\${mInfo.{$key}}\"";
-$required = ($field->required == 1) ? 'required=required' : '';
+$required = ($field->required == 1) ? 'required="required"' : '';
 if ($for_show){
 ?>
 <input type="text" class="form-control "
@@ -1740,7 +1734,7 @@ $key = $field->name;
 $uc_key = ucfirst($key);
 $val1 = "th:value=\"\${mInfo.{$key}}\"";
 $val2 = "th:text=\"\${mInfo.{$key}}\"";
-$required = ($field->required == 1) ? 'required=required' : '';
+$required = ($field->required == 1) ? 'required="required"' : '';
 if ($for_show){
 ?>
 <input type="text" class="form-control "
@@ -1766,14 +1760,13 @@ $key = $field->name;
 $uc_key = ucfirst($key);
 $val1 = "th:value=\"\${mInfo.{$key}}\"";
 $val2 = "th:text=\"\${mInfo.{$key}}\"";
-$required = ($field->required == 1) ? 'required=required' : '';
+$required = ($field->required == 1) ? 'required="required"' : '';
 if ($for_show){
 ?>
-<input type="text" class="form-control "
-       readonly="readonly"
+<input type="text" class="form-control " readonly="readonly"
+       id="ipt_<?= $key ?>"
     <?= $val1 ?>
-/>
-    <?php
+/> <?php
 }  else
 {
     ?>
@@ -1782,9 +1775,7 @@ if ($for_show){
        id="ipt_<?= $key ?>"
     <?= $val1 ?>
     <?= $required ?>
-/>
-
-<?php
+/><?php
 }
 }
 
@@ -1869,10 +1860,9 @@ $has_upload = false;
                                     $uc_key = ucfirst($key);
                                     $val1 = "th:value=\"\${mInfo.{$key}}\"";
                                     $val2 = "th:text=\"\${mInfo.{$key}}\"";
-                                    $required = ($o_field->required == 1) ? 'required=required' : '';
+                                    $required = ($o_field->required == 1) ? 'required="required"' : '';
 
-                                    ?>
-                                    <div class="form-group row">
+                                    ?> <div class="form-group row">
                                         <label for="ipt_<?= $key ?>"
                                                class="col-sm-2 col-form-label"><?= $o_field->title ?></label>
                                         <div class="col-sm-10">

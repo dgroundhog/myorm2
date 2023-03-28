@@ -35,3 +35,5 @@
 | swing          | 单纯的java swing UI       |
 
 # code to code，code for milk
+
+cp -rf D:/build/20230329003649/src/main/*  D:/build/test/test/src/main

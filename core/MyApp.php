@@ -70,6 +70,14 @@ class MyApp extends MyStruct
      */
     public $model_list = array();
 
+
+    /**
+     * 错误码列表
+     * @var array
+     */
+    public $ecode_list = array();
+
+
     /**
      * app数据ok
      * @var boolean
@@ -158,6 +166,7 @@ class MyApp extends MyStruct
         $this->db_list = array();
         $this->arch_list = array();
         $this->field_list = array();
+        $this->ecode_list = array();
 
         //cc一个默认的db和默认的arch
         $o_arch = new MyArch();
@@ -274,6 +283,20 @@ class MyApp extends MyStruct
             /* @var MyModel $o_model */
             $a_data['model_list'][$key] = $o_model->getAsArray();
         }
+
+        $a_data['ecode_list'] = array();
+        foreach ($this->ecode_list as $code => $s_desc) {
+            if(strlen($code) != 5){
+                continue;
+            }
+            if(!str_starts_with($code,"E") && !str_starts_with($code,"S")){
+                continue;
+            }
+            $a_data['ecode_list'][$code] = $s_desc;
+        }
+
+
+
         return $a_data;
 
     }
@@ -284,7 +307,9 @@ class MyApp extends MyStruct
         $this->touchSomeDirs();
         $this->arch_list = array();
         $this->db_list = array();
+        $this->field_list = array();
         $this->model_list = array();
+        $this->ecode_list = array();
         if (isset($a_data['arch_list']) && is_array($a_data['arch_list'])) {
             foreach ($a_data['arch_list'] as $key => $conf) {
                 $o_obj = new MyArch();
@@ -315,6 +340,18 @@ class MyApp extends MyStruct
                 $o_obj = new MyModel();
                 $o_obj->parseToObj($field);
                 $this->model_list[$key] = $o_obj;
+            }
+        }
+
+        if (isset($a_data['ecode_list']) && is_array($a_data['ecode_list'])) {
+            foreach ($a_data['ecode_list'] as $code => $field) {
+                if(strlen($code) != 5){
+                    continue;
+                }
+                if(!str_starts_with($code,"E") && !str_starts_with($code,"S")){
+                    continue;
+                }
+                $this->ecode_list[$code] = $field;
             }
         }
         return $this;
@@ -387,6 +424,9 @@ class MyApp extends MyStruct
             //$this->buildModel(null);
         }
 
+        //数据库
+        $this->buildEcode();
+
     }
 
     /**
@@ -442,6 +482,22 @@ class MyApp extends MyStruct
     }
 
     /**
+     * 构建错误码
+     * @return void
+     */
+    public function buildEcode()
+    {
+
+        // var_dump($this);
+        $mm = MvcBase::findCc($this);
+        //var_dump($mm);
+        if ($mm == null) {
+            return;
+        }
+        $mm->ccEcode($this->ecode_list);
+    }
+
+    /**
      * 构建模型
      */
     public function buildModel()
@@ -474,6 +530,7 @@ class MyApp extends MyStruct
         if ($ccc == null) {
             return;
         }
+        $ccc->makeWebConfig($this->model_list);
         //TODO 全局资源的
         foreach ($this->model_list as $o_model) {
 
@@ -483,7 +540,7 @@ class MyApp extends MyStruct
             $ccc->ccTmpl($o_model);
 
         }
-        $ccc->makeWebConfig($this->model_list );
+
 
     }
 

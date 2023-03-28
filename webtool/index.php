@@ -32,6 +32,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <title>Starter</title>
     <link rel="icon" href="./img/RC30.gif" type="image/x-icon"/>
     <link rel="shortcut icon" href="./img/RC30.gif" type="image/x-icon"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="https://assets.phalcon.io/phalcon/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://assets.phalcon.io/phalcon/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://assets.phalcon.io/phalcon/favicons/favicon-16x16.png">
+    <link rel="icon" type="image/svg+xml" href="https://assets.phalcon.io/phalcon/favicons/favicon.svg"/>
+    <link rel="icon" type="image/png" href="https://assets.phalcon.io/phalcon/favicons/favicon.png"/>
+    <link rel="shortcut icon" type="image/x-icon" href="https://assets.phalcon.io/phalcon/favicons/favicon.ico"/>
     <!-- jquery-ui -->
     <link rel="stylesheet" href="./vendor/jquery-ui/jquery-ui.min.css">
     <!-- Google Font: Source Sans Pro -->
@@ -49,7 +55,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="stylesheet" href="./vendor/bootstrap4-duallistbox/bootstrap-duallistbox.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="./vendor/adminlte-3.2.0/css/adminlte.min.css">
-</head> 
+</head>
 <body class="hold-transition sidebar-mini layout-navbar-fixed">
 <div class="wrapper">
 
@@ -84,6 +90,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <!--1.6-x 模型设计 -->
         <session class="content" id="model_design"></session>
 
+        <!--1.7 错误码 -->
+        <?php include("./_9_session_ecode.php"); ?>
+
     </div><!-- /.container-fluid -->
     <!-- /.content-wrapper -->
 
@@ -114,6 +123,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <?php include("./_8_2_modal_edit_index.php"); ?>
     <?php include("./_8_3_modal_import_global_field.php"); ?>
     <?php include("./_8_4_modal_edit_fun.php"); ?>
+    <?php include("./_9_1_modal_edit_ecode.php"); ?>
 
 </div>
 <!-- ./wrapper -->
@@ -128,6 +138,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <?php include("./_tpl_model_menu.php"); ?>
 <?php include("./_tpl_model_menu_top.php"); ?>
 <?php include("./_tpl_model_where.php"); ?>
+<?php include("./_tpl_ecode_list.php"); ?>
 <!-- /tmpl -->
 
 <!-- REQUIRED SCRIPTS -->
@@ -158,9 +169,35 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="./vendor/adminlte-3.2.0/js/adminlte.min.js"></script>
 
 
-<script src="./js/app.js?_t=<?php echo time();?>"></script>
-<script src="js/struct.js?_t=<?php echo time();?>"></script>
-<script src="./js/dt.js?_t=<?php echo time();?>"></script>
+<script src="./js/app.js?_t=<?php echo time(); ?>"></script>
+<script src="js/struct.js?_t=<?php echo time(); ?>"></script>
+<script src="./js/dt.js?_t=<?php echo time(); ?>"></script>
+<script type="text/javascript">
+    var g_cond_types = {
+        TYPE_EQ: "EQ",//= 等于
+        TYPE_NEQ: "NEQ",//!= 不等于
+        TYPE_GT: "GT",//&GT; 大于
+        TYPE_GTE: "GTE",//&GT;= 大于等于
+        TYPE_LT: "LT",//&LT; 少于
+        TYPE_LTE: "LTE",//&LT;= 少于等于
+        TYPE_LIKE: "LIKE",//关键字模糊匹配
+        TYPE_DATE: "DATE",//关键字模糊匹配
+        TYPE_TIME: "TIME",//日期范围内
+        TYPE_DATETIME: "DATETIME",//日期范围内
+        TYPE_IN: "IN",//离散量范围内
+        TYPE_NOTIN: "NOTIN",//离散量范围外
+        TYPE_BETWEEN: "BETWEEN",//标量范围内
+        TYPE_NOTBETWEEN: "NOTBETWEEN",//标量范围外
+    };
+
+    var g_cond_val_type = {
+        TYPE_NO: "NO",//忽略
+        TYPE_INPUT: "INPUT",//外部输入
+        TYPE_FUN: "FUN",//内部函数
+        TYPE_FIXED: "FIXED",//固定值
+    };
+</script>
+
 
 <script type="text/javascript">
 

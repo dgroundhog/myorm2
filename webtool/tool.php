@@ -18,6 +18,8 @@ define('MEM_DISK_SPEED_UP', "D:");
 //}
 //
 //TODO myapp line-338
+SeasLog::setBasePath("D:/xampp/apache/logs");
+SeasLog::error("wtfffff");
 
 include_once(WT_ROOT . "/../core/Constant.php");
 include_once(WT_ROOT . "/../core/MyProject.php");
@@ -153,7 +155,7 @@ switch (trim($_act)) {
         //加载全部项目索引
         ajax_load_projects();
         break;
-        
+
     case "init":
         //初始化项目
         ajax_init_project($_project);
@@ -193,14 +195,14 @@ switch (trim($_act)) {
         //复制一个版本
         ajax_copy_app($_project, $_version1, $_version2);
         break;
-        
+
     case "drop":
         //删除某个项目的某个版本
         ajax_drop_app($_project, $_version1);
         break;
 
     case "build":
-        ajax_build_app($_project, $_version1, $_arch, $_db,$_all);
+        ajax_build_app($_project, $_version1, $_arch, $_db, $_all);
         break;
 
     default:
@@ -224,7 +226,6 @@ function ajax_load_projects()
     echo json_encode($a_return);
 
 }
-
 
 
 /**
@@ -391,7 +392,7 @@ function ajax_drop_app($project, $version)
  * @param $_all
  * @return void
  */
-function ajax_build_app($project, $version, $arch, $db,$_all)
+function ajax_build_app($project, $version, $arch, $db, $_all)
 {
     global $g_data_root_path;
     $a_return = array();
@@ -406,7 +407,7 @@ function ajax_build_app($project, $version, $arch, $db,$_all)
         $a_project_info = json_decode($str_project, true);
         $o_project = new MyProject();
         $o_project->parseToObj($a_project_info);
-        $o_project->build($version, $arch, $db,$_all);
+        $o_project->build($version, $arch, $db, $_all);
 
     } else {
         $a_return['code'] = "project_not_exist";

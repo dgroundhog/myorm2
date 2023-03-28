@@ -174,7 +174,7 @@
                     <hr class="mb-2">
 
                     <div class="card-header">
-                        <h3 class="card-title">3-CURD列表 <small>{$model.name}
+                        <h3 class="card-title">3-方法列表 <small>{$model.name}
                                 - {$model.title}</small></h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-tool "
@@ -196,6 +196,7 @@
                                 <th>聚合字段</th>
                                 <th>分组键</th>
                                 <th>条件列表</th>
+                                <th>模糊查询</th>
                                 <th>分页</th>
                                 <th>页大小</th>
                                 <th>排序键</th>
@@ -359,6 +360,7 @@
 
                                 </td>
 
+                                <td>{$fun.has_kw}</td>
                                 <td>{$fun.pager_enable}</td>
                                 <td>{$fun.pager_size}</td>
 

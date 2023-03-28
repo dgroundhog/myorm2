@@ -20,6 +20,12 @@ class MyFun extends MyStruct
     public $field_list = [];
 
     /**
+     * 是有模糊查询
+     * @var string
+     */
+    public $has_kw = 0;
+
+    /**
      * 查询条件的列表
      * @var MyWhere
      */
@@ -65,6 +71,7 @@ class MyFun extends MyStruct
 
     public $basic_keys = array(
         "all_field",
+        "has_kw",
         "group_field",
         "group_by",
         "order_enable",

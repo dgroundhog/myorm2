@@ -6,11 +6,7 @@
 function uuid()
 {
     $chars = md5(uniqid(mt_rand(), true));
-    $uuid = substr($chars, 0, 8) . '-'
-        . substr($chars, 8, 4) . '-'
-        . substr($chars, 12, 4) . '-'
-        . substr($chars, 16, 4) . '-'
-        . substr($chars, 20, 12);
+    $uuid = substr($chars, 0, 8) . '-' . substr($chars, 8, 4) . '-' . substr($chars, 12, 4) . '-' . substr($chars, 16, 4) . '-' . substr($chars, 20, 12);
     return $uuid;
 }
 
@@ -45,8 +41,7 @@ function dir_copy($source, $destination, $child = 1)
     while ($entry = $handle->read()) {
         if (($entry != ".") && ($entry != "..")) {
             if (is_dir($source . "/" . $entry)) {
-                if ($child)
-                    dir_copy($source . "/" . $entry, $destination . "/" . $entry, $child);
+                if ($child) dir_copy($source . "/" . $entry, $destination . "/" . $entry, $child);
             } else {
                 copy($source . "/" . $entry, $destination . "/" . $entry);
             }
@@ -62,15 +57,17 @@ function dir_copy($source, $destination, $child = 1)
  * @param $mode
  * @return void
  */
-function dir_create($path, $mode = 0777){
-    SeasLog::info('准备创建目录--'.$path);
-    if(is_dir($path)){
+function dir_create($path, $mode = 0777)
+{
+    SeasLog::info('准备创建目录--' . $path);
+    if (is_dir($path)) {
         SeasLog::info('无法创建,已经是目录了');
-        return ;
-    }else{
-        if(mkdir($path, $mode, true)) {
+        return;
+    } else {
+        //var_dump($path);
+        if (mkdir($path, $mode, true)) {
             SeasLog::info('创建成功');
-        }else{
+        } else {
             SeasLog::info('创建失败');
         }
     }
@@ -126,11 +123,13 @@ function is_ok_app_package($name_to_be)
  * @param $separator
  * @return string
  */
-function str_camelize($uncamelized_words, $separator = '_'){
+function str_camelize($uncamelized_words, $separator = '_')
+{
     $uncamelized_words = $separator . str_replace($separator, " ", strtolower($uncamelized_words));
     return ltrim(str_replace(" ", "", ucwords($uncamelized_words)), $separator);
 
 }
+
 /**
  * 驼峰命名转下划线命名
  * 思路:
@@ -139,7 +138,8 @@ function str_camelize($uncamelized_words, $separator = '_'){
  * @param $separator
  * @return string
  */
-function str_uncamelize($camelCaps, $separator = '_'){
+function str_uncamelize($camelCaps, $separator = '_')
+{
     return strtolower(preg_replace('/([a-z])([A-Z])/', "$1" . $separator . "$2", $camelCaps));
 }
 

@@ -252,7 +252,7 @@ class Constant
     const COND_TYPE_GTE = "GTE";//&GT;= 大于等于
     const COND_TYPE_LT = "LT";//&LT; 少于
     const COND_TYPE_LTE = "LTE";//&LT;= 少于等于
-    const COND_TYPE_KW = "KW";//关键字模糊匹配
+    const COND_TYPE_LIKE = "LIKE";//关键字模糊匹配
     const COND_TYPE_DATE = "DATE";//关键字模糊匹配
     const COND_TYPE_TIME = "TIME";//日期范围内
     const COND_TYPE_DATETIME = "DATETIME";//日期范围内
@@ -272,7 +272,7 @@ class Constant
         self::COND_TYPE_GTE => "&gt;= 大于等于",
         self::COND_TYPE_LT => "&lt; 少于",
         self::COND_TYPE_LTE => "&lt;= 少于等于",
-        self::COND_TYPE_KW => "关键字模糊匹配",
+        self::COND_TYPE_LIKE => "关键字模糊匹配",
         self::COND_TYPE_DATE => "日期范围内",
         self::COND_TYPE_TIME => "时间范围内",
         self::COND_TYPE_DATETIME => "日期时间范围内",

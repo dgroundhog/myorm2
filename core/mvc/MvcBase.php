@@ -18,6 +18,8 @@ abstract class MvcBase extends CcBase implements  CcImpl
     public $odir_resource = "";//资源目录
     public $odir_webapp = "";//jsp目录或者独立http目录
 
+    public $odir_enums = "";//枚举数据
+
     public $odir_beans = "";//数据结构
     public $odir_config = "";//配置
     public $odir_controllers = "";//控制器
@@ -72,6 +74,7 @@ abstract class MvcBase extends CcBase implements  CcImpl
             $this->odir_config = $this->odir_package. DS . "config";//配置
             $this->odir_controllers = $this->odir_package. DS . "controllers";//控制器
             $this->odir_models = $this->odir_package. DS . "models";//模型驱动
+            $this->odir_enums = $this->odir_package. DS . "enums";//错误码
             $this->odir_views = $this->odir_webapp. DS . "WEB-INF".DS . "templates";//视图或者UI
 
         }
@@ -103,12 +106,14 @@ abstract class MvcBase extends CcBase implements  CcImpl
             $this->odir_controllers = $this->odir_package. DS . "controllers";//控制器
             $this->odir_models = $this->odir_package. DS . "models";//模型驱动
             $this->odir_views = $this->odir_package. DS . "views";//视图或者UI
+            $this->odir_enums = $this->odir_package. DS . "enums";//错误码
         }
 
         dir_create($this->odir_package);
         dir_create($this->odir_resource);
         dir_create($this->odir_webapp);
         dir_create($this->odir_beans);
+        dir_create($this->odir_enums);
         dir_create($this->odir_config);
         dir_create($this->odir_controllers);
         dir_create($this->odir_models);
@@ -192,4 +197,10 @@ abstract class MvcBase extends CcBase implements  CcImpl
      * @param MyModel $model
      */
     abstract function ccDoc($model);
+
+    /**
+     * 创建错误码
+     * @param array $kv_list
+     */
+    abstract function ccEcode($kv_list);
 }

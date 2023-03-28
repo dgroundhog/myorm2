@@ -584,6 +584,7 @@ DDD;
                 $s_sql1 = " 1=1 ";
             }
             $s_sql2 = "SET @s_sql = CONCAT( @s_sql, ' {$s_sql1} ');\n";
+            SeasLog::debug("普通条件------------------");
             foreach ($cond_list as $cond) {
                 $jj++;
                 list($_params, $_sql1, $_sql2) = $this->_procWhereOneCond(0, $jj, $model, $cond, $where_joiner);
@@ -598,6 +599,7 @@ DDD;
                     $s_sql2 = $s_sql2 . "\n" . $_sql2;
                 }
             }
+            SeasLog::debug("嵌套查询------------------" . count($where_list));
             foreach ($where_list as $where2) {
 
                 if ($where2 != null) {
@@ -608,7 +610,7 @@ DDD;
                     if (count($cond_list2) == 0) {
                         continue;
                     }
-
+                    //要确保数据
                     $ss_sql1 = "";
                     if ($where_joiner2 == Constant::WHERE_JOIN_OR) {
                         $ss_sql1 = $where_joiner . "( 1=0 ";
@@ -692,7 +694,7 @@ DDD;
             case Constant::COND_TYPE_NOTIN:// = "NOTIN";//离散量范围外
                 return $this->_procWhere_V_range($tab_idx, $inc, $WHERE_JOIN, $field, $cond_type, $v1_type, $v1);
 
-            case Constant::COND_TYPE_KW:// = "KW";//关键字模糊匹配
+            case Constant::COND_TYPE_LIKE:// = "KW";//关键字模糊匹配
                 if ($this->isIntType($field_type)) {
                     //int字段不参与like运算
                     return array(array(), "", "");

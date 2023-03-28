@@ -22,6 +22,11 @@
     <li class="nav-item d-none d-sm-inline-block">
         <a href="#session_model" class="nav-link">模型设计</a>
     </li>
+
+    <li class="nav-item d-none d-sm-inline-block">
+        <a href="#session_ecode" class="nav-link">错误代码</a>
+    </li>
+
     <li class="nav-item d-none d-sm-inline-block">
         <a href="#" class="nav-link">接口和测试 </a>
     </li>

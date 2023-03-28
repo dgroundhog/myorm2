@@ -200,6 +200,8 @@ function MyApp() {
     this.field_list = [];//全局字段
     this.model_list = [];//模型配置列表
 
+    this.ecode_list = [];//错误码列表
+
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
@@ -251,6 +253,13 @@ MyApp.prototype.parse = function (json_one) {
         var _uuid = _model.uuid;
         this.model_list[_uuid] = _model;
     }
+
+    //错误码，简单的kv结构，按码排序
+    this.ecode_list = {};
+    for (var ii in json_one.ecode_list) {
+        this.ecode_list[ii] = json_one.ecode_list[ii];
+    }
+
 };
 
 /**
@@ -501,6 +510,7 @@ function MyFun() {
     this.scope = "FUN";
     this.type = "";
     this.all_field = "1";
+    this.has_kw = "0";//主要是页面上，模糊查询
     this.where = null;
     this.field_list = [];//操作字段
     this.group_field = "";

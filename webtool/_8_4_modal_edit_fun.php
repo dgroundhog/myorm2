@@ -95,6 +95,14 @@
                             </div>
 
                             <div class="form-group row">
+                                <label for="txt_fun_has_kw" class="col-sm-2 col-form-label">模糊查询</label>
+                                <div class="col-sm-10">
+                                    <input id="txt_fun_has_kw" type="checkbox" checked data-bootstrap-switch
+                                           data-off-color="danger" data-on-color="success">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
                                 <label for="txt_fun_order_enable" class="col-sm-2 col-form-label">是否排序</label>
                                 <div class="col-sm-10">
                                     <input id="txt_fun_order_enable" type="checkbox" checked data-bootstrap-switch

@@ -335,11 +335,17 @@ App.dt.data.ccGlobalFields = function (key) {
         case "name":
             _obj = self.data.ccField_Text("name", "名称");
             break;
+        case "email":
+            _obj = self.data.ccField_Text("email", "邮箱");
+            break;
+        case "phone":
+            _obj = self.data.ccField_Text("phone", "电话");
+            break;
         case "memo":
             _obj = self.data.ccField_TextArea("memo", "备注");
             break;
         case "state":
-            _obj = self.data.ccField_Char("state", "业务状态");
+            _obj = self.data.ccField_Char("state", "基本状态");
             break;
         case "flag":
             _obj = self.data.ccField_Char("flag", "数据状态");
@@ -965,12 +971,12 @@ App.dt.data.ccModel_User = function () {
     _kwCond.uuid = App.su.maths.uuid.create();
     _kwCond.ctime = _now;
     _kwCond.utime = _now;
-    _kwCond.type = "KW";
+    _kwCond.type = g_cond_types.TYPE_LIKE;
     _kwCond.title = "关键字1";
     _kwCond.field = _f_name.uuid;
     _kwCond.v1 = "";
     _kwCond.v2 = "";
-    _kwCond.v1_type = "INPUT";
+    _kwCond.v1_type = g_cond_val_type.TYPE_INPUT;
     _kwCond.v2_type = "";
 
     var _gidCond = new MyCond();
@@ -994,7 +1000,7 @@ App.dt.data.ccModel_User = function () {
     _genderCond.field = _f_gender.uuid;
     _genderCond.v1 = "";
     _genderCond.v2 = "";
-    _genderCond.v1_type = "INPUT";
+    _genderCond.v1_type = g_cond_val_type.TYPE_INPUT;
     _genderCond.v2_type = "";
 
     var _typeCond = new MyCond();
@@ -1085,6 +1091,8 @@ App.dt.data.ccModel_Admin = function () {
     var _f_passwd = self.data.ccField_Text("passwd", "加密密码");
     var _f_role = self.data.ccField_Text("role", "权限");
     var _f_name = self.data.ccGlobalFields("name");
+    var _f_phone = self.data.ccGlobalFields("phone");
+    var _f_email = self.data.ccGlobalFields("email");
     var _f_memo = self.data.ccGlobalFields("memo");
     var _f_state = self.data.ccGlobalFields("state");
     var _f_flag = self.data.ccGlobalFields("flag");
@@ -1101,6 +1109,8 @@ App.dt.data.ccModel_Admin = function () {
     _modelAdmin.field_list[_f_passwd.uuid] = _f_passwd;
     _modelAdmin.field_list[_f_role.uuid] = _f_role;
     _modelAdmin.field_list[_f_name.uuid] = _f_name;
+    _modelAdmin.field_list[_f_phone.uuid] = _f_phone;
+    _modelAdmin.field_list[_f_email.uuid] = _f_email;
     _modelAdmin.field_list[_f_memo.uuid] = _f_memo;
     _modelAdmin.field_list[_f_state.uuid] = _f_state;
     _modelAdmin.field_list[_f_flag.uuid] = _f_flag;
@@ -1110,7 +1120,7 @@ App.dt.data.ccModel_Admin = function () {
     _modelAdmin.field_list[_f_uadmin.uuid] = _f_uadmin;
 
     console.log(_curr_app.field_list);
-
+    //id都是唯一的
     var _idx_u = new MyIndex();
     _idx_u.uuid = App.su.maths.uuid.create();
     _idx_u.ctime = _now;
@@ -1120,17 +1130,18 @@ App.dt.data.ccModel_Admin = function () {
     _idx_u.type = "UNIQUE";
     _idx_u.field_list = {};
     _idx_u.field_list[_f_admin_id.uuid] = deepCopy(_f_admin_id);
-
+    //登陆账号唯一性，删除了也不回收
     var _idx_i = new MyIndex();
     _idx_i.uuid = App.su.maths.uuid.create();
     _idx_i.ctime = _now;
     _idx_i.utime = _now;
-    _idx_i.name = "idx_account_name";
+    _idx_i.name = "udx_account";
     _idx_i.memo = "";
-    _idx_i.type = "KEY";
+    //_idx_i.type = "KEY";
+    _idx_i.type = "UNIQUE";
     _idx_i.field_list = {};
     _idx_i.field_list[_f_account.uuid] = deepCopy(_f_account);
-    _idx_i.field_list[_f_name.uuid] = deepCopy(_f_name);
+    //_idx_i.field_list[_f_passwd.uuid] = deepCopy(_f_passwd);
 
     _modelAdmin.idx_list[_idx_u.uuid] = _idx_u;
     _modelAdmin.idx_list[_idx_i.uuid] = _idx_i;
@@ -1400,8 +1411,8 @@ App.dt.data.ccModel_Admin = function () {
     _kwCond.uuid = App.su.maths.uuid.create();
     _kwCond.ctime = _now;
     _kwCond.utime = _now;
-    _kwCond.type = "KW";
-    _kwCond.title = "关键字1";
+    _kwCond.type = g_cond_types.TYPE_LIKE;
+    _kwCond.title = "关键字1账号名";
     _kwCond.field = _f_account.uuid;
     _kwCond.v1 = "";
     _kwCond.v2 = "";
@@ -1412,13 +1423,37 @@ App.dt.data.ccModel_Admin = function () {
     _kwCond2.uuid = App.su.maths.uuid.create();
     _kwCond2.ctime = _now;
     _kwCond2.utime = _now;
-    _kwCond2.title = "关键字2";
-    _kwCond2.type = "KW";
+    _kwCond2.title = "关键字2姓名";
+    _kwCond2.type = g_cond_types.TYPE_LIKE;
     _kwCond2.field = _f_name.uuid;
     _kwCond2.v1 = "";
     _kwCond2.v2 = "";
     _kwCond2.v1_type = "INPUT";
     _kwCond2.v2_type = "";
+
+    var _kwCond3 = new MyCond();
+    _kwCond3.uuid = App.su.maths.uuid.create();
+    _kwCond3.ctime = _now;
+    _kwCond3.utime = _now;
+    _kwCond3.title = "关键字3电话";
+    _kwCond3.type = g_cond_types.TYPE_LIKE;
+    _kwCond3.field = _f_phone.uuid;
+    _kwCond3.v1 = "";
+    _kwCond3.v2 = "";
+    _kwCond3.v1_type = "INPUT";
+    _kwCond3.v2_type = "";
+
+    var _kwCond4 = new MyCond();
+    _kwCond4.uuid = App.su.maths.uuid.create();
+    _kwCond4.ctime = _now;
+    _kwCond4.utime = _now;
+    _kwCond4.title = "关键字4邮箱";
+    _kwCond4.type = g_cond_types.TYPE_LIKE;
+    _kwCond4.field = _f_email.uuid;
+    _kwCond4.v1 = "";
+    _kwCond4.v2 = "";
+    _kwCond4.v1_type = "INPUT";
+    _kwCond4.v2_type = "";
 
     var _timeCond = new MyCond();
     _timeCond.uuid = App.su.maths.uuid.create();
@@ -1436,6 +1471,8 @@ App.dt.data.ccModel_Admin = function () {
     _listWhere.cond_list[_stateCond.uuid] = _stateCond;
     _listWhere.cond_list[_kwCond.uuid] = _kwCond;
     _listWhere.cond_list[_kwCond2.uuid] = _kwCond2;
+    _listWhere.cond_list[_kwCond3.uuid] = _kwCond3;
+    _listWhere.cond_list[_kwCond4.uuid] = _kwCond4;
     _listWhere.cond_list[_timeCond.uuid] = _timeCond;
 
     _funList.where = _listWhere;
@@ -1652,6 +1689,8 @@ App.dt.project.loadProject = function (project_name, app_version) {
         self.project.fieldLoad();
         //加载模型
         self.project.modelLoad();
+        //加载数据库
+        self.project.ecodeLoad();
         //加载可构建选项
         self.project.reloadBuild(_app);
     }
@@ -2648,9 +2687,8 @@ App.dt.project.fieldSave = function () {
         for (var ii in _curr_app.model_list) {
             var ii_model = _curr_app.model_list[ii];
             var _m_uid = ii_model.uuid;
-            for (var jj in ii_model.field_list) {
-                var jj_field = ii_model.field_list[jj];
-                var _f_uid = jj_field.uuid;
+            for (var _f_uid in ii_model.field_list) {
+                var jj_field = ii_model.field_list[_f_uid];
                 //console.log(_uuid + " =?= " + _f_uid);
                 if (_uuid == _f_uid) {
                     var last_pos = jj_field.position;
@@ -2662,13 +2700,11 @@ App.dt.project.fieldSave = function () {
                 }
             }
 
-            for (var jj in ii_model.idx_list) {
-                var jj_idx = ii_model.idx_list[jj];
-                var _i_uid = jj_idx.uuid;
+            for (var _i_uid in ii_model.idx_list) {
+                var jj_idx = ii_model.idx_list[_i_uid];
                 //console.log(_uuid + " =?= " + _f_uid);
-                for (var kk in jj_idx.field_list) {
-                    var kk_field = jj_idx.field_list[kk];
-                    var _f_uid = kk_field.uuid;
+                for (var _f_uid in jj_idx.field_list) {
+                    var kk_field = jj_idx.field_list[_f_uid];
                     //console.log(_uuid + " =?= " + _f_uid);
                     if (_uuid == _f_uid) {
                         var last_pos = kk_field.position;
@@ -2682,13 +2718,11 @@ App.dt.project.fieldSave = function () {
                 ii_model.idx_list[_i_uid] = jj_idx;
             }
 
-            for (var jj in ii_model.fun_list) {
-                var jj_fun = ii_model.fun_list[jj];
-                var _i_uid = jj_fun.uuid;
+            for (var _i_uid in ii_model.fun_list) {
+                var jj_fun = ii_model.fun_list[_i_uid];
                 //console.log(_uuid + " =?= " + _f_uid);
-                for (var kk in jj_fun.field_list) {
-                    var kk_field = jj_fun.field_list[kk];
-                    var _f_uid = kk_field.uuid;
+                for (var _f_uid in jj_fun.field_list) {
+                    var kk_field = jj_fun.field_list[_f_uid];
                     //console.log(_uuid + " =?= " + _f_uid);
                     if (_uuid == _f_uid) {
                         var last_pos = kk_field.position;
@@ -2899,43 +2933,33 @@ App.dt.project.fieldDrop = function (_uuid, _model_id) {
                     for (var ii in _curr_app.model_list) {
                         var ii_model = _curr_app.model_list[ii];
                         var _m_uid = ii_model.uuid;
-                        console.log("删除模型的字段--"+_m_uid);
-                        for (var jj in ii_model.field_list) {
-                            var jj_field = ii_model.field_list[jj];
-                            var _f_uid = jj_field.uuid;
-                            console.log(_uuid + " =?= " + _f_uid);
+                        console.log("删除模型的字段--" + _m_uid);
+                        for (var _f_uid in ii_model.field_list) {
+                            //var jj_field = ii_model.field_list[_f_uid];
                             if (_uuid == _f_uid) {
-                               delete ii_model.field_list[_f_uid];
+                                delete ii_model.field_list[_f_uid];
                             }
                         }
 
-                        for (var jj in ii_model.idx_list) {
-                            var jj_idx = ii_model.idx_list[jj];
-                            var _i_uid = jj_idx.uuid;
-                            console.log("删除索引的字段--"+_i_uid);
+                        for (var _i_uid in ii_model.idx_list) {
+                            var jj_idx = ii_model.idx_list[_i_uid];
+                            console.log("删除索引的字段--" + _i_uid);
                             //console.log(_uuid + " =?= " + _f_uid);
-                            for (var kk in jj_idx.field_list) {
-                                var kk_field = jj_idx.field_list[kk];
-                                var _f_uid = kk_field.uuid;
-                                console.log(_uuid + " =?= " + _f_uid);
+                            for (var _f_uid in jj_idx.field_list) {
                                 if (_uuid == _f_uid) {
-                                    delete jj_idx.field_list[_uuid] ;
+                                    delete jj_idx.field_list[_uuid];
                                 }
                             }
                             ii_model.idx_list[_i_uid] = jj_idx;
                         }
 
-                        for (var jj in ii_model.fun_list) {
-                            var jj_fun = ii_model.fun_list[jj];
-                            var _i_uid = jj_fun.uuid;
-                            console.log("删除函数的字段--"+_i_uid);
+                        for (var _i_uid in ii_model.fun_list) {
+                            var jj_fun = ii_model.fun_list[_i_uid];
+                            console.log("删除函数的字段--" + _i_uid);
                             //console.log(_uuid + " =?= " + _f_uid);
-                            for (var kk in jj_fun.field_list) {
-                                var kk_field = jj_fun.field_list[kk];
-                                var _f_uid = kk_field.uuid;
-                                console.log(_uuid + " =?= " + _f_uid);
+                            for (var _f_uid in jj_fun.field_list) {
                                 if (_uuid == _f_uid) {
-                                    delete jj_fun.field_list[_uuid] ;
+                                    delete jj_fun.field_list[_uuid];
                                 }
                             }
                             ii_model.fun_list[_i_uid] = jj_fun;
@@ -3583,6 +3607,7 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
 
         self.editor.setBootSwitchVal("#txt_fun_all_field", "1");
         self.editor.setBootSwitchVal("#txt_fun_order_enable", "0");
+        self.editor.setBootSwitchVal("#txt_fun_has_kw", "0");
         self.editor.setBootSwitchVal("#txt_fun_pager_enable", "0");
         $("#txt_fun_pager_size").val(0);
         $("#block_where").html("");
@@ -3609,6 +3634,7 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
 
         self.editor.setBootSwitchVal("#txt_fun_all_field", o_fun.all_field);
         self.editor.setBootSwitchVal("#txt_fun_order_enable", o_fun.order_enable);
+        self.editor.setBootSwitchVal("#txt_fun_has_kw", o_fun.has_kw);
         self.editor.setBootSwitchVal("#txt_fun_pager_enable", o_fun.pager_enable);
         $("#txt_fun_pager_size").val(o_fun.pager_size);
 
@@ -3717,6 +3743,8 @@ App.dt.project.modelFunSave = function () {
     o_fun.all_field = self.editor.getBootSwitchVal("#txt_fun_all_field");
     o_fun.group_by = $("#sel_fun_group_by").val();
     o_fun.group_field = $("#sel_fun_group_field").val();
+
+    o_fun.has_kw = self.editor.getBootSwitchVal("#txt_fun_has_kw");
 
     o_fun.order_enable = self.editor.getBootSwitchVal("#txt_fun_order_enable");
     o_fun.order_by = $("#sel_fun_order_by").val();
@@ -4148,6 +4176,103 @@ App.dt.project.modelFunHavingDrop = function () {
     self.project.modelFunHavingInit();
 }
 
+/**
+ * 加载配置
+ */
+App.dt.project.ecodeLoad = function () {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本,无法打开配置");
+        return;
+    }
+
+    var tpl = new jSmart(self.getTpl('tpl_ecode_list'));
+    var res = tpl.fetch(_curr_app);
+    $("#table_ecode_list").html(res);
+}
+
+
+/**
+ * 编辑错误代码
+ */
+App.dt.project.ecodeEdit = function (_code) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    if (App.su.isEmpty(_code)) {
+        console.log("新的配置");
+
+        $("#txt_ecode_name").val("");
+        $("#txt_ecode_desc").val("");
+
+    } else {
+        console.log("编辑旧配置");
+        var _desc = _curr_app.ecode_list[_code];
+        $("#txt_ecode_name").val(_code);
+        $("#txt_ecode_desc").val(_desc);
+    }
+    $("#modal_edit_ecode").modal('show');
+}
+
+/**
+ * 编辑错误代码
+ */
+App.dt.project.ecodeSave = function () {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+    var _code = $("#txt_ecode_name").val();
+    var _desc = $("#txt_ecode_desc").val();
+    if (!App.su.isEmpty(_code) && !App.su.isEmpty(_desc)) {
+        if (_code.length == 5) {
+            $("#txt_ecode_name").val("");
+            $("#txt_ecode_desc").val("");
+            _curr_app.ecode_list[_code] = _desc;
+            $("#modal_edit_ecode").modal('hide');
+
+            var tpl = new jSmart(self.getTpl('tpl_ecode_list'));
+            var res = tpl.fetch(_curr_app);
+            $("#table_ecode_list").html(res);
+            return;
+        }
+    }
+    self.fail("错误码输入有误");
+}
+
+/**
+ * 编辑错误代码
+ */
+App.dt.project.ecodeDrop = function (_code) {
+    var self = App.dt;
+    var _curr_app = self.project.getCurrApp();
+    if (null == _curr_app) {
+        self.fail("未选择应用版本");
+        return;
+    }
+
+    var _desc = _curr_app.ecode_list[_code];
+
+    bootbox.confirm("确认删除这个编码（" + _code + "）（" + _desc + "）？", function (ret) {
+        if (ret) {
+            delete _curr_app.ecode_list[_code];
+            if (self.project.setCurrApp(_curr_app)) {
+                self.succ("移除成功--ecodeDrop");
+            } else {
+                self.fail("移除失败1-ecodeDrop");
+            }
+            var tpl = new jSmart(self.getTpl('tpl_ecode_list'));
+            var res = tpl.fetch(_curr_app);
+            $("#table_ecode_list").html(res);
+        }
+    });
+}
 
 /**
  * 主程序入口
@@ -4327,6 +4452,16 @@ App.dt.init = function () {
         self.project.buildCC(true);
     });
 
+    /**
+     * 1.9 错误码
+     */
+    $("#btn_edit_ecode").click(function () {
+        self.project.ecodeEdit("");
+    });
+
+    $("#btn_save_ecode").click(function () {
+        self.project.ecodeSave();
+    });
 
     /**
      *   $(".btn-warning").on('click', function () {

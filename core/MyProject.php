@@ -114,7 +114,7 @@ class MyProject extends MyStruct
      * @param $build_all  构建全部，false时只构建基本模型
      * @return void
      */
-    function build($version, $arch, $db,$build_all)
+    function build($version, $arch, $db, $build_all)
     {
 
         if (!$this->version_list || count($this->version_list) == 0 || !isset($this->version_list[$version])) {
@@ -125,6 +125,6 @@ class MyProject extends MyStruct
         $o_curr_app = $this->version_list[$version];
         /* @var MyApp $o_curr_app */
 
-        $o_curr_app->build($arch, $db,$build_all);
+        $o_curr_app->build($arch, $db, $build_all);
     }
 }
