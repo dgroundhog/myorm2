@@ -39,11 +39,12 @@ class DbMysql extends DbBase
 
         }
 
-        echo "FLUSH PRIVILEGES;\n";
+        echo "FLUSH PRIVILEGES;\n\n";
 
-        _db_comment("for events", true);
+        _db_comment("for debugs and events", true);
         echo "SET GLOBAL event_scheduler = ON;\n";
-        _db_comment("for debugs", true);
+        echo "use `{$db->database}`;\n";
+
         $sdebug = <<<DDD
 DROP TABLE IF EXISTS `t__debug`;
 CREATE TABLE `t__debug` (
@@ -102,6 +103,7 @@ CREATE DEFINER='{$db->user}'@'{$db->host}' EVENT `auto__delete_debug_log`
 DELIMITER ;
 DDD;
         echo $sdebug;
+        echo "\n\n";
         _db_comment("for functions", true);
         _db_comment("TODO");
 

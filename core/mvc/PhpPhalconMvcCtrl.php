@@ -862,7 +862,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         }
         echo "<body class=\"hold-transition sidebar-mini text-sm\">\n";
         echo _tab(1) . "<div class=\"wrapper\">";
-        echo _tab(2) . "<div class=\"content-wrapper\">\n";
+        echo _tab(2) . "<div class=\"content-wrapper px-4 py-2\">\n";
 
     }
 

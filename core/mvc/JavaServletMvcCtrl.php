@@ -1028,11 +1028,12 @@ function _makeHtmlHeader($model, $for_edit = false)
     } else {
         echo "<head th:replace=\"_header_inc::admin_header_for_edit\"></head>\n";
     }
-    echo "<body class=\"hold-transition sidebar-mini layout-navbar-fixed\">\n";
+    //echo "<body class=\"hold-transition sidebar-mini layout-navbar-fixed\">\n";
+    echo "<body class=\"hold-transition sidebar-mini text-sm\">\n";
     echo _tab(1) . "<div class=\"wrapper\">";
-    echo _tab(2) . "<nav th:replace=\"_header_inc::navbar\"></nav>\n";
-    echo _tab(2) . "<aside th:replace=\"_header_inc::sidebar\"></aside>\n";
-    echo _tab(2) . "<div class=\"content-wrapper\">\n";
+    //echo _tab(2) . "<nav th:replace=\"_header_inc::navbar\"></nav>\n";
+    //echo _tab(2) . "<aside th:replace=\"_header_inc::sidebar\"></aside>\n";
+    echo _tab(2) . "<div class=\"content-wrapper  px-4 py-2\">\n";
 
 }
 
@@ -1399,9 +1400,12 @@ $has_upload = false;
                                 <small>编辑</small></h3>
 
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool" id="btn_edit_conf">
-                                    <i class="fas fa-plus-circle"></i>
+
+                                <button type="button" class="btn btn-tool" id="btn_delete_me">
+                                    <i class="fas fa-trash"></i>
                                 </button>
+
+
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse"
                                         title="Collapse">
                                     <i class="fas fa-minus"></i>
@@ -1520,7 +1524,15 @@ $has_upload = false;
                         <?php
                     } ?>
 
-                    <div th:replace="_comm_ui::block_confirm_delete"></div>
+                    <div class="card card-success card-outline">
+                        <div class="card-header">
+                            帮助提示
+                        </div>
+                        <div class="card-body">
+                        </div>
+                        <div class="card-footer">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1830,9 +1842,10 @@ $has_upload = false;
                                 <small>编辑</small></h3>
 
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool" id="btn_edit_conf">
-                                    <i class="fas fa-plus-circle"></i>
+                                <button type="button" class="btn btn-tool" id="btn_edit_me">
+                                    <i class="fas fa-edit"></i>
                                 </button>
+
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse"
                                         title="Collapse">
                                     <i class="fas fa-minus"></i>
