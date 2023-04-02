@@ -788,7 +788,7 @@ DDD;
             if ($this->isIntType($f_type)) {
                 $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != -1 THEN\n";
             } else {
-                $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' THEN\n";
+                $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' AND {$s_param1} != '0000-00-00 00:00:00' THEN\n";
             }
             $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
             $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";
@@ -1141,7 +1141,7 @@ DDD;
                     if ($this->isIntType($f_type)) {
                         $s_sql3 = _tab($tab_idx) . "IF {$s_param1_use} != -1 AND {$s_param2_use} != -1  THEN\n";
                     } else {
-                        $s_sql3 = _tab($tab_idx) . "IF {$s_param1_use} != '' AND {$s_param2_use} != '' THEN\n";
+                        $s_sql3 = _tab($tab_idx) . "IF {$s_param1_use} != '' AND  {$s_param1_use} != '0000-00-00 00:00:00'  AND {$s_param2_use} != '' AND  {$s_param2_use} != '0000-00-00 00:00:00' THEN\n";
                     }
                     $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
                     $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";

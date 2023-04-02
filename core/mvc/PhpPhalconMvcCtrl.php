@@ -917,7 +917,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                         <h1 class="m-0" id="txt_curr_project">
                             <i class="fa fa-fw fa-<?= $model->fa_icon ?>"></i>
                             <?= $model->title ?> 列表
-                            Starter Page</h1>
+                            Starter Page ,TODO XXX 此页面模板仅供参考，请勿直接投产</h1>
                     </div><!-- /.col -->
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
@@ -1053,36 +1053,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                                     </div>
 
                                 </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </session>
-
-        <session class="content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="card card-success card-outline">
-                            <div class="card-header">
-                                <h3 class="card-title">
-                                    <i class="fa fa-fw fa-<?= $model->fa_icon ?>"></i> <?= $model->title ?>
-                                    <small>列表</small></h3>
-                                <div class="card-tools">
-                                    <button type="button" class="btn btn-tool" id="btn_edit_conf">
-                                        <i class="fas fa-plus-circle"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-tool" data-card-widget="collapse"
-                                            title="Collapse">
-                                        <i class="fas fa-minus"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-tool" data-card-widget="maximize"><i
-                                                class="fas fa-expand"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-body">
+                               <hr/>
                                 <table class="table table-bordered table-hover mb-0">
                                     <thead class="thead-light">
                                     <tr class="">
@@ -1220,7 +1191,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                         <h1 class="m-0" id="txt_curr_project">
                             <i class="fa fa-fw fa-<?= $model->fa_icon ?>"></i>
                             <?= $model->title ?> 编辑
-                            Starter Page</h1>
+                            Starter Page ,TODO XXX 此页面模板仅供参考，请勿直接投产</h1>
                     </div>
                     <!-- /.col -->
                     <div class="col-sm-6">
@@ -1708,7 +1679,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                         <h1 class="m-0" id="txt_curr_project">
                             <i class="fa fa-fw fa-<?= $model->fa_icon ?>"></i>
                             <?= $model->title ?>
-                            Starter Page</h1>
+                            Starter Page ,TODO XXX 此页面模板仅供参考，请勿直接投产</h1>
                     </div><!-- /.col -->
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">

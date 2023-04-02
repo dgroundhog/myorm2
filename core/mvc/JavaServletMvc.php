@@ -836,11 +836,11 @@ class JavaServletMvc extends MvcBase
                 } else {
                     echo _tab(4) . "st.setInt({$jj}, {$param}); \n";
                 }
-
                 $ii++;
             }
         }
-
+        //辅助变量的偏移量先+1
+        $ii++;
         //5555
         if ($has_order) {
             if ($is_order_by_input) {
