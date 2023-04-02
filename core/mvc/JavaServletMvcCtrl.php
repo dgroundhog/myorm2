@@ -51,20 +51,11 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo "package  {$package}.controllers;\n";
 
 
-        echo "import com.yzzq.base.webapp.AjaxResult;\n";
-        echo "import com.yzzq.base.webapp.MyContext;\n";
-        echo "import com.yzzq.base.webapp.DateFromToBeanx;\n";
-        echo "import com.yzzq.base.webapp.DateFromToBeanx;\n";
-        echo "import com.yzzq.base.webapp.UploadBeanx;\n";
-        echo "import com.yzzq.base.webapp.ECode;\n";
-        echo "import com.yzzq.base.webapp.FormServletBase;\n";
-        echo "import com.yzzq.base.webapp.PagerHelper;\n";
-        echo "import com.yzzq.base.utils.MixUtil;\n";
+        echo "import com.yzzq.base.webapp.*;\n";
+        echo "import com.yzzq.base.utils.*;\n";
 
         echo "import {$package}.MyApp;\n";
         echo "import {$package}.enums.MyECode;\n";
-        echo "import {$package}.beans.Sys_adminBean;\n";
-        echo "import {$package}.models.Sys_adminModelX;\n";
         echo "import {$package}.beans.{$uc_model_name}Bean;\n";
         echo "import {$package}.models.{$uc_model_name}Model;\n";
 
@@ -298,8 +289,10 @@ class JavaServletMvcCtrl extends JavaServletMvc
                     break;
 
                 case Constant::FUN_TYPE_LIST:
-                default:
                     $this->cList($model, $o_fun);
+                    break;
+
+                default:
                     break;
             }
         }
@@ -332,7 +325,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         _fun_comment("启用CSRF预防", 2);
         echo _tab(2) . "setupFormCSRF(req, ctx);\n";
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("加载基本数据TODO", 2);
         echo _tab(2) . "Map<String,String> mInfo = new HashMap<String,String>();\n";
         echo _tab(2) . "ctx.setVariable(\"mInfo\", mInfo);\n";
@@ -353,7 +346,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(3) . "resp.sendRedirect(\"../index.jsp?err_code=CSRF\");\n";
         echo _tab(3) . "return;\n";
         echo _tab(2) . "}\n";
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         $this->_echoReqParams($a_param_define, $a_param_field);
@@ -378,7 +371,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _pAjaxSave(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查攻击", 2);
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         $this->_echoReqParams($a_param_define, $a_param_field);
@@ -484,7 +477,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(3) . "resp.sendRedirect(\"../index.jsp?err_code=CSRF\");\n";
         echo _tab(3) . "return;\n";
         echo _tab(2) . "}\n";
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("获取POST参数", 2);
 
         _fun_comment("删除条件", 2);
@@ -508,7 +501,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         _fun_comment("ajax删除", 1);
         echo _tab(1) . "protected void  _pAjaxDelete(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         _fun_comment("删除条件", 2);
@@ -559,7 +552,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
         _fun_comment("启用CSRF预防", 2);
         echo _tab(2) . "setupFormCSRF(req, ctx);\n";
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
 
 
         //更新条件
@@ -594,7 +587,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(3) . "resp.sendRedirect(\"../index.jsp?err_code=CSRF\");\n";
         echo _tab(3) . "return;\n";
         echo _tab(2) . "}\n";
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("获取POST参数", 2);
         _fun_comment("需要更新的字段", 2);
         $this->_echoReqParams($a_u_param_define, $a_u_param_field);
@@ -628,7 +621,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         _fun_comment("ajax更新", 1);
         echo _tab(1) . "protected void  _pAjaxModify(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
 
         _fun_comment("获取POST参数", 2);
         _fun_comment("需要更新的字段", 2);
@@ -680,7 +673,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo _tab(1) . "protected void  _gDetail(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
 
         _fun_comment("检查攻击", 2);
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
         //更新条件
         list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $this->fun_fetch);
 
@@ -773,8 +766,8 @@ class JavaServletMvcCtrl extends JavaServletMvc
         _fun_comment("获取详情用于显示", 1);
         echo _tab(1) . "protected void  _gList(HttpServletRequest req, HttpServletResponse resp, WebContext ctx) throws ServletException, IOException {\n";
         //TODO
-        _fun_comment("检查攻击", 2);
-        echo _tab(2) . "Sys_adminModelX mVisitor = (Sys_adminModelX) ctx.getVariable(\"__visitor__\");\n";
+        _fun_comment("检查攻击，检查当前用户", 2);
+        echo _tab(2) . "MyVisitor mVisitor = (MyVisitor) ctx.getVariable(\"__visitor__\");\n";
         _fun_comment("获取GET参数", 2);
         $this->_echoReqParams($a_w_param_define, $a_w_param_field);
         _fun_comment("TODO 注意来自session的变量", 2);

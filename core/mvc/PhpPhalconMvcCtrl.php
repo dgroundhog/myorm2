@@ -143,8 +143,11 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                     break;
 
                 case Constant::FUN_TYPE_LIST:
-                default:
+
                     $this->cList($model, $o_fun);
+                    break;
+
+                default:
                     break;
             }
         }

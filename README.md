@@ -38,6 +38,6 @@
 
 ## TODO 
 controller 的count 变成了list
-db proc 默认值不见了
+其中model是对的
 
-cp -rf D:/build/20230401205954/src/main/*  D:/build/demoee/src/main 
+~~~~cp -rf D:/build/20230402165635/src/main/*  D:/build/demoee/src/main~~~~ 

@@ -18,7 +18,7 @@ class DbMysql extends DbBase
         $db = $this->db_conf;
         _db_comment_begin();
         _db_comment("Init mysql user {$db->user} and database {$db->database}");
-        _db_comment("You should run this As super user");
+        _db_comment("You should run this As super user or Some db Admin");
         _db_comment_end();
 
 
@@ -28,8 +28,8 @@ class DbMysql extends DbBase
                 _db_comment("for mysql {$db->driver}", true);
                 echo "CREATE USER IF NOT EXISTS '{$db->user}'@'{$db->host}' IDENTIFIED BY '{$db->password}';\n";
                 echo "CREATE DATABASE IF NOT EXISTS `{$db->database}` CHARACTER SET {$db->charset} COLLATE {$db->charset}_general_ci;\n";
-                echo "GRANT ALL PRIVILEGES ON `{$db->user}`.* TO '{$db->user}'@'{$db->host}';\n";
-                echo "GRANT ALL PRIVILEGES ON `{$db->user}\\_%`.* TO '{$db->user}'@'{$db->host}';\n";
+                echo "GRANT ALL PRIVILEGES ON `{$db->database}`.* TO '{$db->user}'@'{$db->host}';\n";
+                echo "GRANT ALL PRIVILEGES ON `{$db->database}\\_%`.* TO '{$db->user}'@'{$db->host}';\n";
                 echo "GRANT SELECT ON mysql.proc TO '{$db->user}'@'{$db->host}';\n";
                 break;
             case Constant::DB_MYSQL_80:
@@ -574,6 +574,7 @@ DDD;
         $s_sql1 = "";
         $s_sql2 = "";
 
+        SeasLog::debug("解析条件----------{$o_fun->type}");
         $jj = 0;
         if ($o_fun->where != null) {
 
@@ -1445,12 +1446,10 @@ DDD;
         //预先处理查询条件的
         //查询条件的字段
         list($a_param, $_sql1, $_sql2) = $this->_procWhereCond($model, $o_fun);
-
         $proc_name = self::_procHeader($model, $fun_name, $o_fun->title, $base_fun);
         $this->_procBegin($a_param);
         echo "SET @s_sql = 'SELECT COUNT(`{$model->primary_key}`) AS i_count FROM `t_{$model->table_name}` WHERE ';\n";
-
-        //基本条件sql
+        //基本条件sql TODO 这里返回有问题
         echo $_sql2;
         echo "CALL p__debug('{$proc_name}', @s_sql);\n";
         echo "PREPARE stmt FROM @s_sql;\n";

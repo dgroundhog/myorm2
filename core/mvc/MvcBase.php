@@ -76,6 +76,7 @@ abstract class MvcBase extends CcBase implements  CcImpl
             $this->odir_models = $this->odir_package. DS . "models";//模型驱动
             $this->odir_enums = $this->odir_package. DS . "enums";//错误码
             $this->odir_views = $this->odir_webapp. DS . "WEB-INF".DS . "templates";//视图或者UI
+            //TODO 配置文件应该写到这里
 
         }
         if($this->arch_conf->mvc==Constant::MVC_PHP_PHALCON){

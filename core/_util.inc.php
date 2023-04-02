@@ -61,7 +61,7 @@ function dir_create($path, $mode = 0777)
 {
     SeasLog::info('准备创建目录--' . $path);
     if (is_dir($path)) {
-        SeasLog::info('无法创建,已经是目录了');
+        SeasLog::info('无须创建,已经是目录了');
         return;
     } else {
         //var_dump($path);
