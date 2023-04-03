@@ -1086,7 +1086,7 @@ App.dt.data.ccModel_Admin = function () {
     _modelAdmin.idx_list = {};
     _modelAdmin.fun_list = {};
     var _f_id = self.data.ccGlobalFields("id");
-    var _f_admin_id = self.data.ccField_Text("admin_id", "登录名");
+    var _f_admin_id = self.data.ccField_Text("admin_id", "管理员ID");
     var _f_account = self.data.ccField_Text("account", "登录名");
     var _f_passwd = self.data.ccField_Text("passwd", "加密密码");
     var _f_role = self.data.ccField_Text("role", "权限");
@@ -1478,6 +1478,17 @@ App.dt.data.ccModel_Admin = function () {
     _kwCond4.v1_type = "INPUT";
     _kwCond4.v2_type = "";
 
+    var _flagCond= new MyCond();
+    _flagCond.uuid = App.su.maths.uuid.create();
+    _flagCond.ctime = _now;
+    _flagCond.utime = _now;
+    _flagCond.type = "EQ";
+    _flagCond.field = _f_flag.uuid;
+    _flagCond.v1 = "N";
+    _flagCond.v2 = "";
+    _flagCond.v1_type = "FIXED";
+    _flagCond.v2_type = "";
+
     var _timeCond = new MyCond();
     _timeCond.uuid = App.su.maths.uuid.create();
     _timeCond.ctime = _now;
@@ -1496,12 +1507,87 @@ App.dt.data.ccModel_Admin = function () {
     _listWhere.cond_list[_kwCond2.uuid] = _kwCond2;
     _listWhere.cond_list[_kwCond3.uuid] = _kwCond3;
     _listWhere.cond_list[_kwCond4.uuid] = _kwCond4;
+    _listWhere.cond_list[_flagCond.uuid] = _flagCond;
     _listWhere.cond_list[_timeCond.uuid] = _timeCond;
 
     _funList.where = _listWhere;
     _modelAdmin.fun_list[_funList.uuid] = _funList;
 
+    //普通查询
+    var _funList2 = new MyFun();
+    _funList2.uuid = App.su.maths.uuid.create();
+    _funList2.ctime = _now;
+    _funList2.utime = _now;
+    _funList2.name = "byState";
+    _funList2.title = "通用列表查询2";
+    _funList2.memo = "";
+    _funList2.type = "LISTS";
 
+    _funList2.group_by = "";
+    _funList2.group_field = "";
+    _funList2.order_enable = 1;
+    _funList2.order_by = _f_account.uuid;
+    _funList2.order_dir = "ASC";
+    _funList2.pager_enable = 1;
+    _funList2.pager_size = 20;
+    _funList2.all_field = 1;//不存在全部更新
+    _funList2.field_list = [];
+
+    var _listWhere2 = new MyWhere();
+    _listWhere2.uuid = App.su.maths.uuid.create();
+    _listWhere2.ctime = _now;
+    _listWhere2.utime = _now;
+    _listWhere2.cond_list = {};
+
+    var _stateCond2 = new MyCond();
+    _stateCond2 = deepCopy(_stateCond);
+
+    var _flagCond2 = new MyCond();
+    _flagCond2 = deepCopy(_flagCond);
+
+    _listWhere2.cond_list[_stateCond2.uuid] = _stateCond2;
+    _listWhere2.cond_list[_flagCond2.uuid] = _flagCond2;
+
+    _funList2.where = _listWhere2;
+    _modelAdmin.fun_list[_funList2.uuid] = _funList2;
+
+    //普通统计
+    var _funCount = new MyFun();
+    _funCount.uuid = App.su.maths.uuid.create();
+    _funCount.ctime = _now;
+    _funCount.utime = _now;
+    _funCount.name = "default";
+    _funCount.title = "普通统计";
+    _funCount.memo = "";
+    _funCount.type = "COUNTS";
+
+    _funCount.group_by = "";
+    _funCount.group_field = "";
+    _funCount.order_enable = 1;
+    _funCount.order_by = "";
+    _funCount.order_dir = "";
+    _funCount.pager_enable = 0;
+    _funCount.pager_size = 20;
+    _funCount.all_field = 1;//不存在全部更新
+    _funCount.field_list = [];
+
+    var _countWhere = new MyWhere();
+    _countWhere.uuid = App.su.maths.uuid.create();
+    _countWhere.ctime = _now;
+    _countWhere.utime = _now;
+    _countWhere.cond_list = {};
+
+
+    var _flagCond3 = new MyCond();
+    _flagCond3 = deepCopy(_flagCond);
+
+    _countWhere.cond_list[_flagCond3.uuid] = _flagCond3;
+
+    _funCount.where = _countWhere;
+    _modelAdmin.fun_list[_funCount.uuid] = _funCount;
+
+
+    //查询结束
     _curr_app.model_list[_uuidAdmin] = _modelAdmin;
     //_curr_app.model_list[_uuidRole] = _modelRole;
 

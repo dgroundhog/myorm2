@@ -39,24 +39,24 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="icon" type="image/png" href="https://assets.phalcon.io/phalcon/favicons/favicon.png"/>
     <link rel="shortcut icon" type="image/x-icon" href="https://assets.phalcon.io/phalcon/favicons/favicon.ico"/>
     <!-- jquery-ui -->
-    <link rel="stylesheet" href="/static/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" href="js/venders/jquery-ui/jquery-ui.min.css">
     <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="/static/local-google-font/local.google.fonts.css">
+    <link rel="stylesheet" href="js/venders/local-google-font/local.google.fonts.css">
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="/static/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="js/venders/fontawesome-free/css/all.min.css">
     <!-- Toastr -->
-    <link rel="stylesheet" href="/static/toastr/toastr.min.css">
+    <link rel="stylesheet" href="js/venders/toastr/toastr.min.css">
     <!-- Select2 -->
-    <link rel="stylesheet" href="/static/select2/css/select2.min.css">
-    <link rel="stylesheet" href="/static/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    <link rel="stylesheet" href="js/venders/select2/css/select2.min.css">
+    <link rel="stylesheet" href="js/venders/select2-bootstrap4-theme/select2-bootstrap4.min.css">
     <!-- Bootstrap-Fileinput -->
-    <link rel="stylesheet" href="/static/bootstrap-fileinput/css/fileinput.min.css">
+    <link rel="stylesheet" href="js/venders/bootstrap-fileinput/css/fileinput.min.css">
     <!-- Bootstrap4 Duallistbox -->
-    <link rel="stylesheet" href="/static/bootstrap4-duallistbox/bootstrap-duallistbox.min.css">
+    <link rel="stylesheet" href="js/venders/bootstrap4-duallistbox/bootstrap-duallistbox.min.css">
     <!-- Theme style -->
-    <link rel="stylesheet" href="/static/adminlte-3.2.0/css/adminlte.min.css">
+    <link rel="stylesheet" href="js/venders/adminlte-3.2.0/css/adminlte.min.css">
 </head>
-<body class="hold-transition sidebar-mini layout-navbar-fixed">
+<body class="hold-transition sidebar-mini layout-navbar-fixed text-sm">
 <div class="wrapper">
 
     <!-- Navbar -->
@@ -144,29 +144,29 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <!-- REQUIRED SCRIPTS -->
 
 <!-- jQuery -->
-<script src="/static/jquery/jquery.min.js"></script>
+<script src="js/venders/jquery/jquery.min.js"></script>
 <!-- jquery-ui -->
-<script src="/static/jquery-ui/jquery-ui.min.js"></script>
+<script src="js/venders/jquery-ui/jquery-ui.min.js"></script>
 <!-- Bootstrap 4 -->
-<script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="js/venders/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- Toastr -->
-<script src="/static/toastr/toastr.min.js"></script>
+<script src="js/venders/toastr/toastr.min.js"></script>
 <!-- Select2 -->
-<script src="/static/select2/js/select2.full.min.js"></script>
+<script src="js/venders/select2/js/select2.full.min.js"></script>
 <!-- bootbox -->
-<script src="/static/bootbox-5.5.2/js/bootbox.all.min.js"></script>
+<script src="js/venders/bootbox-5.5.2/js/bootbox.all.min.js"></script>
 <!-- Bootstrap Switch -->
-<script src="/static/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+<script src="js/venders/bootstrap-switch/js/bootstrap-switch.min.js"></script>
 <!-- Jsmart -->
-<script src="/static/jsmart-4.0.0/jsmart.min.js"></script>
+<script src="js/venders/jsmart-4.0.0/jsmart.min.js"></script>
 <!-- bootstrap-fileinput -->
-<script src="/static/bootstrap-fileinput/js/fileinput.min.js"></script>
-<script src="/static/bootstrap-fileinput/js/locales/zh.js"></script>
-<script src="/static/bootstrap-fileinput/themes/fas/theme.min.js"></script>
+<script src="js/venders/bootstrap-fileinput/js/fileinput.min.js"></script>
+<script src="js/venders/bootstrap-fileinput/js/locales/zh.js"></script>
+<script src="js/venders/bootstrap-fileinput/themes/fas/theme.min.js"></script>
 <!-- Bootstrap4 Duallistbox -->
-<script src="/static/bootstrap4-duallistbox/jquery.bootstrap-duallistbox.min.js"></script>
+<script src="js/venders/bootstrap4-duallistbox/jquery.bootstrap-duallistbox.min.js"></script>
 <!-- AdminLTE App -->
-<script src="/static/adminlte-3.2.0/js/adminlte.min.js"></script>
+<script src="js/venders/adminlte-3.2.0/js/adminlte.min.js"></script>
 
 
 <script src="./js/app.js?_t=<?php echo time(); ?>"></script>

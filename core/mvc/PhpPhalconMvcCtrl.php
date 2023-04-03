@@ -39,7 +39,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         $uc_model_name = ucfirst($model_name);
         $lc_model_name = strtolower($model_name);
         SeasLog::info("创建PHP控制器--{$model_name}");
-        $_target = $this->odir_controllers . DS . "{$uc_model_name}Controller.php";
+        $_target = $this->odir_controllers . DS . "_{$uc_model_name}Controller.php";
         ob_start();
 
         $this->_makeHeader();
@@ -47,7 +47,7 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo "use Phalcon\Mvc\Controller;\n";
 
         _fun_comment(array("php  控制器", $model->title));
-        echo "class {$uc_model_name}Controller extends ControllerBase {\n";
+        echo "class _{$uc_model_name}Controller extends ControllerBase {\n";
 
         _fun_comment_header("配对业务模型", 1);
         echo _tab(1) . " * @var {$uc_model_name}Model\n";

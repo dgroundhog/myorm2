@@ -44,7 +44,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         $uc_model_name = ucfirst($model_name);
         $lc_model_name = strtolower($model_name);
         SeasLog::info("创建JAVA控制器--{$model_name}");
-        $_target = $this->odir_controllers . DS . "{$uc_model_name}Servlet.java";
+        $_target = $this->odir_controllers . DS . "_{$uc_model_name}Servlet.java";
         ob_start();
 
         $package = $this->final_package;
@@ -75,7 +75,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         echo "import java.util.*;\n";
 
         _fun_comment("java 控制器 servlet类--{$model_name}");
-        echo "public class {$uc_model_name}Servlet extends FormServletBase {\n";
+        echo "public class _{$uc_model_name}Servlet extends FormServletBase {\n";
 
         _fun_comment("日志", 1);
         echo _tab(1) . "private static Logger logger = LoggerFactory.getLogger({$uc_model_name}Servlet.class);\n";
@@ -897,7 +897,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
         $lc_model_name = strtolower($model_name);
 
         SeasLog::info("创建入口页模板--{$model_name}");
-        $_target = $this->odir_views . DS . "{$model_name}_index.html";
+        $_target = $this->odir_views . DS . "_{$model_name}_index.html";
         ob_start();
         $this->makeHtmlIndex($model);
         $data = ob_get_contents();
@@ -906,7 +906,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
 
         SeasLog::info("列表页模板--{$model_name}");
-        $_target = $this->odir_views . DS . "{$model_name}_list.html";
+        $_target = $this->odir_views . DS . "_{$model_name}_list.html";
         ob_start();
         $this->makeHtmlList($model);
         $data = ob_get_contents();
@@ -915,7 +915,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
 
         SeasLog::info("编辑页模板--{$model_name}");
-        $_target = $this->odir_views . DS . "{$model_name}_edit.html";
+        $_target = $this->odir_views . DS . "_{$model_name}_edit.html";
         ob_start();
         $this->makeHtmlEdit($model);
         $data = ob_get_contents();
@@ -924,7 +924,7 @@ class JavaServletMvcCtrl extends JavaServletMvc
 
 
         SeasLog::info("详情页模板--{$model_name}");
-        $_target = $this->odir_views . DS . "{$model_name}_detail.html";
+        $_target = $this->odir_views . DS . "_{$model_name}_detail.html";
         ob_start();
         $this->makeHtmlDetail($model);
         $data = ob_get_contents();
