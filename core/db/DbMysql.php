@@ -19,6 +19,9 @@ class DbMysql extends DbBase
         _db_comment_begin();
         _db_comment("Init mysql user {$db->user} and database {$db->database}");
         _db_comment("You should run this As super user or Some db Admin");
+        _db_comment("如果编码选UTF8，则需要修改mysql配置，设置方式如 ： set character_set_server=utf8;");
+        _db_comment("去mysql 安装目录下找到my.ini文件。设置里面的latin1为utf8");
+
         _db_comment_end();
 
 

@@ -1227,6 +1227,8 @@ App.dt.data.ccModel_Admin = function () {
     _funUpdate.pager_size = 0;
     _funUpdate.field_list = {};
     _funUpdate.field_list[_f_name.uuid] = deepCopy(_f_name);
+    _funUpdate.field_list[_f_phone.uuid] = deepCopy(_f_phone);
+    _funUpdate.field_list[_f_email.uuid] = deepCopy(_f_email);
     _funUpdate.field_list[_f_memo.uuid] = deepCopy(_f_memo);
 
     _funUpdate.where = deepCopy(_pkWhere);
