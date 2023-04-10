@@ -400,7 +400,6 @@ class MyApp extends MyStruct
             //UI
             //文档
             //接口
-            //接口
         }
 
 
@@ -514,6 +513,7 @@ class MyApp extends MyStruct
             /* @var MyModel $o_model */
             $mm->ccBean($o_model);//创建bean 文件
             $mm->ccModel($o_model);//创建bean 文件
+            $mm->ccRestful($o_model);//创建restful文件
 
 
         }

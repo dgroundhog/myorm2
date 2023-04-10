@@ -50,12 +50,11 @@ class JavaServletMvcCtrl extends JavaServletMvc
         $package = $this->final_package;
         echo "package  {$package}.controllers;\n";
 
-
         echo "import com.yzzq.base.webapp.*;\n";
         echo "import com.yzzq.base.utils.*;\n";
 
         echo "import {$package}.MyApp;\n";
-        echo "import {$package}.enums.MyECode;\n";
+        echo "import {$package}.enums.*;\n";
         echo "import {$package}.beans.{$uc_model_name}Bean;\n";
         echo "import {$package}.models.{$uc_model_name}Model;\n";
 

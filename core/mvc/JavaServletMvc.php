@@ -191,8 +191,6 @@ class JavaServletMvc extends MvcBase
                 file_put_contents($_target, $cc_data);
             }
         }
-
-
     }
 
     function cAdd(MyModel $model, MyFun $fun)
@@ -1301,6 +1299,428 @@ class JavaServletMvc extends MvcBase
         file_put_contents($_target, $cc_data);
     }
 
+    /**
+     * 创建模型
+     * @param $model
+     * @return mixed|void
+     */
+    function ccRestful($model)
+    {
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
+        SeasLog::info("创建JAVA RESTFUL API--{$model_name}");
+        $_target = $this->odir_rest . DS . "{$uc_model_name}Api.java";
+        ob_start();
 
+        $package = $this->final_package;
+        echo "package  {$package}.rest;\n";
+
+        echo "import com.yzzq.base.app.ListResult;\n";
+        echo "import com.yzzq.base.webapp.*;\n";
+        echo "import com.yzzq.base.utils.*;\n";
+
+        echo "import {$package}.MyApp;\n";
+        echo "import {$package}.enums.*;\n";
+        echo "import {$package}.beans.{$uc_model_name}Bean;\n";
+        echo "import {$package}.models.{$uc_model_name}Model;\n";
+
+        echo "import java.util.HashMap;\n";
+        echo "import java.util.Date;\n";
+        echo "import java.util.Map;\n";
+        echo "import java.util.Vector;\n";
+        echo "import javax.servlet.http.HttpServletRequest;\n";
+        echo "import javax.ws.rs.GET;\n";
+        echo "import javax.ws.rs.POST;\n";
+        echo "import javax.ws.rs.Path;\n";
+        echo "import javax.ws.rs.PathParam;\n";
+        echo "import javax.ws.rs.core.Context;\n";
+        echo "import javax.ws.rs.core.HttpHeaders;\n";
+        echo "import javax.ws.rs.core.MediaType;\n";
+        echo "import javax.ws.rs.core.Response;\n";
+
+        echo "import org.slf4j.Logger;\n";
+        echo "import org.slf4j.LoggerFactory;\n";
+        echo "import org.apache.commons.lang3.StringUtils;\n";
+
+
+        _fun_comment("API类--{$model->title}");
+        echo "@Path(\"/{$lc_model_name}\")\n";
+        echo "public class {$uc_model_name}Api extends RestfulBase {\n";
+
+        _fun_comment("私有日志类", 1);
+        echo _tab(1) . "private  static Logger logger = LoggerFactory.getLogger({$uc_model_name}Api.class);\n\n";
+
+        $a_all_fields = array();
+        //转换用name作为主键
+        foreach ($model->field_list as $field) {
+            /* @var MyField $field */
+            $key = $field->name;
+            $a_all_fields[$key] = $field;
+        }
+
+        //没有字段不操作
+        if (count($a_all_fields) > 0) {
+
+            $model->field_list_kv = $a_all_fields;
+
+            foreach ($model->fun_list as $o_fun) {
+
+                /* @var MyFun $o_fun */
+                $fun_type = $o_fun->type;
+                $this->_funHeader($model, $o_fun);
+                $fun_name = $o_fun->name;
+                $uc_fun_name = ucfirst($fun_name);
+                $lc_fun_name = strtolower($fun_name);
+                $lc_fun_type = strtolower($fun_type);
+                echo _tab(1) . "@POST\n";
+                echo _tab(1) . "@Path(\"/{$lc_fun_type}_{$lc_fun_name}\")\n";
+
+                echo _tab(1) . "public Response {$lc_fun_type}_{$uc_fun_name}(String sParam, @Context HttpServletRequest request) {\n";
+
+                echo _tab(2) . "AjaxResult ajaxResult = new AjaxResult();\n";
+                echo _tab(2) . "Date timeBegin = new Date();\n";
+                echo _tab(2) . "String ip = request.getRemoteAddr();\n";
+                echo _tab(2) . "HashMap<String,String> mParam = GsonUtil.fromJson(sParam, HashMap.class);\n";
+
+                switch ($fun_type) {
+                    case Constant::FUN_TYPE_ADD:
+                        $this->crAdd($model, $o_fun);
+                        break;
+
+                    case Constant::FUN_TYPE_DELETE:
+                        $this->crDelete($model, $o_fun);
+                        break;
+
+                    case Constant::FUN_TYPE_UPDATE:
+                        $this->crUpdate($model, $o_fun);
+                        break;
+
+                    case Constant::FUN_TYPE_FETCH:
+                        $this->crFetch($model, $o_fun);
+                        break;
+
+                    case Constant::FUN_TYPE_COUNT:
+                        $this->crCount($model, $o_fun);
+                        break;
+
+                    case Constant::FUN_TYPE_LIST_WITH_COUNT:
+                    case Constant::FUN_TYPE_LIST_WITH_AVG:
+                    case Constant::FUN_TYPE_LIST_WITH_SUM:
+                    case Constant::FUN_TYPE_LIST_WITH_MAX:
+                    case Constant::FUN_TYPE_LIST_WITH_MIN:
+                    case Constant::FUN_TYPE_LIST:
+                    default:
+                        $this->crList($model, $o_fun);
+                        break;
+                }
+                echo _tab(2) ."\n\n";
+                echo _tab(2) . "if(iRet==1){\n";
+                echo _tab(3) . "ajaxResult.setCode(ECode.OK.getValue());\n";
+                echo _tab(2) . "}else{\n";
+                echo _tab(3) . "ajaxResult.setCode(ECode.FAIL.getValue());\n";
+                echo _tab(3) . "ajaxResult.setRet(\"\"+iRet);\n";
+                echo _tab(2) . "}\n";
+                echo _tab(2) . "Date timeEnd = new Date();\n";
+                echo _tab(2) . "long dd = timeEnd.getTime() - timeBegin.getTime();\n";
+                echo _tab(2) . "ajaxResult.time = dd + \"ms\";\n";
+                echo _tab(2) . "return _jsonOut(ajaxResult);\n";
+                echo _tab(1) ."}\n";
+                $this->_funFooter($model, $o_fun);
+            }
+
+        }
+        echo "}";
+        $data = ob_get_contents();
+        ob_end_clean();
+        file_put_contents($_target, $data);
+    }
+
+    function _echoRestParams($a_param_define, $a_param_field)
+    {
+        $ii = 0;
+        $a_used_key = array();
+        foreach ($a_param_define as $param) {
+            $o_field = $a_param_field[$ii];
+            $key = $o_field->name;
+
+            if (!isset($a_used_key[$key])) {
+                $a_used_key[$key] = 1;
+            } else {
+                $a_used_key[$key]++;
+            }
+            $i_key_count = $a_used_key[$key];
+            $vkey = $key . "_{$i_key_count}";
+            $title = $o_field->title;
+            echo "\n";
+            echo _tab(2) . "String v_{$vkey} = mParam.get(\"{$key}\");\n";
+            echo _tab(2) . "logger.debug(\"GetParam-({$title})-({$key})--(\" + v_{$vkey} + \")\");\n";
+            $d_value = $o_field->default_value;
+            if ($this->isIntType($o_field->type) || $this->isBoolType($o_field->type)) {
+                $d_value = ($d_value == "") ? 0 : (1 * $d_value);
+                echo _tab(2) . "{$param} = tidyIntParam(v_{$vkey},{$d_value});\n";
+            } elseif ($this->isBlobType($o_field->type)) {
+                echo _tab(2) . "{$param} = v_{$vkey}.getBytes();\n";
+            } else {
+                echo _tab(2) . "{$param} = tidyStrParam(v_{$vkey},\"{$d_value}\");\n";
+            }
+            if ($this->isBlobType($o_field->type)) {
+                echo _tab(2) . "//TODO add bin data here;\n";
+            }
+            if ($o_field->input_hash != "") {
+                echo _tab(2) . "//TODO 输入为有限的字典值 {$o_field->input_hash};\n";
+            }
+            if ($o_field->filter != "" && $o_field->filter != "NO_FILTER") {
+                echo _tab(2) . "//TODO 默认过滤器 {$o_field->filter};\n";
+            }
+            if ($o_field->regexp != "") {
+                echo _tab(2) . "//TODO 验证正则表达式 {$o_field->regexp};\n";
+            }
+
+            if ($key == "ctime" || $key == "utime") {
+                echo _tab(2) . "//TODO 日期范围需要从字段取值 date_from date_to  \n";
+                echo _tab(2) . "//TODO DateFromToBeanx dateFromToBeanx = listDataFromTo( v_date_from,  v_date_to);\n";
+            }
+            $ii++;
+        }
+
+    }
+
+    function crAdd(MyModel $model, MyFun $fun)
+    {
+        $base_fun = strtolower($fun->type);
+
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
+        $fun_name = $fun->name;
+        $uc_fun_name = ucfirst($fun_name);
+        $lc_fun_name = strtolower($fun_name);
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+        $fun_name2 = $this->makeModelFunName($fun_name, $base_fun, true);//通过bean添加
+
+        list($is_return_new_id, $i_param, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_key, $a_param_field) = $this->parseAdd_field($model, $fun);
+
+        if ($i_param == 0) {
+            //没有输入参数
+            return;
+        }
+
+        if ($is_return_new_id) {
+            $i_param++;
+        }
+
+        _fun_comment("获取POST参数", 2);
+        $this->_echoRestParams($a_param_define, $a_param_field);
+        _fun_comment("执行保存", 2);
+        echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
+        echo _tab(2) . "int iRet = oModel.{$fun_name1}(";
+        $this->_echoFunParams($a_param_use);
+        echo _tab(2) . ");\n";
+
+    }
+
+    function crDelete(MyModel $model, MyFun $fun)
+    {
+        $base_fun = strtolower($fun->type);
+
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
+        $fun_name = $fun->name;
+        $uc_fun_name = ucfirst($fun_name);
+        $lc_fun_name = strtolower($fun_name);
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+
+        //删除条件
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
+
+        _fun_comment("获取POST参数", 2);
+        $this->_echoRestParams($a_w_param_define, $a_w_param_field);
+
+        _fun_comment("执行保存", 2);
+        echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
+        echo _tab(2) . "int iRet = oModel.{$fun_name1}(";
+        $this->_echoFunParams($a_w_param_use);
+        echo _tab(2) . ");\n";
+
+    }
+
+    function crUpdate(MyModel $model, MyFun $fun)
+    {
+        $base_fun = strtolower($fun->type);
+
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
+        $fun_name = $fun->name;
+        $uc_fun_name = ucfirst($fun_name);
+        $lc_fun_name = strtolower($fun_name);
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+
+        //需要更新的字段
+        list($i_u_param, $a_u_param_comment, $a_u_param_define, $a_u_param_use, $a_u_param_type, $a_u_param_key, $a_u_param_field) = $this->_parseUpdate_field($model, $fun);
+        //更新条件
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
+
+        _fun_comment("获取POST参数", 2);
+
+
+        _fun_comment("需要更新的字段", 2);
+        $this->_echoRestParams($a_u_param_define, $a_u_param_field);
+        _fun_comment("需要条件", 2);
+        $this->_echoRestParams($a_w_param_define, $a_w_param_field);
+
+        _fun_comment("执行保存", 2);
+        echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
+        echo _tab(2) . "int iRet = oModel.{$fun_name1}(";
+        $this->_echoFunParams($a_u_param_use, $a_w_param_use);
+        echo _tab(2) . ");\n";
+
+    }
+
+    function crCount(MyModel $model, MyFun $fun)
+    {
+        echo _tab(2) . "int iRet = 1;\n";
+        echo _tab(2) . "//TODO";
+    }
+
+    function crFetch(MyModel $model, MyFun $fun)
+    {
+        $base_fun = strtolower($fun->type);
+
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
+        $fun_name = $fun->name;
+        $uc_fun_name = ucfirst($fun_name);
+        $lc_fun_name = strtolower($fun_name);
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+
+        //查询条件
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
+
+        _fun_comment("获取POST参数", 2);
+        $this->_echoRestParams($a_w_param_define, $a_w_param_field);
+
+        _fun_comment("执行查询", 2);
+        echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
+        echo _tab(2) . "Map<String,String> mInfo =  oModel.{$fun_name1}(";
+        $this->_echoFunParams($a_w_param_use);
+        echo _tab(2) . ");\n\n";
+        echo _tab(2) . "int iRet = 1;\n";
+        echo _tab(2) . "ajaxResult.setData(mInfo);\n";
+
+    }
+
+    function crList(MyModel $model, MyFun $fun)
+    {
+        $base_fun = strtolower($fun->type);
+
+        $model_name = $model->name;
+        $uc_model_name = ucfirst($model_name);
+        $lc_model_name = strtolower($model_name);
+        $fun_name = $fun->name;
+        $uc_fun_name = ucfirst($fun_name);
+        $lc_fun_name = strtolower($fun_name);
+        $fun_name1 = $this->makeModelFunName($fun_name, $base_fun);//散列参数添加
+
+        $a_all_fields = $model->field_list_kv;//通过主键访问的字段
+        $fun_type = $fun->type;
+        $has_return_bean = false;
+        if ($fun_type == Constant::FUN_TYPE_LIST) {
+            $has_return_bean = true;
+        }
+        //1111基本条件
+        list($i_w_param, $a_w_param_comment, $a_w_param_define, $a_w_param_use, $a_w_param_type, $a_w_param_field) = $this->_procWhereCond($model, $fun);
+        $i_param_list = $i_w_param;
+
+        //22222被聚合键
+        $fun_type = $fun->type;
+        list($has_group_field, $group_field, $o_group_field, $group_field_final, $group_field_sel) = $this->parseGroup_field($model, $fun);
+        //3333分组键
+        list($has_group_by, $group_by) = $this->parseGroup_by($model, $fun);
+
+        //4444先处理having,预先处理hading的条件
+        $has_having = false;
+        $o_having = $fun->group_having;//用来判断绑定关系
+        if ($has_group_field && $has_group_by) {
+            list($has_having, $a_param_comment_having, $a_param_define_having, $a_param_use_having, $a_param_type_having, $_sql1_having, $_sql2_having) = $this->parseHaving($model, $fun, $o_group_field, $group_field_final);
+        }
+
+        //5555排序键
+        list($has_order, $is_order_by_input, $s_order_by, $is_order_dir_input, $s_order_dir) = $this->parseOrder_by($model, $fun, $has_group_field, $group_field_final);
+
+        //6666 分页
+        list($has_pager, $is_pager_size_input, $pager_size) = $this->parsePager($model, $fun);
+        _fun_comment("获取POST参数", 2);
+        $this->_echoRestParams($a_w_param_define, $a_w_param_field);
+
+        _fun_comment("TODO 默认模板不会出现having的情况", 2);
+
+        //5555
+        if ($has_order) {
+            if ($is_order_by_input) {
+                echo _tab(2) . "String v_order_by = mParam.get(\"order_by\");\n";
+                echo _tab(2) . "v_order_by = tidyStrParam(v_order_by,\"id\");\n";
+            }
+            if ($is_order_by_input) {
+                echo _tab(2) . "String v_order_dir = mParam.get(\"order_dir\");\n";
+                echo _tab(2) . "v_order_dir = tidyStrParam(v_order_dir,\"DESC\");\n";
+            }
+        }
+        //6666
+        if ($has_pager) {
+            echo _tab(2) . "String v_page = mParam.get(\"page\");\n";
+            echo _tab(2) . "int i_page = tidyIntParam(v_page, 1);\n";
+
+            if ($is_pager_size_input) {
+                echo _tab(2) . "String v_page_size = mParam.get(\"page_size\");\n";
+                echo _tab(2) . "int i_page_size = tidyIntParam(v_page_size, 20);\n";
+            } else {
+                echo _tab(2) . "int i_page_size = {$pager_size};\n";
+            }
+        }
+        echo _tab(2) ."ListResult listResult = new ListResult();\n";
+        echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
+        if ($has_pager) {
+            _fun_comment("计数", 2);
+            echo _tab(2) . "int iTotal = oModel.{$fun_name1}_Count(";
+            $this->_echoFunParams($a_w_param_use);
+            echo ");\n";
+            echo _tab(2) . "listResult.i_total = iTotal;\n";
+        }
+
+        _fun_comment("执行查询", 2);
+        //echo _tab(2) . "{$uc_model_name}Model oModel = new {$uc_model_name}Model();\n";
+
+        echo _tab(2) . "Vector<HashMap> vList = oModel.{$fun_name1}(";
+        $this->_echoFunParams($a_w_param_use);
+        $ii = count($a_w_param_use);
+        if ($has_order) {
+            if ($is_order_by_input) {
+                echo _warp2join($ii) . _tab(5) . "v_order_by";
+                $ii++;
+            }
+            if ($is_order_by_input) {
+                echo _warp2join($ii) . _tab(5) . "v_order_dir";
+                $ii++;
+            }
+        }
+        //6666
+        if ($has_pager) {
+            echo _warp2join($ii) . _tab(5) . "i_page";
+            $ii++;
+            if ($is_pager_size_input) {
+                echo _warp2join($ii) . _tab(5) . "i_page_size";
+                $ii++;
+            }
+        }
+        echo ");\n\n";
+        echo _tab(2) . "listResult.m_list = vList;\n";
+        echo _tab(2) . "int iRet = 1;\n";
+        echo _tab(2) . "ajaxResult.setData(listResult);\n";
+
+    }
 
 }

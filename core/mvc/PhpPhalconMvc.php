@@ -1242,4 +1242,9 @@ class PhpPhalconMvc extends MvcBase
         ob_end_clean();
         file_put_contents($_target, $cc_data);
     }
+
+    function ccRestful($model)
+    {
+        // TODO: Implement ccRestful() method.
+    }
 }

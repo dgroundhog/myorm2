@@ -256,6 +256,24 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(2) . "return;\n";
         echo _tab(1) . "}\n";
 
+        _fun_comment("restful保存插入数据", 1);
+        echo _tab(1) . "public function restSaveAction() {\n";
+        echo _tab(2) ."\$a_param = json_decode(\$app->request->getRawBody());";
+        _fun_comment("获取POST参数", 2);
+        $this->_echoRestParams($a_param_define, $a_param_field, "post");
+        _fun_comment("执行保存", 2);
+        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->add(";
+        $this->_echoFunParams($a_param_use);
+        echo _tab(1) . ");\n";
+
+        echo _tab(2) . "if(\$iRet > 0){\n";
+        echo _tab(3) . "\$this->_ajax2(ECode::SUCC,\"保存成功\");\n";
+        echo _tab(2) . "}else{\n";
+        echo _tab(3) . "\$this->_ajax2(ECode::E0000,\"保存失败\");\n";
+        echo _tab(2) . "}\n";
+        echo _tab(2) . "return;\n";
+        echo _tab(1) . "}\n";
+
         $this->_funFooter($model, $fun);
     }
 
@@ -276,19 +294,24 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
 
             echo "\n";
 
+            $s_title = $o_field->title;
             $d_value = $o_field->default_value;
             if ($this->isIntType($o_field->type) || $this->isBoolType($o_field->type)) {
                 $d_value = ($d_value == "") ? 0 : (1 * $d_value);
                 if ($method == "get") {
                     echo _tab(2) . "{$param} = \$this->request->get(\"{$key}\",\"int\",{$d_value});\n";
+                    echo _tab(2) . "SeasLog::debug(\"GetParam-({$key})({$s_title})--(\" . {$param} . \")\");\n";
                 } else {
                     echo _tab(2) . "{$param} = \$this->request->getPost(\"{$key}\",\"int\",{$d_value});\n";
+                    echo _tab(2) . "SeasLog::debug(\"PostParam-({$key})({$s_title})--(\" . {$param} . \")\");\n";
                 }
             } else {
                 if ($method == "get") {
                     echo _tab(2) . "{$param} = \$this->request->get(\"{$key}\",\"string\",\"{$d_value}\");\n";
+                    echo _tab(2) . "SeasLog::debug(\"GetParam-({$key})({$s_title})--(\" . {$param} . \")\");\n";
                 } else {
                     echo _tab(2) . "{$param} = \$this->request->getPost(\"{$key}\",\"string\",\"{$d_value}\");\n";
+                    echo _tab(2) . "SeasLog::debug(\"PostParam-({$key})({$s_title})--(\" . {$param} . \")\");\n";
                 }
             }
             if ($this->isBlobType($o_field->type)) {
@@ -304,7 +327,49 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
                 echo _tab(2) . "//TODO 验证正则表达式 {$o_field->regexp};\n";
             }
 
-            echo _tab(2) . "SeasLog::debug(\"GetParam-({$key})--(\" . {$param} . \")\");\n";
+
+            $ii++;
+        }
+
+    }
+
+    function _echoRestParams($a_param_define, $a_param_field, $method = "get")
+    {
+        $ii = 0;
+        foreach ($a_param_define as $param) {
+            $o_field = $a_param_field[$ii];
+            $key = $o_field->name;
+            if(!isset($a_used_key[$key])){
+                $a_used_key[$key]=1;
+            }
+            else{
+                $a_used_key[$key]++;
+            }
+            $i_key_count = $a_used_key[$key];
+            $vkey = $key."_{$i_key_count}";
+
+            echo "\n";
+            $s_title = $o_field->title;
+            $d_value = $o_field->default_value;
+            if ($this->isIntType($o_field->type) || $this->isBoolType($o_field->type)) {
+                $d_value = ($d_value == "") ? 0 : (1 * $d_value);
+            }
+            echo _tab(2) . "//默认值 {$d_value};\n";
+            echo _tab(2) . "{$param} = \$m_param[\"{$key}\"];\n";
+            if ($this->isBlobType($o_field->type)) {
+                echo _tab(2) . "//TODO add bin data here;\n";
+            }
+            if ($o_field->input_hash != "") {
+                echo _tab(2) . "//TODO 输入为有限的字典值 {$o_field->input_hash};\n";
+            }
+            if ($o_field->filter != "" && $o_field->filter != "NO_FILTER") {
+                echo _tab(2) . "//TODO 默认过滤器 {$o_field->filter};\n";
+            }
+            if ($o_field->regexp != "") {
+                echo _tab(2) . "//TODO 验证正则表达式 {$o_field->regexp};\n";
+            }
+
+            echo _tab(2) . "SeasLog::debug(\"PosttParam-({$key})({$s_title})--(\" . {$param} . \")\");\n";
             $ii++;
         }
 
@@ -371,6 +436,27 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         _fun_comment("删除条件", 2);
         $this->_echoReqParams($a_w_param_define, $a_w_param_field);
         _fun_comment("TODO 注意来自session的变量", 2);
+
+        _fun_comment("执行删除", 2);
+        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->drop(";
+        $this->_echoFunParams($a_w_param_use);
+        echo ");\n";
+
+        echo _tab(2) . "if(\$iRet==1){\n";
+        echo _tab(3) . "\$this->_ajax2(ECode::SUCC,\"删除成功\");\n";
+        echo _tab(2) . "}else{\n";
+        echo _tab(3) . "\$this->_ajax2(ECode::E0000,\"删除失败\");\n";
+        echo _tab(2) . "}\n";
+        echo _tab(2) . "return;\n";
+        echo _tab(1) . "}\n";
+
+
+        _fun_comment("restful删除", 1);
+        echo _tab(1) . "public function restDeleteAction() {\n";
+        echo _tab(2) ."\$a_param = json_decode(\$app->request->getRawBody());";
+        _fun_comment("获取POST参数", 2);
+        _fun_comment("删除条件", 2);
+        $this->_echoRestParams($a_w_param_define, $a_w_param_field);
 
         _fun_comment("执行删除", 2);
         echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->drop(";
@@ -508,6 +594,32 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(2) . "return;\n";
         echo _tab(1) . "}\n";
 
+
+        _fun_comment("restful更新", 1);
+        echo _tab(1) . "public function restModifyAction() {\n";
+        echo _tab(2) ."\$a_param = json_decode(\$app->request->getRawBody());";
+
+        _fun_comment("获取POST参数", 2);
+        _fun_comment("需要更新的字段", 2);
+        $this->_echoRestParams($a_u_param_define, $a_u_param_field);
+        _fun_comment("需要条件", 2);
+        $this->_echoRestParams($a_w_param_define, $a_w_param_field);
+
+        _fun_comment("执行更新", 2);
+        echo _tab(2) . "\$iRet = \$this->o_{$uc_model_name}->modify(";
+        $this->_echoFunParams($a_u_param_use, $a_w_param_use);
+        echo ");\n";
+
+        echo _tab(2) . "if(\$iRet > 0){\n";
+        echo _tab(3) . "\$this->_ajax2(ECode::SUCC,\"更新成功\");\n";
+        echo _tab(2) . "}else{\n";
+        echo _tab(3) . "\$this->_ajax2(ECode::E0000,\"更新失败\");\n";
+        echo _tab(2) . "}\n";
+        echo _tab(2) . "return;\n";
+        echo _tab(1) . "}\n";
+
+
+
         $this->_funFooter($model, $fun);
     }
 
@@ -565,6 +677,29 @@ class PhpPhalconMvcCtrl extends PhpPhalconMvc
         echo _tab(2) . "}\n";
         echo _tab(2) . "return;\n";
         echo _tab(1) . "}\n";
+
+        _fun_comment("获取restful详情用于显示", 1);
+        echo _tab(1) . "public function restDetailAction() {\n";
+        echo _tab(2) ."\$a_param = json_decode(\$app->request->getRawBody());";
+        _fun_comment("获取POST参数", 2);
+        $this->_echoRestParams($a_w_param_define, $a_w_param_field);
+
+
+        echo _tab(2) . "\$mInfo = \$this->o_{$uc_model_name}->fetch(";
+        $this->_echoFunParams($a_w_param_use);
+        echo ");\n";
+
+        echo _tab(2) . "if(\$mInfo != null){\n";
+        echo _tab(3) . "\$this->_ajax2(ECode::SUCC,\"读取成功\",\$mInfo);\n";
+        echo _tab(2) . "}else{\n";
+        echo _tab(3) . "\$this->_ajax2(ECode::E0000,\"读取失败\");\n";
+        echo _tab(2) . "}\n";
+        echo _tab(2) . "return;\n";
+        echo _tab(1) . "}\n";
+
+
+
+
         $this->_funFooter($model, $fun);
 
     }
@@ -1966,6 +2101,7 @@ WEB;
 
 
     }
+
 
 }
 

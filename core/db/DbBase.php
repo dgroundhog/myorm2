@@ -38,6 +38,11 @@ abstract class DbBase extends CcBase implements  CcImpl
             mkdir($output_2);
         }
 
+        $output_2_2 = $output_1 . DS . "pm";
+        if (!file_exists($output_2_2)) {
+            mkdir($output_2_2);
+        }
+
         $output_3 = $output_2 . DS . $this->curr_app->driver;
         if (!file_exists($output_3)) {
             mkdir($output_3);
