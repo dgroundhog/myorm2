@@ -3964,6 +3964,27 @@ App.dt.project.modelFunWhereInit = function () {
     var tpl = new jSmart(self.getTpl('tpl_model_where'));
     var res = tpl.fetch(a_data);
     $("#block_where").html(res);
+    var _old_list = self.project.curr_where.cond_list;
+    var _cond_list = $("#cond_sort_0");
+    _cond_list.sortable({
+        handle: ".fa-sort", stop: function () {
+            var _new_list = {};
+            var iii = 0
+            _cond_list.find(".cond_row").each(function () {
+                var _me = $(this);
+                var _uuid = _me.attr("title");
+                if (undefined != _old_list[_uuid]) {
+                    iii++;
+                    var _cond = _old_list[_uuid];
+                    _cond.position = iii;
+                    _new_list[_uuid] = _cond;
+                }
+            });
+            console.log(_new_list);
+            self.project.curr_where.cond_list = _new_list;
+            self.project.modelFunWhereInit();
+        }
+    });
 
 
 }

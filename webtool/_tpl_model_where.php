@@ -40,14 +40,19 @@
             <!-- /.card-tools -->
         </div>
         <!-- /.card-header -->
-        <div class="card-body p-1" id="cond_sort_0">
+        <div class="card-body p-1" >
 
             <div class="card">
                 <div class="card-body p-1">
-                    <table class="table table-striped table-sm">
+                    <table class="table table-striped table-sm" >
+                        <tbody id="cond_sort_0">
                         {foreach $where0.cond_list as $i => $cond}
                         {assign var="cond_field" value=$cond.field}
-                        <tr>
+                        <tr class="cond_row" title="{$cond.uuid}">
+                            <td style="cursor: move;">
+                                <i class="fa fa-sort" ></i>
+                                {$cond.position}
+                            </td>
                             <td>
                                 {foreach $model_field_list as $ii => $iff4}
                                 {if $cond_field eq $iff4.uuid} {$iff4.name}{/if}
@@ -84,7 +89,7 @@
                         {/foreach}
                         {foreach $where0.where_list as $i => $where1}
                         <tr>
-                            <td colspan="7">
+                            <td colspan="8">
                                 <div class="card">
                                     <div class="card-header">
                                         <h3 class="card-title">
@@ -166,6 +171,7 @@
                             </td>
                         </tr>
                         {/foreach}
+                        </tbody>
                     </table>
                 </div>
             </div>

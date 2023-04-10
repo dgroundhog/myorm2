@@ -223,6 +223,32 @@ class PhpPhalconMvc extends MvcBase
         $data = ob_get_contents();
         ob_end_clean();
         file_put_contents($_target2, $data);
+
+        foreach ($model->field_list as $field) {
+            /* @var MyField $field */
+            if ($field->input_hash != "") {
+                $key = $field->name;
+                $uc_key = ucfirst($key);
+                //字典作为枚举型
+                $kv_list = array();
+                $a_hash = explode(";", $field->input_hash);
+                foreach ($a_hash as $s_kv) {
+                    $a_kv = explode(",", $s_kv);
+                    $kv_list[$a_kv[0]] = $a_kv[1];
+                }
+                $e_name = "E{$uc_model_name}{$uc_key}";
+                $_target = $this->odir_enums . DS . "{$e_name}.php";
+                ob_start();
+                $this->_makeheader();
+                //echo "package {$this->final_package}.enums;\n\n";
+                //echo "import java.util.HashMap;\n";
+                _fun_comment("枚举值：{$model->title} -- {$field->title}");
+                _php_enum_common( $e_name,$kv_list);
+                $cc_data = ob_get_contents();
+                ob_end_clean();
+                file_put_contents($_target, $cc_data);
+            }
+        }
     }
 
     function _makeHeader()
@@ -1130,7 +1156,17 @@ class PhpPhalconMvc extends MvcBase
 
     function ccEcode($kv_list)
     {
-
+        $e_name = "MyECode";
+        $_target = $this->odir_enums . DS . "{$e_name}.php";
+        ob_start();
+        $this->_makeheader();
+        //echo "package {$this->final_package}.enums;\n\n";
+        //echo "import java.util.HashMap;\n";
+        _fun_comment("全局枚举值");
+        _php_enum_common( $e_name,$kv_list);
+        $cc_data = ob_get_contents();
+        ob_end_clean();
+        file_put_contents($_target, $cc_data);
     }
 
 

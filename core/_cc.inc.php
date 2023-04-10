@@ -209,3 +209,117 @@ function _warp2join($ii)
     return ($ii == 0) ? "\n" : ",\n";
 }
 
+
+/**
+ * 生产java枚举型的代码
+ * @param $name
+ * @return string
+ */
+function _java_enum_common($name,$kv_list)
+{
+    echo "public enum $name {\n";
+
+    foreach ($kv_list as $code => $desc) {
+        echo _tab(1) . "{$code}(\"{$code}\", \"{$desc}\"),\n";
+    }
+    echo _tab(1) . ";\n\n";
+
+
+    echo _tab(1) . "private final String v;//value\n";
+    echo _tab(1) . "private final String d;//desc,msg\n\n";
+
+    echo _tab(1) . "{$name}(String val, String desc) {\n";
+    echo _tab(2) . "this.v = val;\n";
+    echo _tab(2) . "this.d = desc;\n";
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public static {$name} asEnum(String str) {\n";
+    echo _tab(2) . "for ({$name} me : {$name}.values()) {\n";
+    echo _tab(3) . "if (me.getValue().equalsIgnoreCase(str)) return me;\n";
+    echo _tab(2) . "}\n";
+    echo _tab(2) . "return null;\n";
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public static HashMap<String, String> toMap() {\n";
+    echo _tab(2) . "HashMap<String, String> _map = new HashMap<>();\n";
+    echo _tab(2) . "for ({$name} me : {$name}.values()) {\n";
+    echo _tab(3) . "_map.put(me.getValue(), me.getMessage());\n";
+    echo _tab(2) . "}\n";
+    echo _tab(2) . "return _map;\n";
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public String getValue() {\n";
+    echo _tab(2) . "return this.v;\n";
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public String getDesc() {\n";
+    echo _tab(2) . "return this.d;\n";
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public String getMessage() {\n";
+    echo _tab(2) . "return this.d;\n";
+    echo _tab(1) . "}\n\n";
+    echo "}";
+}
+
+
+/**
+ * 生产php枚举型的代码
+ * @param $name
+ * @return string
+ */
+function _php_enum_common($name,$kv_list)
+{
+    echo "class $name {\n";
+    //const VIEW = 'view';i
+    //php 的常量类都是大些，仅为代码读取使用
+    foreach ($kv_list as $code => $desc) {
+        $upp = strtoupper($code);
+        echo _tab(1) . "const  {$upp} = \"{$upp}\"; //{$desc}\n";
+    }
+    echo _tab(1) . "\n\n";
+
+    echo _tab(1) . "private static \$_v2d = array(\n";
+    foreach ($kv_list as $code => $desc) {
+        $upp = strtoupper($code);
+        echo _tab(2) . "\"{$upp}\" => \"{$desc}\",\n";
+    }
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public static function asEnum(\$str) {\n";
+    echo _tab(2) . "\$upp = strtoupper(\$str);\n";
+    echo _tab(2) . "if (isset(\$_v2d[\$upp])) {\n";
+    echo _tab(3) . "return \$upp;\n";
+    echo _tab(2) . "}\n";
+    echo _tab(2) . "return null;\n";
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public static function toMap() {\n";
+    echo _tab(2) . "return \$_v2d;\n";
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public static function getValue(\$val) {\n";
+    echo _tab(2) . "\$upp = strtoupper(\$val);\n";
+    echo _tab(2) . "if (isset(\$_v2d[\$upp])) {\n";
+    echo _tab(3) . "return \$upp;\n";
+    echo _tab(2) . "}\n";
+    echo _tab(2) . "return null;\n";
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public static function getDesc(\$val) {\n";
+    echo _tab(2) . "\$upp = strtoupper(\$val);\n";
+    echo _tab(2) . "if (isset(\$_v2d[\$upp])) {\n";
+    echo _tab(3) . "return \$_v2d[\$upp];\n";
+    echo _tab(2) . "}\n";
+    echo _tab(2) . "return null;\n";
+    echo _tab(1) . "}\n\n";
+
+    echo _tab(1) . "public static function getMessage(\$val) {\n";
+    echo _tab(2) . "\$upp = strtoupper(\$val);\n";
+    echo _tab(2) . "if (isset(\$_v2d[\$upp])) {\n";
+    echo _tab(3) . "return \$_v2d[\$upp];\n";
+    echo _tab(2) . "}\n";
+    echo _tab(2) . "return null;\n";
+    echo _tab(1) . "}\n\n";
+    echo "}";
+}

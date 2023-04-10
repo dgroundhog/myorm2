@@ -166,6 +166,33 @@ class JavaServletMvc extends MvcBase
         $data = ob_get_contents();
         ob_end_clean();
         file_put_contents($_target2, $data);
+
+        foreach ($model->field_list as $field) {
+            /* @var MyField $field */
+            if ($field->input_hash != "") {
+                $key = $field->name;
+                $uc_key = ucfirst($key);
+                //字典作为枚举型
+                $kv_list = array();
+                $a_hash = explode(";", $field->input_hash);
+                foreach ($a_hash as $s_kv) {
+                    $a_kv = explode(",", $s_kv);
+                    $kv_list[$a_kv[0]] = $a_kv[1];
+                }
+                $e_name = "E{$uc_model_name}{$uc_key}";
+                $_target = $this->odir_enums . DS . "{$e_name}.java";
+                ob_start();
+                echo "package {$this->final_package}.enums;\n\n";
+                echo "import java.util.HashMap;\n";
+                _fun_comment("枚举值：{$model->title} -- {$field->title}");
+                _java_enum_common( $e_name,$kv_list);
+                $cc_data = ob_get_contents();
+                ob_end_clean();
+                file_put_contents($_target, $cc_data);
+            }
+        }
+
+
     }
 
     function cAdd(MyModel $model, MyFun $fun)
@@ -1184,54 +1211,15 @@ class JavaServletMvc extends MvcBase
     //创建错误码
     function ccEcode($kv_list)
     {
-
+        //TODO
         SeasLog::info("创建错误码");
         $_target = $this->odir_enums . DS . "MyECode.java";
         ob_start();
-
         echo "package {$this->final_package}.enums;\n\n";
         echo "import java.util.HashMap;\n";
-
         _fun_comment("错误码");
-        echo "public enum MyECode {\n";
-
-        foreach ($kv_list as $code => $desc) {
-            echo _tab(1) . "{$code}(\"{$code}\", \"{$desc}\"),\n";
-        }
-        echo _tab(1) . ";\n\n";
-
-
-        echo _tab(1) . "private final String v;\n";
-        echo _tab(1) . "private final String msg;\n\n";
-
-        echo _tab(1) . "MyECode(String val, String message) {\n";
-        echo _tab(2) . "this.v = val;\n";
-        echo _tab(2) . "this.msg = message;\n";
-        echo _tab(1) . "}\n\n";
-
-        echo _tab(1) . "public static MyECode asEnum(String str) {\n";
-        echo _tab(2) . "for (MyECode me : MyECode.values()) {\n";
-        echo _tab(3) . "if (me.getValue().equalsIgnoreCase(str)) return me;\n";
-        echo _tab(2) . "}\n";
-        echo _tab(2) . "return null;\n";
-        echo _tab(1) . "}\n\n";
-
-        echo _tab(1) . "public static HashMap<String, String> toMap() {\n";
-        echo _tab(2) . "HashMap<String, String> _map = new HashMap<>();\n";
-        echo _tab(2) . "for (MyECode me : MyECode.values()) {\n";
-        echo _tab(3) . "_map.put(me.getValue(), me.getMessage());\n";
-        echo _tab(2) . "}\n";
-        echo _tab(2) . "return _map;\n";
-        echo _tab(1) . "}\n\n";
-
-        echo _tab(1) . "public String getValue() {\n";
-        echo _tab(2) . "return this.v;\n";
-        echo _tab(1) . "}\n\n";
-
-        echo _tab(1) . "public String getMessage() {\n";
-        echo _tab(2) . "return this.msg;\n";
-        echo _tab(1) . "}\n\n";
-        echo "}";
+        //TODO
+        _java_enum_common("MyECode",$kv_list);
         $cc_data = ob_get_contents();
         ob_end_clean();
         file_put_contents($_target, $cc_data);
