@@ -173,13 +173,13 @@
                                 <h3 class="card-title">WHERE组合查询条件</h3>
                                 <div class="card-tools">
                                     <button class="btn btn-tool" type="button"
-                                            onclick="javascript:App.dt.project.modelFunWhereAdd('','AND');">
+                                            onclick="App.dt.project.modelFunWhereAdd('AND');">
                                         <i class="fas fa-plus-circle"></i>
                                         <img src="img/and-gate.png" style="height: 24px;width: 24px"/>
                                         与条件组合
                                     </button>
                                     <button class="btn btn-tool" type="button"
-                                            onclick="javascript:App.dt.project.modelFunWhereAdd('','OR');">
+                                            onclick="App.dt.project.modelFunWhereAdd('OR');">
                                         <i class="fas fa-plus-circle"></i>
                                         <img src="img/or-gate.png" style="height: 24px;width: 24px"/>
                                         或条件组合
@@ -219,7 +219,8 @@
                                     </div>
 
                                     <div class="form-group row">
-                                        <label for="sel_fun_cond_v1_type" class="col-sm-4 col-form-label">参数1类型</label>
+                                        <label for="sel_fun_cond_v1_type"
+                                               class="col-sm-4 col-form-label">参数1类型</label>
                                         <div class="col-sm-8">
                                             <select id="sel_fun_cond_v1_type"
                                                     class="form-control form-control-sm select2">
@@ -242,7 +243,8 @@
 
 
                                     <div class="form-group row">
-                                        <label for="sel_fun_cond_v2_type" class="col-sm-4 col-form-label">参数2类型</label>
+                                        <label for="sel_fun_cond_v2_type"
+                                               class="col-sm-4 col-form-label">参数2类型</label>
                                         <div class="col-sm-8">
                                             <select id="sel_fun_cond_v2_type"
                                                     class="form-control form-control-sm select2">
@@ -276,7 +278,8 @@
                                     </div>
 
                                     <input type="hidden" id="txt_cond_uuid"/>
-                                    <input type="hidden" id="txt_where_uuid"/>
+                                    <input type="hidden" id="txt_is_sub"/>
+                                    <input type="hidden" id="txt_sub_cond_uuid"/>
                                 </form>
                             </div>
 
@@ -285,7 +288,7 @@
                                 <h3 class="card-title">HAVING聚合后过滤（参数为聚合新键）</h3>
                                 <div class="card-tools">
                                     <button class="btn btn-tool" type="button"
-                                            onclick="javascript:App.dt.project.modelFunHavingEdit();">
+                                            onclick="App.dt.project.modelFunHavingEdit();">
                                         <i class="fas fa-edit"></i> 编辑
                                     </button>
 
@@ -315,7 +318,7 @@
                                                     <a class="dropdown-item" href="#">--</a>
                                                     <a class="dropdown-item" href="#">---</a>
                                                     <a class="dropdown-item"
-                                                       onclick="javascript:App.dt.project.modelFunHavingDrop();"
+                                                       onclick="App.dt.project.modelFunHavingDrop();"
                                                        href="####">确认移除</a>
                                                 </div>
 
@@ -332,7 +335,7 @@
             <div class="modal-footer justify-content-between">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary"
-                        onclick="javascript:App.dt.project.modelFunSave();"
+                        onclick="App.dt.project.modelFunSave();"
                 >保存
                 </button>
             </div>

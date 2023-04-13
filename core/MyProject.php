@@ -82,7 +82,7 @@ class MyProject extends MyStruct
         $a_data = $this->getBasicAsArray();
         $a_data['version_list'] = array();
         foreach ($this->version_list as $key => $item) {
-            /*@var MyApp $item */
+            /* @var MyApp $item */
             $a_data['version_list'][$key] = $item->getAsArray();
         }
 

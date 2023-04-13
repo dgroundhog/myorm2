@@ -587,9 +587,8 @@ function MyWhere() {
     MyStruct.call(this);
     this.scope = "WHERE";
     this.type = "AND";
-    this.parent_where = "";
     this.cond_list = [];//操作字段
-    this.where_list = [];//操作字段
+
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
@@ -605,22 +604,12 @@ MyWhere.prototype.parse = function (json_one) {
     this.parseBasic(json_one);
 
     this.type = json_one.type;
-    this.parent_where = json_one.parent_where;
-
     this.cond_list = {};
     for (var ii in json_one.cond_list) {
         var _cond = new MyCond();
         _cond.parse(json_one.cond_list[ii]);
         var _uuid = _cond.uuid;
         this.cond_list[_uuid] = _cond;
-    }
-
-    this.where_list = {};
-    for (var ii in json_one.where_list) {
-        var _where = new MyWhere();
-        _where.parse(json_one.where_list[ii]);
-        var _uuid = _where.uuid;
-        this.where_list[_uuid] = _where;
     }
 }
 
@@ -637,6 +626,9 @@ function MyCond() {
     this.v2 = "@@";
     this.v1_type = "@@";
     this.v2_type = "@@";
+    this.is_sub_where = "0";//1表示子嵌套
+    this.type_sub_where = "OR";//子嵌套类型
+    this.cond_list = [];//操作字段
 }
 
 //把子类的原型指向通过Object.create创建的中间对象
@@ -655,4 +647,14 @@ MyCond.prototype.parse = function (json_one) {
     this.v2 = json_one.v2;
     this.v1_type = json_one.v1_type;
     this.v2_type = json_one.v2_type;
+    this.is_sub_where = json_one.is_sub_where;
+    this.type_sub_where = json_one.type_sub_where;
+
+    this.cond_list = {};
+    for (var ii in json_one.cond_list) {
+        var _cond = new MyCond();
+        _cond.parse(json_one.cond_list[ii]);
+        var _uuid = _cond.uuid;
+        this.cond_list[_uuid] = _cond;
+    }
 }

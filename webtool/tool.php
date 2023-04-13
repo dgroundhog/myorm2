@@ -110,6 +110,7 @@ function ajax_update_project($_project, $_title, $_memo)
         $o_project->utime = date("Y-m-d H:i:s", time());
         $a_project_info = $o_project->getAsArray();
 
+
         file_put_contents($project_path, json_encode($a_project_info));
         $a_return['data']['project_info'] = $a_project_info;
     } else {
@@ -261,6 +262,8 @@ function ajax_save_app($project, $version, $data)
         $o_project->version_list[$version] = $o_app;
 
         $a_project_info = $o_project->getAsArray();
+
+
 
         file_put_contents($project_path, json_encode($a_project_info));
         $a_return['data']['project_info'] = $a_project_info;

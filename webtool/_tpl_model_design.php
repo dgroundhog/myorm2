@@ -276,8 +276,9 @@
                                             <div class="card" style="margin-bottom:0px">
                                                 <div class="card-body p-1">
                                                     <table class="table table-striped table-sm">
-                                                        {foreach $where0.cond_list as $i => $cond}
-                                                        {assign var="cond_field" value=$cond.field}
+                                                        {foreach $where0.cond_list as $i => $cond0}
+                                                        {assign var="cond_field" value=$cond0.field}
+                                                        {if $cond0.is_sub_where eq 0}
                                                         <tr>
                                                             <td>
                                                                 {if $cond_field eq '##'}
@@ -288,25 +289,24 @@
                                                                 {/foreach}
                                                                 {/if}
                                                             </td>
-                                                            <td>{$cond.type}</td>
-                                                            <td>{$cond.v1_type}</td>
-                                                            <td>{$cond.v1}</td>
-                                                            <td>{$cond.v2_type}</td>
-                                                            <td>{$cond.v2}</td>
+                                                            <td>{$cond0.type}</td>
+                                                            <td>{$cond0.v1_type}</td>
+                                                            <td>{$cond0.v1}</td>
+                                                            <td>{$cond0.v2_type}</td>
+                                                            <td>{$cond0.v2}</td>
                                                         </tr>
-                                                        {/foreach}
-                                                        {foreach $where0.where_list as $i => $where1}
+                                                        {else}
                                                         <tr>
                                                             <td class="p-1" colspan="6">
                                                                 <div class="card" style="margin-bottom:0px">
                                                                     <div class="card-header">
                                                                         <span>- -
-                                                                            {if $where1.type eq 'AND'}
+                                                                            {if $cond0.type_sub_where eq 'AND'}
                                                                             <img src="img/and-gate.png" style="height: 24px;width: 24px"/> 与
                                                                             {else}
                                                                             <img src="img/or-gate.png" style="height: 24px;width: 24px"/>或
                                                                             {/if}
-                                                                            子嵌套组合 {$where1.cond_list|count}
+                                                                            子嵌套组合 {$cond0.cond_list|count}
                                                                         </span>
 
                                                                         <!-- /.card-tools -->
@@ -316,26 +316,26 @@
                                                                         <div class="card" style="margin-bottom:0px">
                                                                             <div class="card-body p-1">
                                                                                 <table class="table table-striped table-sm">
-                                                                                    {assign var="sub_cond_list" value=$where1.cond_list}
-                                                                                    {foreach $sub_cond_list as $ii => $cond}
-                                                                                    {assign var="cond_field" value=$cond.field}
+                                                                                    {assign var="sub_cond_list" value=$cond0.cond_list}
+                                                                                    {foreach $sub_cond_list as $ii => $cond1}
+                                                                                    {assign var="cond_field" value=$cond1.field}
                                                                                     <tr>
                                                                                         <td>
                                                                                             {if $cond_field eq '##'}
                                                                                             聚合新健
                                                                                             {else}
-                                                                                                {foreach $model_field_list  as $ii => $iff4}
-                                                                                                    {if $cond_field eq $iff4.uuid}
-                                                                                                        {$iff4.name}
-                                                                                                    {/if}
-                                                                                                {/foreach}
+                                                                                            {foreach $model_field_list  as $ii => $iff4}
+                                                                                            {if $cond_field eq $iff4.uuid}
+                                                                                            {$iff4.name}
+                                                                                            {/if}
+                                                                                            {/foreach}
                                                                                             {/if}
                                                                                         </td>
-                                                                                        <td>{$cond.type}</td>
-                                                                                        <td>{$cond.v1_type}</td>
-                                                                                        <td>{$cond.v1}</td>
-                                                                                        <td>{$cond.v2_type}</td>
-                                                                                        <td>{$cond.v2}</td>
+                                                                                        <td>{$cond1.type}</td>
+                                                                                        <td>{$cond1.v1_type}</td>
+                                                                                        <td>{$cond1.v1}</td>
+                                                                                        <td>{$cond1.v2_type}</td>
+                                                                                        <td>{$cond1.v2}</td>
                                                                                     </tr>
                                                                                     {/foreach}
                                                                                 </table>
@@ -347,7 +347,9 @@
                                                                 </div>
                                                             </td>
                                                         </tr>
+                                                        {/if}
                                                         {/foreach}
+
                                                     </table>
                                                 </div>
                                             </div>

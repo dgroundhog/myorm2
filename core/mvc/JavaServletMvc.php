@@ -1310,7 +1310,7 @@ class JavaServletMvc extends MvcBase
         $uc_model_name = ucfirst($model_name);
         $lc_model_name = strtolower($model_name);
         SeasLog::info("创建JAVA RESTFUL API--{$model_name}");
-        $_target = $this->odir_rest . DS . "{$uc_model_name}Api.java";
+        $_target = $this->odir_rest . DS . "_{$uc_model_name}Api.java";
         ob_start();
 
         $package = $this->final_package;
@@ -1345,11 +1345,11 @@ class JavaServletMvc extends MvcBase
 
 
         _fun_comment("API类--{$model->title}");
-        echo "@Path(\"/{$lc_model_name}\")\n";
-        echo "public class {$uc_model_name}Api extends RestfulBase {\n";
+        echo "@Path(\"/_{$lc_model_name}\")\n";
+        echo "public class _{$uc_model_name}Api extends RestfulBase {\n";
 
         _fun_comment("私有日志类", 1);
-        echo _tab(1) . "private  static Logger logger = LoggerFactory.getLogger({$uc_model_name}Api.class);\n\n";
+        echo _tab(1) . "private  static Logger logger = LoggerFactory.getLogger(_{$uc_model_name}Api.class);\n\n";
 
         $a_all_fields = array();
         //转换用name作为主键

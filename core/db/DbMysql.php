@@ -572,80 +572,87 @@ DDD;
      */
     function _procWhereCond($model, $o_fun)
     {
-
         $a_param = array();//
         $s_sql1 = "";
         $s_sql2 = "";
-
         SeasLog::debug("解析条件----------{$o_fun->type}");
         $jj = 0;
         if ($o_fun->where != null) {
-
             $where_joiner = $o_fun->where->type;
-            $cond_list = $o_fun->where->cond_list;
-            $where_list = $o_fun->where->where_list;
+            $cond_list0 = $o_fun->where->cond_list;
+            if ($cond_list0 == null || count($cond_list0) == 0) {
+                SeasLog::debug("根条件为空");
+                return array($a_param, $s_sql1, $s_sql2);
+            }
             if ($where_joiner == Constant::WHERE_JOIN_OR) {
                 $s_sql1 = " 1=0 ";
             } else {
                 $s_sql1 = " 1=1 ";
             }
             $s_sql2 = "SET @s_sql = CONCAT( @s_sql, ' {$s_sql1} ');\n";
-            SeasLog::debug("普通条件------------------");
-            foreach ($cond_list as $cond) {
-                $jj++;
-                list($_params, $_sql1, $_sql2) = $this->_procWhereOneCond(0, $jj, $model, $cond, $where_joiner);
-                //var_dump($_params, $_sql1, $_sql2);
-                foreach ($_params as $_param) {
-                    $a_param[] = $_param;
-                }
-                if ($_sql1 != "") {
-                    $s_sql1 = $s_sql1 . "\n" . $_sql1;
-                }
-                if ($_sql2 != "") {
-                    $s_sql2 = $s_sql2 . "\n" . $_sql2;
-                }
-            }
-            SeasLog::debug("嵌套查询------------------" . count($where_list));
-            foreach ($where_list as $where2) {
 
-                if ($where2 != null) {
+            foreach ($cond_list0 as $cond0) {
+                /* @var MyCond $cond0 */
+                if ($cond0->is_sub_where == "1") {
+                    SeasLog::debug("嵌套查询------------------{$cond0->uuid}");
+                    //子查询部分
+                    if ($cond0->cond_list != null && count($cond0->cond_list) > 0) {
+                        $cond_list1 = $cond0->cond_list;
+                        //要确保数据
+                        $ss_sql1 = "";
+                        $where_joiner2 = $cond0->type_sub_where;
+                        if ($where_joiner2 == Constant::WHERE_JOIN_OR) {
+                            $ss_sql1 = $where_joiner . "( 1=0 ";
+                            $s_sql2 = $s_sql2 . "\n" . "SET @s_sql = CONCAT( @s_sql, ' {$where_joiner} ( 1=0  ');\n";
+                        } else {
+                            $ss_sql1 = $where_joiner . "( 1=1 ";
+                            $s_sql2 = $s_sql2 . "\n" . "SET @s_sql = CONCAT( @s_sql, ' {$where_joiner} ( 1=1  ');\n";
+                        }
 
-                    $where_joiner2 = $where2->type;
-                    $cond_list2 = $where2->cond_list;
+                        foreach ($cond_list1 as $cond1) {
+                            /* @var MyCond $cond1 */
+                            if ($cond1->is_sub_where == "1") {
+                                //仅允许一级子嵌套
+                                continue;
+                            }
 
-                    if (count($cond_list2) == 0) {
-                        continue;
-                    }
-                    //要确保数据
-                    $ss_sql1 = "";
-                    if ($where_joiner2 == Constant::WHERE_JOIN_OR) {
-                        $ss_sql1 = $where_joiner . "( 1=0 ";
-                        $s_sql2 = $s_sql2 . "\n" . "SET @s_sql = CONCAT( @s_sql, ' {$where_joiner} ( 1=0  ');\n";
+                            $jj++;
+                            list($_params, $_sql1, $_sql2) = $this->_procWhereOneCond(1, $jj, $model, $cond1, $where_joiner2);
+                            foreach ($_params as $_param) {
+                                $a_param[] = $_param;
+                            }
+                            if ($_sql1 != "") {
+                                $ss_sql1 = $ss_sql1 . "\n" . $_sql1;
+                            }
+                            if ($_sql2 != "") {
+                                $s_sql2 = $s_sql2 . "\n" . $_sql2;
+                            }
+
+                        }
+                        $s_sql1 = $s_sql1 . "\n" . $ss_sql1 . ")";
+                        $s_sql2 = $s_sql2 . "\n" . "SET @s_sql = CONCAT( @s_sql, ')');\n\n";
                     } else {
-                        $ss_sql1 = $where_joiner . "( 1=1 ";
-                        $s_sql2 = $s_sql2 . "\n" . "SET @s_sql = CONCAT( @s_sql, ' {$where_joiner} ( 1=1  ');\n";
+                        SeasLog::debug("子条件为空");
                     }
 
-                    foreach ($cond_list2 as $cond) {
-
-                        $jj++;
-                        list($_params, $_sql1, $_sql2) = $this->_procWhereOneCond(1, $jj, $model, $cond, $where_joiner2);
-                        foreach ($_params as $_param) {
-                            $a_param[] = $_param;
-                        }
-                        if ($_sql1 != "") {
-                            $ss_sql1 = $ss_sql1 . "\n" . $_sql1;
-                        }
-                        if ($_sql2 != "") {
-                            $s_sql2 = $s_sql2 . "\n" . $_sql2;
-                        }
+                } else {
+                    SeasLog::debug("普通条件------------------");
+                    $jj++;
+                    list($_params, $_sql1, $_sql2) = $this->_procWhereOneCond(0, $jj, $model, $cond0, $where_joiner);
+                    //var_dump($_params, $_sql1, $_sql2);
+                    foreach ($_params as $_param) {
+                        $a_param[] = $_param;
                     }
-
-                    $s_sql1 = $s_sql1 . "\n" . $ss_sql1 . ")";
-                    $s_sql2 = $s_sql2 . "\n" . "SET @s_sql = CONCAT( @s_sql, ')');\n\n";
+                    if ($_sql1 != "") {
+                        $s_sql1 = $s_sql1 . "\n" . $_sql1;
+                    }
+                    if ($_sql2 != "") {
+                        $s_sql2 = $s_sql2 . "\n" . $_sql2;
+                    }
                 }
             }
-            //$s_param = implode(",\n" . _tab(1), $a_param);
+
+
         }
         return array($a_param, $s_sql1, $s_sql2);
     }
@@ -778,8 +785,7 @@ DDD;
                 $s_sql1 = " {$WHERE_JOIN} `{$key}` {$s_cond} {$s_param1}";
                 if (!$this->isIntType($f_type)) {
                     $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} \'', {$s_param1}, '\' '";
-                }
-                else{
+                } else {
                     $s_sql2 = "' {$WHERE_JOIN} `{$key}` {$s_cond} ', {$s_param1}, '  '";
                 }
                 $has_if = true;
@@ -807,7 +813,6 @@ DDD;
      * 创建存储过程-查询多个、聚合、统计
      * @param MyModel $model
      */
-
 
 
     /**
@@ -1015,8 +1020,7 @@ DDD;
                         //$s_sql2 = $s_sql2 . " {$s_param2_use} ";
                         if (!$this->isIntType($f_type)) {
                             $s_sql2 = $s_sql2 . " \'', {$s_param2_use}, '\' '";
-                        }
-                        else{
+                        } else {
                             $s_sql2 = $s_sql2 . " ', {$s_param2_use}, '  '";
                         }
                         break;
@@ -1066,8 +1070,7 @@ DDD;
                         //$s_sql2 = $s_sql2 . " {$s_param2_use} ";
                         if (!$this->isIntType($f_type)) {
                             $s_sql2 = $s_sql2 . " \'', {$s_param2_use}, '\' '";
-                        }
-                        else{
+                        } else {
                             $s_sql2 = $s_sql2 . " ', {$s_param2_use}, '  '";
                         }
                         break;
@@ -1088,8 +1091,7 @@ DDD;
 
                 if (!$this->isIntType($f_type)) {
                     $s_sql2 = $s_sql2 . " \'', {$s_param1_use}, '\' AND ";
-                }
-                else{
+                } else {
                     $s_sql2 = $s_sql2 . " ', {$s_param1_use}, '  AND ";
                 }
 
@@ -1129,8 +1131,7 @@ DDD;
                         //不完整的支持，当2个都是输入时，才允许用if判断是否为空
                         if (!$this->isIntType($f_type)) {
                             $s_sql2 = $s_sql2 . " \'', {$s_param2_use}, '\' ";
-                        }
-                        else{
+                        } else {
                             $s_sql2 = $s_sql2 . " ', {$s_param2_use}, '  ";
                         }
                         $has_if = true;
@@ -1603,8 +1604,7 @@ DDD;
             if ($has_group_by && $group_by != "") {
                 if ($has_having) {
                     echo "SET @s_sql = 'SELECT COUNT(`{$group_by}`) AS i_count  FROM (SELECT `{$group_by}`,{$group_field_sel} FROM `t_{$model->table_name}` WHERE ';\n";
-                }
-                else{
+                } else {
                     echo "SET @s_sql = 'SELECT COUNT(`{$group_by}`) AS i_count  FROM `t_{$model->table_name}` WHERE ';\n";
                 }
             } else {

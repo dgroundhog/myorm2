@@ -8,11 +8,7 @@
 class MyWhere extends MyStruct
 {
 
-    /**
-     * 父级id
-     * @var string
-     */
-    public $parent_where = "";
+
 
     /**
      * 查询列表的名字
@@ -21,11 +17,7 @@ class MyWhere extends MyStruct
     public $cond_list= [];
 
 
-    /**
-     * 潜逃条件组合 MyWhere
-     * @var array
-     */
-    public $where_list= [];
+
 
     /**
      * MyWhere constructor.
@@ -37,7 +29,7 @@ class MyWhere extends MyStruct
 
     public $basic_keys = array(
         //type
-        "parent_where"
+
     );
 
     /**
@@ -47,11 +39,6 @@ class MyWhere extends MyStruct
     function getAsArray()
     {
         $a_data = $this->getBasicAsArray();
-        $a_data['where_list'] = array();
-        foreach ($this->where_list as $key => $o_where) {
-            /* @var MyWhere $o_where */
-            $a_data['where_list'][$key] = $o_where->getAsArray();
-        }
 
         $a_data['cond_list'] = array();
         foreach ($this->cond_list as $key => $o_cond) {
@@ -65,7 +52,7 @@ class MyWhere extends MyStruct
     function parseToObj($a_data)
     {
         $this->parseToBasicObj($a_data);
-        $this->where_list = array();
+
         $this->cond_list = array();
 
         if (isset($a_data['cond_list']) && is_array($a_data['cond_list'])) {
@@ -73,14 +60,6 @@ class MyWhere extends MyStruct
                 $o_obj = new MyCond();
                 $o_obj->parseToObj($cond);
                 $this->cond_list[$key] = $o_obj;
-            }
-        }
-
-        if (isset($a_data['where_list']) && is_array($a_data['where_list'])) {
-            foreach ($a_data['where_list'] as $key => $where) {
-                $o_obj = new MyWhere();
-                $o_obj->parseToObj($where);
-                $this->where_list[$key] = $o_obj;
             }
         }
         return $this;

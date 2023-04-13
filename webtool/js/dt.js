@@ -4020,65 +4020,73 @@ App.dt.project.modelFunHavingInit = function () {
 /**
  * 添加一个查询条件组合
  *
- * @param par 父亲节点
+ * @param par 父亲节点 cond_id
  * @param type
  */
-App.dt.project.modelFunWhereAdd = function (par, type) {
+App.dt.project.modelFunWhereAdd = function (type) {
     var self = App.dt;
-    if (App.su.isEmpty(par) && self.project.curr_where != null && self.project.curr_where.uuid != null) {
+    if (self.project.curr_where != null && self.project.curr_where.uuid != null) {
         self.fail("当前已经添加了一个根条件,无需重复添加");
         return;
     }
     var o_where = new MyWhere();
     o_where.uuid = App.su.maths.uuid.create();
     o_where.type = type;
+    console.log("添加[根]查询条件--" + type);
 
-    if (App.su.isEmpty(par)) {
-        console.log("添加[根]查询条件--" + type);
-        o_where.parent_where = "";
-        self.project.curr_where = o_where;
-    } else {
-        console.log("添加[嵌套]查询条件--" + type);
-        o_where.parent_where = par;
-        self.project.curr_where.where_list[o_where.uuid] = o_where;
-    }
+    self.project.curr_where = o_where;
     self.project.modelFunWhereInit();
 }
 
 /**
- * 删除一个查询条件组合
+ * 删除根条件
+ *
+ * @param par 父亲节点 cond_id
+ * @param type
  */
-App.dt.project.modelFunWhereDrop = function (where_id) {
+App.dt.project.modelFunWhereDrop = function () {
     var self = App.dt;
-    if (App.su.isEmpty(where_id) && self.project.curr_where != null) {
-        self.fail("非法业务流程");
-        return;
-    }
-    if (where_id == self.project.curr_where.uuid) {
-        self.project.curr_where = null;
-        $("#block_where").html("");
-    } else {
-        if (undefined != self.project.curr_where.where_list[where_id]) {
-            var _where_list = self.project.curr_where.where_list;
-            delete _where_list[where_id];
-            self.project.curr_where.where_list = _where_list;
-            console.log(444);
-        }
-    }
+    console.log("删除[根]查询条件--");
+    self.project.curr_where = null;
     self.project.modelFunWhereInit();
 }
 
+//TODO
 
 /**
  * 编辑一个查询条件
+ * cond_id 可以为空，AND，OR 和UUID
+ * sub_cond_id 可以为空，UUID
  */
-App.dt.project.modelFunCondEdit = function (where_id, cond_id) {
+App.dt.project.modelFunCondEdit = function (cond_id, is_sub, sub_cond_id) {
     var self = App.dt;
     if (undefined == self.project.curr_where || null == self.project.curr_where) {
         self.fail("非法任务流程--modelFunCondEdit");
         return;
     }
-    $("#txt_where_uuid").val(where_id);
+    var _now = App.su.datetime.getCurrentDateTime();
+    if(cond_id == "AND" || cond_id == "OR"){
+        //增加一个子嵌套，直接保存,这个不能修改，只能直接删除
+        console.log("增加一个子嵌套，直接保存");
+        _currCond = new MyCond();
+        _cond_id = App.su.maths.uuid.create();
+        _currCond.uuid = _cond_id;
+        _currCond.ctime = _now;
+        _currCond.is_sub_where = "1";
+        _currCond.type_sub_where = cond_id;//AND or OR
+        _currCond.cond_list = [];
+        self.project.curr_where.cond_list[_cond_id] = _currCond;
+        $("#block_edit_mode_conf").hide();
+        self.succ("临时添加");
+        self.project.modelFunWhereInit();
+        return;
+    }
+    //差一个参数
+
+    $("#txt_cond_uuid").val(cond_id);
+    $("#txt_is_sub").val(is_sub);
+    $("#txt_sub_cond_uuid").val(sub_cond_id);
+
     $("#block_fun_cond_field").show();
     $("#btn_save_having").hide();
     $("#btn_save_cond").show();
@@ -4088,37 +4096,43 @@ App.dt.project.modelFunCondEdit = function (where_id, cond_id) {
     var sel_fun_cond_v1_type = $("#sel_fun_cond_v1_type");
     var sel_fun_cond_v2_type = $("#sel_fun_cond_v2_type");
 
-    if (App.su.isEmpty(cond_id)) {
+    if (App.su.isEmpty(cond_id) || (!App.su.isEmpty(cond_id) && is_sub=="1" && App.su.isEmpty(sub_cond_id))) {
         console.log("编辑新条件");
         $("#btn_save_cond").text("新添加条件");
         $("#txt_fun_cond_v1").val("");
         $("#txt_fun_cond_v2").val("");
-        $("#txt_cond_uuid").val("");
-
+        //$("#txt_cond_uuid").val("");
 
     } else {
         console.log("编辑旧条件");
-        //console.log(where_id);
-        //console.log(cond_id);
-        $("#btn_save_cond").text("保存旧条件");
+
+        if (undefined == self.project.curr_where.cond_list
+            || undefined == self.project.curr_where.cond_list[cond_id]) {
+            self.fail("非法任务流程1--不存在的主条件");
+            return;
+        }
         //var _currCond =  new MyCond();
         //console.log(self.project.curr_where.where_list)
         var _currCond = null;
-        if (undefined != self.project.curr_where.cond_list[cond_id]) {
+        if (is_sub=="1" && !App.su.isEmpty(sub_cond_id))  {
             console.log(111);
-            _currCond = self.project.curr_where.cond_list[cond_id];
-        } else {
-            console.log(222);
-            if (undefined != self.project.curr_where.where_list[where_id]) {
-                var _where2 = self.project.curr_where.where_list[where_id];
-                _currCond = _where2.cond_list[cond_id];
-                console.log(333);
+            if (undefined == self.project.curr_where.cond_list[cond_id].cond_list
+                || undefined == self.project.curr_where.cond_list[cond_id].cond_list[sub_cond_id]) {
+                self.fail("非法任务流程2--不存在的子条件");
+                return;
             }
+            console.log(222);
+            _currCond = self.project.curr_where.cond_list[cond_id].cond_list[sub_cond_id];
+        } else {
+            console.log(333);
+            _currCond = self.project.curr_where.cond_list[cond_id];
         }
         if (null == _currCond) {
-            self.fail("非法任务流程2--modelFunCondEdit");
+            console.log(444);
+            self.fail("非法任务流程3--modelFunCondEdit");
             return;
         }
+        $("#btn_save_cond").text("保存旧条件");
         sel_fun_cond_field.val(_currCond.field);
         sel_fun_cond_type.val(_currCond.type);
         sel_fun_cond_v1_type.val(_currCond.v1_type);
@@ -4126,8 +4140,7 @@ App.dt.project.modelFunCondEdit = function (where_id, cond_id) {
 
         $("#txt_fun_cond_v1").val(_currCond.v1);
         $("#txt_fun_cond_v2").val(_currCond.v2);
-        //cond_id
-        $("#txt_cond_uuid").val(_currCond.uuid);
+
     }
 
     sel_fun_cond_field.change();
@@ -4150,25 +4163,42 @@ App.dt.project.modelFunCondSave = function () {
     }
 
     var _cond_id = $("#txt_cond_uuid").val();
-    var _where_id = $("#txt_where_uuid").val();
+    var _sub_cond_id = $("#txt_sub_cond_uuid").val();
+    var _is_sub = $("#txt_is_sub").val();
 
     var _currCond = null;
-    if (!App.su.isEmpty(_cond_id)) {
-        if (undefined != self.project.curr_where.cond_list[_cond_id]) {
-            _currCond = self.project.curr_where.cond_list[_cond_id];
-        } else {
-            if (undefined != self.project.curr_where.where_list[_where_id]) {
-                var _where2 = self.project.curr_where.where_list[_where_id];
-                _currCond = _where2.cond_list[_cond_id];
-            }
+    if (!App.su.isEmpty(_cond_id) && _is_sub=="1"  && !App.su.isEmpty(_sub_cond_id))  {
+        //编辑主条件
+        console.log(111);
+        if (undefined == self.project.curr_where.cond_list
+            || undefined == self.project.curr_where.cond_list[_cond_id]
+            || undefined == self.project.curr_where.cond_list[_cond_id].cond_list
+            || undefined == self.project.curr_where.cond_list[_cond_id].cond_list[_sub_cond_id]) {
+            self.fail("非法任务流程2--不存在的子条件");
+            return;
         }
+        console.log(222);
+        _currCond = self.project.curr_where.cond_list[_cond_id].cond_list[_sub_cond_id];
+    } else if(!App.su.isEmpty(_cond_id) && _is_sub=="0" ) {
+        //编辑主条件
+        console.log(333);
+        if (undefined == self.project.curr_where.cond_list
+            || undefined == self.project.curr_where.cond_list[_cond_id] ) {
+            self.fail("非法任务流程2--不存在的主条件");
+            return;
+        }
+        console.log(444);
+        _currCond = self.project.curr_where.cond_list[_cond_id];
     }
+
+    var _cond_id_new = _cond_id;
     var _now = App.su.datetime.getCurrentDateTime();
     if (null == _currCond) {
         console.log("保存新配置");
         _currCond = new MyCond();
-        _cond_id = App.su.maths.uuid.create();
-        _currCond.uuid = _cond_id;
+        _cond_id_new = App.su.maths.uuid.create();
+        _currCond.uuid = _cond_id_new;
+        _currCond.is_sub_where = "0";
         _currCond.ctime = _now;
     } else {
         console.log("保存旧配置");
@@ -4181,10 +4211,10 @@ App.dt.project.modelFunCondSave = function () {
     _currCond.v1 = $("#txt_fun_cond_v1").val();
     _currCond.v2 = $("#txt_fun_cond_v2").val();
 
-    if (undefined != self.project.curr_where.where_list[_where_id]) {
-        self.project.curr_where.where_list[_where_id].cond_list[_cond_id] = _currCond;
+    if (_is_sub =="1" ) {
+        self.project.curr_where.cond_list[_cond_id].cond_list[_cond_id_new] = _currCond;
     } else {
-        self.project.curr_where.cond_list[_cond_id] = _currCond;
+        self.project.curr_where.cond_list[_cond_id_new] = _currCond;
     }
     $("#block_edit_mode_conf").hide();
     self.succ("临时添加");
@@ -4194,31 +4224,37 @@ App.dt.project.modelFunCondSave = function () {
 /**
  * 删除一个查询条件
  */
-App.dt.project.modelFunCondDrop = function (_where_id, _cond_id) {
+App.dt.project.modelFunCondDrop = function (_cond_id, is_sub, _sub_cond_id) {
     var self = App.dt;
     if (null == self.project.curr_where) {
         self.fail("没有条件--modelFunCondDrop");
         return;
     }
-    if (!App.su.isEmpty(_cond_id)) {
-        var _currWhere = self.project.curr_where;
-        if (undefined != _currWhere.cond_list[_cond_id]) {
-            console.log("删除的在主条件中11");
-            delete _currWhere.cond_list[_cond_id];
-        } else {
-            if (undefined != _currWhere.where_list[_where_id]) {
-                console.log("删除的在主条件中22");
-                if (undefined != _currWhere.where_list[_where_id].cond_list[_cond_id]) {
-                    delete _currWhere.where_list[_where_id].cond_list[_cond_id];
-                    console.log("删除的在主条件中33");
-                }
-            }
+    var _currWhere = self.project.curr_where;
+    if(is_sub=="1"){
+        if (undefined == _currWhere.cond_list
+            || undefined == _currWhere.cond_list[_cond_id]
+            || undefined == _currWhere.cond_list[_cond_id].cond_list
+            || undefined == _currWhere.cond_list[_cond_id].cond_list[_sub_cond_id]) {
+            self.fail("删除的在子条件中11");
+            return;
         }
-        self.project.curr_where = _currWhere;
-        self.project.modelFunWhereInit();
-        return;
+        delete _currWhere.cond_list[_cond_id].cond_list[_sub_cond_id];
     }
+    else{
+        if (undefined == _currWhere.cond_list
+            || undefined == _currWhere.cond_list[_cond_id] ) {
+            self.fail("删除的在主条件中22");
+            return;
+        }
+        delete _currWhere.cond_list[_cond_id];
+    }
+
+    self.project.curr_where = _currWhere;
+    self.project.modelFunWhereInit();
     self.fail("没有条件--空的--modelFunCondDrop");
+    return;
+
 
 }
 
@@ -4227,7 +4263,6 @@ App.dt.project.modelFunCondDrop = function (_where_id, _cond_id) {
  */
 App.dt.project.modelFunHavingEdit = function () {
     var self = App.dt;
-    $("#txt_where_uuid").val("");
 
     var sel_fun_cond_field = $("#sel_fun_cond_field");
     var sel_fun_cond_type = $("#sel_fun_cond_type");
@@ -4293,7 +4328,7 @@ App.dt.project.modelFunHavingSave = function () {
     _currCond.v2_type = $("#sel_fun_cond_v2_type").val();
     _currCond.v1 = $("#txt_fun_cond_v1").val();
     _currCond.v2 = $("#txt_fun_cond_v2").val();
-
+    //
     self.project.curr_having = _currCond;
     $("#block_edit_mode_conf").hide();
     self.project.modelFunHavingInit();

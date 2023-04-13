@@ -212,159 +212,167 @@ abstract class CcBase
         $a_param_field = array();//用于使用
 
         //var_dump($o_fun->where);
-        $jj = 0;
+        $jj = 0; //jj是用来构建参数序列的，防止用错
         if ($o_fun->where != null) {
+            $cond_list0 = $o_fun->where->cond_list;
+            foreach ($cond_list0 as $cond0) {
+                /* @var MyCond $cond0 */
+                if ($cond0->is_sub_where == "1") {
+                    //子嵌套
+                    $cond_list1 = $cond0->cond_list;
+                    //子查询部分
+                    if ($cond_list1 != null && count($cond_list1) > 0) {
 
-            $cond_list = $o_fun->where->cond_list;
-            $where_list = $o_fun->where->where_list;
-
-            //var_dump($cond_list);
-            foreach ($cond_list as $cond) {
-                $field = $model->field_list[$cond->field];
-                $field_type = $field->type;
-                if ($field_type == Constant::DB_FIELD_TYPE_BLOB || $field_type == Constant::DB_FIELD_TYPE_LONGBLOB) {
-                    //blob字段不参与条件运算
-                    continue;
-                }
-
-               // var_dump($cond->type, $cond->v1_type, $cond->v2_type);
-                /* @var MyCond $cond */
-                switch ($cond->type) {
-                    case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
-                    case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
-                    case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
-                        if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                            $o_field = $model->field_list[$cond->field];
-                            list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                            $a_param_comment[] = $s_param1;
-                            $a_param_define[] = $s_param2;
-                            $a_param_use[] = $s_param3;
-                            $a_param_type[] = $s_param4;
-                            $a_param_field[] = $o_field;
-                            $jj++;
-                            //执行2次
-                            list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                            $a_param_comment[] = $s_param1;
-                            $a_param_define[] = $s_param2;
-                            $a_param_use[] = $s_param3;
-                            $a_param_type[] = $s_param4;
-                            $a_param_field[] = $o_field;
-                            $jj++;
+                        foreach ($cond_list1 as $cond1) {
+                            /* @var MyCond $cond1 */
+                            if ($cond1->is_sub_where == "1") {
+                                //仅允许一级子嵌套
+                                continue;
+                            }
+                            $field1 = $model->field_list[$cond1->field];
+                            /* @var MyField $field1 */
+                            $field_type = $field1->type;
+                            if ($field_type == Constant::DB_FIELD_TYPE_BLOB
+                                || $field_type == Constant::DB_FIELD_TYPE_LONGBLOB
+                                || $field_type == Constant::DB_FIELD_TYPE_TEXT
+                                || $field_type == Constant::DB_FIELD_TYPE_LONGTEXT
+                            ) {
+                                SeasLog::error("{ $field1->name}--{$field1->type}字段不参与条件运算2");
+                                //blob字段不参与条件运算2
+                                continue;
+                            }
+                            switch ($cond1->type) {
+                                case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
+                                case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
+                                case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
+                                    if ($cond1->v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                        list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field1, $jj, "w");
+                                        $a_param_comment[] = $s_param1;
+                                        $a_param_define[] = $s_param2;
+                                        $a_param_use[] = $s_param3;
+                                        $a_param_type[] = $s_param4;
+                                        $a_param_field[] = $field1;
+                                        $jj++;
+                                        //执行2次
+                                        list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field1, $jj, "w");
+                                        $a_param_comment[] = $s_param1;
+                                        $a_param_define[] = $s_param2;
+                                        $a_param_use[] = $s_param3;
+                                        $a_param_type[] = $s_param4;
+                                        $a_param_field[] = $field1;
+                                        $jj++;
+                                    }
+                                    break;
+                                case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
+                                case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
+                                    if ($cond1->v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                        list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field1, $jj, "w");
+                                        $a_param_comment[] = $s_param1;
+                                        $a_param_define[] = $s_param2;
+                                        $a_param_use[] = $s_param3;
+                                        $a_param_type[] = $s_param4;
+                                        $a_param_field[] = $field1;
+                                        $jj++;
+                                    }
+                                    if ($cond1->v2_type == Constant::COND_VAl_TYPE_INPUT) {
+                                        list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field1, $jj, "w");
+                                        $a_param_comment[] = $s_param1;
+                                        $a_param_define[] = $s_param2;
+                                        $a_param_use[] = $s_param3;
+                                        $a_param_type[] = $s_param4;
+                                        $a_param_field[] = $field1;
+                                        $jj++;
+                                    }
+                                    break;
+                                default:
+                                    if ($cond1->v1_type == Constant::COND_VAl_TYPE_INPUT) {
+                                        list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field1, $jj, "w");
+                                        $a_param_comment[] = $s_param1;
+                                        $a_param_define[] = $s_param2;
+                                        $a_param_use[] = $s_param3;
+                                        $a_param_type[] = $s_param4;
+                                        $a_param_field[] = $field1;
+                                        $jj++;
+                                    }
+                            }
                         }
-                        break;
-                    case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
-                    case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
-                        if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                            $o_field = $model->field_list[$cond->field];
-                            list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                            $a_param_comment[] = $s_param1;
-                            $a_param_define[] = $s_param2;
-                            $a_param_use[] = $s_param3;
-                            $a_param_type[] = $s_param4;
-                            $a_param_field[] = $o_field;
-                            $jj++;
-                        }
-                        if ($cond->v2_type == Constant::COND_VAl_TYPE_INPUT) {
-                            $o_field = $model->field_list[$cond->field];
-                            list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                            $a_param_comment[] = $s_param1;
-                            $a_param_define[] = $s_param2;
-                            $a_param_use[] = $s_param3;
-                            $a_param_type[] = $s_param4;
-                            $a_param_field[] = $o_field;
-                            $jj++;
-                        }
-                        break;
-                    default:
-                        if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                            $o_field = $model->field_list[$cond->field];
-                            list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                            $a_param_comment[] = $s_param1;
-                            $a_param_define[] = $s_param2;
-                            $a_param_use[] = $s_param3;
-                            $a_param_type[] = $s_param4;
-                            $a_param_field[] = $o_field;
-                            $jj++;
-                        }
-                }
-            }
-            foreach ($where_list as $where2) {
-                //子查询部分
-                if ($where2 != null) {
-                    $cond_list2 = $where2->cond_list;
-                    if (count($cond_list2) == 0) {
+                    }
+                } else {
+                    //普通条件
+                    $field0 = $model->field_list[$cond0->field];
+                    /* @var MyField $field0 */
+                    $field_type = $field0->type;
+                    if ($field_type == Constant::DB_FIELD_TYPE_BLOB
+                        || $field_type == Constant::DB_FIELD_TYPE_LONGBLOB
+                        || $field_type == Constant::DB_FIELD_TYPE_TEXT
+                        || $field_type == Constant::DB_FIELD_TYPE_LONGTEXT
+                    ) {
+                        SeasLog::error("{ $field0->name}--{$field0->type}字段不参与条件运算1");
+                        //blob字段不参与条件运算2
                         continue;
                     }
-                    foreach ($cond_list2 as $cond) {
-                        $field = $model->field_list[$cond->field];
-                        $field_type = $field->type;
-                        if ($field_type == Constant::DB_FIELD_TYPE_BLOB || $field_type == Constant::DB_FIELD_TYPE_LONGBLOB) {
-                            //blob字段不参与条件运算2
-                            continue;
-                        }
 
-                        /* @var MyCond $cond */
-                        switch ($cond->type) {
-                            case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
-                            case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
-                            case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
-                                if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                                    $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                                    $a_param_comment[] = $s_param1;
-                                    $a_param_define[] = $s_param2;
-                                    $a_param_use[] = $s_param3;
-                                    $a_param_type[] = $s_param4;
-                                    $a_param_field[] = $o_field;
-                                    $jj++;
-                                    //执行2次
-                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                                    $a_param_comment[] = $s_param1;
-                                    $a_param_define[] = $s_param2;
-                                    $a_param_use[] = $s_param3;
-                                    $a_param_type[] = $s_param4;
-                                    $a_param_field[] = $o_field;
-                                    $jj++;
-                                }
-                                break;
-                            case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
-                            case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
-                                if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                                    $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                                    $a_param_comment[] = $s_param1;
-                                    $a_param_define[] = $s_param2;
-                                    $a_param_use[] = $s_param3;
-                                    $a_param_type[] = $s_param4;
-                                    $a_param_field[] = $o_field;
-                                    $jj++;
-                                }
-                                if ($cond->v2_type == Constant::COND_VAl_TYPE_INPUT) {
-                                    $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                                    $a_param_comment[] = $s_param1;
-                                    $a_param_define[] = $s_param2;
-                                    $a_param_use[] = $s_param3;
-                                    $a_param_type[] = $s_param4;
-                                    $a_param_field[] = $o_field;
-                                    $jj++;
-                                }
-                                break;
-                            default:
-                                if ($cond->v1_type == Constant::COND_VAl_TYPE_INPUT) {
-                                    $o_field = $model->field_list[$cond->field];
-                                    list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($o_field, $jj, "w");
-                                    $a_param_comment[] = $s_param1;
-                                    $a_param_define[] = $s_param2;
-                                    $a_param_use[] = $s_param3;
-                                    $a_param_type[] = $s_param4;
-                                    $a_param_field[] = $o_field;
-                                    $jj++;
-                                }
-                        }
+                    switch ($cond0->type) {
+                        case Constant::COND_TYPE_DATE:    // = "DATE";//关键字模糊匹配
+                        case Constant::COND_TYPE_TIME:    // = "TIME";//日期范围内
+                        case Constant::COND_TYPE_DATETIME:    // = "TIME";//日期范围内
+                            if ($cond0->v1_type == Constant::COND_VAl_TYPE_INPUT) {
+
+                                list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field0, $jj, "w");
+                                $a_param_comment[] = $s_param1;
+                                $a_param_define[] = $s_param2;
+                                $a_param_use[] = $s_param3;
+                                $a_param_type[] = $s_param4;
+                                $a_param_field[] = $field0;
+                                $jj++;
+                                //执行2次
+                                list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field0, $jj, "w");
+                                $a_param_comment[] = $s_param1;
+                                $a_param_define[] = $s_param2;
+                                $a_param_use[] = $s_param3;
+                                $a_param_type[] = $s_param4;
+                                $a_param_field[] = $field0;
+                                $jj++;
+                            }
+                            break;
+                        case Constant::COND_TYPE_BETWEEN: // = "BETWEEN";//标量范围内
+                        case Constant::COND_TYPE_NOTBETWEEN: // = "NOTBETWEEN";//标量范围外
+                            if ($cond0->v1_type == Constant::COND_VAl_TYPE_INPUT) {
+
+                                list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field0, $jj, "w");
+                                $a_param_comment[] = $s_param1;
+                                $a_param_define[] = $s_param2;
+                                $a_param_use[] = $s_param3;
+                                $a_param_type[] = $s_param4;
+                                $a_param_field[] = $field0;
+                                $jj++;
+                            }
+                            if ($cond0->v2_type == Constant::COND_VAl_TYPE_INPUT) {
+
+                                list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field0, $jj, "w");
+                                $a_param_comment[] = $s_param1;
+                                $a_param_define[] = $s_param2;
+                                $a_param_use[] = $s_param3;
+                                $a_param_type[] = $s_param4;
+                                $a_param_field[] = $field0;
+                                $jj++;
+                            }
+                            break;
+                        default:
+                            if ($cond0->v1_type == Constant::COND_VAl_TYPE_INPUT) {
+
+                                list($s_param1, $s_param2, $s_param3, $s_param4) = $this->_procParam($field0, $jj, "w");
+                                $a_param_comment[] = $s_param1;
+                                $a_param_define[] = $s_param2;
+                                $a_param_use[] = $s_param3;
+                                $a_param_type[] = $s_param4;
+                                $a_param_field[] = $field0;
+                                $jj++;
+                            }
                     }
                 }
             }
+
         }
         //参数个数，用于注释,用于定义,用于使用
         return array($jj, $a_param_comment, $a_param_define, $a_param_use, $a_param_type, $a_param_field);

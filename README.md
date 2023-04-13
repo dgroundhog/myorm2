@@ -42,4 +42,6 @@ http://app.waibc.com/manual/phalcon_zh/reference/tutorial-rest.html
 
 2、查询条件排序
 
-cp -rf D:/build/20230411054659/src/main/*  D:/build/demoee/src/main 
+parent_where 需要改为COND_UUID
+
+cp -rf D:/build/20230411171153/src/main/*  D:/build/demoee/src/main 
