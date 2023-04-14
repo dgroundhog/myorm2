@@ -66,12 +66,15 @@ class MyCond extends MyStruct
     {
         $this->parseToBasicObj($a_data);
         $this->cond_list = array();
-        if (isset($a_data['cond_list']) && is_array($a_data['cond_list'])) {
+        if (isset($a_data['cond_list']) && is_array($a_data['cond_list']) && count($a_data['cond_list']) > 0) {
+            //var_dump($a_data['uuid']);
+            //var_dump($a_data['cond_list']);
             foreach ($a_data['cond_list'] as $key => $cond) {
                 $o_obj = new MyCond();
                 $o_obj->parseToObj($cond);
                 $this->cond_list[$key] = $o_obj;
             }
+            //var_dump($this->getAsArray());
         }
         return $this;
     }

@@ -3651,6 +3651,7 @@ App.dt.project.modelFunEdit = function (model_id, fun_id) {
     console.log("过滤可用于索引的字段2")
     self.project.curr_fieldCanIndex = {};
     self.project.curr_where = null;
+    self.project.curr_having = null;
     for (var ii in _curr_model.field_list) {
         var ff = _curr_model.field_list[ii];
         var typeU = ff.type.toUpperCase();
@@ -3867,10 +3868,13 @@ App.dt.project.modelFunSave = function () {
     o_fun.query_optimize = self.editor.getBootSwitchVal("#txt_fun_query_optimize");
     o_fun.limit = $("#txt_fun_limit").val();
 
-    o_fun.where = self.project.curr_where;
+    o_fun.where = deepCopy(self.project.curr_where) ;
+    o_fun.where.uuid = App.su.maths.uuid.create();
 
-    o_fun.group_having = self.project.curr_having;
-
+    if(null != self.project.curr_having){
+        o_fun.group_having = deepCopy(self.project.curr_having);
+        o_fun.group_having.uuid= App.su.maths.uuid.create();
+    }
 
     console.log("过滤可用于操作的的字段")
 
@@ -3934,6 +3938,7 @@ App.dt.project.modelFunDrop = function (model_id, fun_id) {
 
 /**
  * 全局临时条件
+ * 保存方法前，MyWhere还没有关联关系，所以反倒全局临时变量
  * @type {MyWhere}
  */
 App.dt.project.curr_where = new MyWhere();
@@ -4239,7 +4244,9 @@ App.dt.project.modelFunCondDrop = function (_cond_id, is_sub, _sub_cond_id) {
             self.fail("删除的在子条件中11");
             return;
         }
-        delete _currWhere.cond_list[_cond_id].cond_list[_sub_cond_id];
+        var _temp_cond =_currWhere.cond_list[_cond_id];
+        delete _temp_cond.cond_list[_sub_cond_id];
+        _currWhere.cond_list[_cond_id] =_temp_cond;
     }
     else{
         if (undefined == _currWhere.cond_list
@@ -4252,7 +4259,7 @@ App.dt.project.modelFunCondDrop = function (_cond_id, is_sub, _sub_cond_id) {
 
     self.project.curr_where = _currWhere;
     self.project.modelFunWhereInit();
-    self.fail("没有条件--空的--modelFunCondDrop");
+    self.succ("删除成功--modelFunCondDrop");
     return;
 
 

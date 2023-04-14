@@ -796,8 +796,12 @@ DDD;
         if ($has_if) {
             if ($this->isIntType($f_type)) {
                 $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != -1 THEN\n";
-            } else {
+            } else if ($this->isDateType($f_type)) {
+                $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' AND {$s_param1} != '0000-00-00' THEN\n";
+            } else if ($this->isDateTimeType($f_type)) {
                 $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' AND {$s_param1} != '0000-00-00 00:00:00' THEN\n";
+            } else {
+                $s_sql3 = _tab($tab_idx) . "IF {$s_param1} != '' THEN\n";
             }
             $s_sql3 = $s_sql3 . _tab($tab_idx + 1) . "SET @s_sql = CONCAT( @s_sql, {$s_sql2});\n";
             $s_sql3 = $s_sql3 . _tab($tab_idx) . "END IF;\n";

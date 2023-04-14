@@ -858,6 +858,26 @@ abstract class CcBase
     }
 
     /**
+     * 是否日期的类型
+     * @param $field_type
+     * @return bool
+     */
+    function isDateType($field_type)
+    {
+        return ($field_type == Constant::DB_FIELD_TYPE_DATE );
+    }
+
+    /**
+     * 是否事件的类型
+     * @param $field_type
+     * @return bool
+     */
+    function isDateTimeType($field_type)
+    {
+        return ($field_type == Constant::DB_FIELD_TYPE_DATETIME );
+    }
+
+    /**
      * 是否二进制类型
      * @param $field_type
      * @return bool
